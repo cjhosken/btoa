@@ -6,6 +6,7 @@ set -e  # Exit immediately if a command exits with a non-zero status
 ARNOLD_ROOT="$HOME/.btoa"
 MY_ARNOLD_VERSION="7.3.4.1"
 MY_USD_VERSION="23.11"
+MY_CMAKE_VERSION="3.30.5"
 
 # Create required directories
 mkdir -p "$ARNOLD_ROOT/arnoldsdk"
@@ -38,8 +39,23 @@ else
     echo "USD is already built. Skipping build."
 fi
 
+# Download and extract USD if not already present
+CMAKE_TAR="$ARNOLD_ROOT/deps/src/cmake-$MY_CMAKE_VERSION-linux-x86_64.tar.gz"
+if [ ! -f "$CMAKE_TAR" ]; then
+    echo "Downloading CMake version $MY_CMAKE_VERSION..."
+    wget -P "$ARNOLD_ROOT/deps/src" "https://github.com/Kitware/CMake/releases/download/v$MY_CMAKE_VERSION/cmake-$MY_CMAKE_VERSION-linux-x86_64.tar.gz"
+else
+    echo "CMake tarball already exists. Skipping download."
+fi
 
-PATH="$ARNOLD_ROOT/deps/bin:$PATH"
+if [ ! -d "$ARNOLD_ROOT/deps/src/cmake-$MY_CMAKE_VERSION-linux-x86_64" ]; then
+    echo "Extracting CMake..."
+    tar -zxf "$CMAKE_TAR" -C "$ARNOLD_ROOT/deps/src"
+else
+    echo "CMake source directory already exists. Skipping extraction."
+fi
+
+PATH="$ARNOLD_ROOT/deps/src/cmake-$MY_CMAKE_VERSION-linux-x86_x64/bin:$ARNOLD_ROOT/deps/bin:$PATH"
 PYTHONPATH="$ARNOLD_ROOT/deps/python:$PYTHONPATH"
 LD_LIBRARY_PATH="$ARNOLD_ROOT/deps/lib:$LD_LIBRARY_PATH"
 
@@ -71,34 +87,6 @@ SHCXX="/usr/bin/g++"
 PYTHON_LIB="/usr/lib"
 PYTHON_LIB_NAME="python3.9"
 PREFIX="$ARNOLD_ROOT/arnold-usd"
-
-# Run the build command
-#echo "Building Arnold USD plugin..."
-#./abuild \
-#    ARNOLD_PATH="$ARNOLD_PATH" \
-#    USD_PATH="$USD_PATH" \
-#    USD_BUILD_MODE='shared_libs' \
-#    BOOST_INCLUDE="$BOOST_INCLUDE" \
-#    PYTHON_INCLUDE="$PYTHON_INCLUDE" \
-#    PYTHON_LIB="$PYTHON_LIB" \
-#    PYTHON_LIB_NAME="$PYTHON_LIB_NAME" \
-#    SHCXX="$SHCXX" \
-#    CXX_STANDARD="17" \
-#    PREFIX="$PREFIX" \
-#    BUILD_DOCS=False \
-#    BUILD_NDR_PLUGIN=False \
-#    BUILD_PROCEDURAL=False \
-#    BUILD_TESTSUITE=False \
-#    BUILD_SCHEMAS=False \
-#    BUILD_RENDER_DELEGATE=True
-
-#echo "Build process completed."
-
-#echo "Installing Arnold USD plugin..."
-#./abuild -j $(nproc) install
-#echo "Installation process completed."
-
-# /usr/bin/ld: cannot find -lboost_python
 
 mkdir -p build
 cd build
