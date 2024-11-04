@@ -9,7 +9,6 @@ MY_USD_VERSION="23.11"
 MY_CMAKE_VERSION="3.30.5"
 
 # Create required directories
-mkdir -p "$ARNOLD_ROOT/arnoldsdk"
 mkdir -p "$ARNOLD_ROOT/deps/src"
 
 # Download and extract USD if not already present
@@ -79,7 +78,7 @@ fi
 # Set paths and environment variables for building Arnold USD
 cd "$ARNOLD_ROOT/deps/src/arnold-usd-Arnold-$MY_ARNOLD_VERSION"
 
-ARNOLD_PATH="$ARNOLD_ROOT/arnoldsdk/Arnold-$MY_ARNOLD_VERSION-linux"
+ARNOLD_PATH="$ARNOLD_ROOT/arnoldSDK"
 USD_PATH="$ARNOLD_ROOT/deps"
 BOOST_INCLUDE="$ARNOLD_ROOT/deps/include"
 PYTHON_INCLUDE="/usr/include/python3.9"

@@ -77,14 +77,14 @@ class ARNOLD_OT_ExportASS(bpy.types.Operator):
         
         # Construct the command to source the setup script and run the conversion
 
-        command = f'{os.path.join(os.path.expanduser("~"), ".btoa/arnoldsdk/Arnold-7.3.4.1-linux/bin/kick")} -i {usd_filepath} -resave {ass_filepath}'
+        command = f'{os.path.join(os.path.expanduser("~"), ".btoa/arnoldSDK/bin/kick")} -i {usd_filepath} -resave {ass_filepath}'
         
         try:
             # Run the command in a shell
             subprocess.run(command, shell=True, check=True, executable="/bin/bash")
 
             texture_path = os.path.join(os.path.dirname(ass_filepath), "textures")
-            maketx_path = os.path.join(os.path.expanduser("~"), ".btoa/arnoldsdk/Arnold-7.3.4.1-linux/bin/maketx")
+            maketx_path = os.path.join(os.path.expanduser("~"), ".btoa/arnoldSDK/bin/maketx")
 
             if os.path.exists(texture_path):
                 for file in os.listdir(texture_path):
