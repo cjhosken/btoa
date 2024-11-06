@@ -15,31 +15,37 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
     def register(cls):
         import pxr.Plug
         btoa = os.path.join(os.path.expanduser("~"), ".btoa")
-        arnoldsdk = os.path.join(btoa, "arnoldsdk", "Arnold-7.3.4.1-linux")
-        arnoldusd = os.path.join(btoa, "arnold-usd")
+        arnoldsdk = os.path.join(btoa, "dependencies", "arnoldSDK")
+        arnoldusd = os.path.join(btoa, "installs", "arnoldusd")
         
         os.environ["ARNOLD_PLUGIN_PATH"] = os.path.join(arnoldusd, "procedural")
-
-        os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "") + ":" + os.path.join(arnoldsdk, "python")
         os.environ["PXR_PLUGINPATH_NAME"] = os.environ.get("PXR_PLUGINPATH_NAME", "") + ":" + os.path.join(arnoldusd, "plugin") + ":" + os.path.join(arnoldsdk, "plugins", "usd")
-        os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH", "") + ":" + os.path.join(arnoldsdk, "bin")
-
-        print(os.environ.get("PXR_PLUGINPATH_NAME"))
-        print(os.environ.get("LD_LIBRARY_PATH"))
 
         pxr.Plug.Registry().RegisterPlugins([os.path.join(arnoldusd, "plugin")])
 
 
     def get_render_settings(self, engine_type):
+        # Explicitly define AOV bindings for Arnold
         return {
-            'myBoolean': True,
-            'myValue': 8,
-            'aovToken:Depth': "depth",
+            'aovToken:color': "color",
+            'aovToken:depth': "depth",
+            'aovToken:diffuse': "diffuse",
+            'aovToken:specular': "specular",
+            'aovToken:emission': "emission",
         }
     
     def update_render_passes(self, scene, render_layer):
+        # Register standard AOVs for rendering
+        self.register_pass(scene, render_layer, 'Combined', 4, 'RGBA', 'COLOR')
+        
+        # Register additional passes if needed
         if render_layer.use_pass_z:
             self.register_pass(scene, render_layer, 'Depth', 1, 'Z', 'VALUE')
+        if render_layer.use_pass_diffuse_color:
+            self.register_pass(scene, render_layer, 'Diffuse', 3, 'RGB', 'COLOR')
+        if render_layer.use_pass_glossy_direct:
+            self.register_pass(scene, render_layer, 'Specular', 3, 'RGB', 'COLOR')
+        # Add more passes as needed
 
     def update(self, data, depsgraph):
         super().update(data, depsgraph)

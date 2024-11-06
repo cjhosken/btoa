@@ -1,4 +1,4 @@
-import bpy, os
+import bpy, os, sys
 
 bl_info = {
     "name" : "Blender to Arnold",
@@ -13,9 +13,8 @@ bl_info = {
 
 from . import properties, engine, preferences, operators, ui
 
-def register():
-    os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH", "") + ":" + os.path.join(os.path.expanduser("~"), ".btoa", "deps", "lib")
 
+def register():
     properties.register()
     preferences.register()
     engine.register()
