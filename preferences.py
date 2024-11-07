@@ -1,4 +1,4 @@
-import bpy
+import bpy, os
 from bpy.props import *
 
 
@@ -9,7 +9,8 @@ class ArnoldPreferences(bpy.types.AddonPreferences):
         layout = self.layout
         scene = context.scene
         arnold = scene.arnold
-        layout.operator("arnold.install", text="Install Arnold")
+        layout.operator("arnold.install", "Install Arnold")
+        layout.prop(arnold, "hdArnoldPluginPath")
     
 
 def register():

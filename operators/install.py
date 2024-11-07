@@ -8,7 +8,9 @@ class ARNOLD_OT_Install(bpy.types.Operator):
     bl_label = "Install Arnold"
 
     def execute(self, context):
-        print("TEST")
+        print("""This has yet to be implemented! 
+            The way I'm thinking this will work is that the delegate binaries will be prebuilt for each OS. 
+            The user can then download and extract a compressed .zip which should quickly link everything up.""")
         return {"FINISHED"}
 
 

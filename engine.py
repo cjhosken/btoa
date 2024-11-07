@@ -13,43 +13,28 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
 
     @classmethod
     def register(cls):
+        bpy.app.timers.register(cls.load_plugin, first_interval=0.01)
+
+    def load_plugin():
         import pxr.Plug
-        btoa = os.path.join(os.path.expanduser("~"), ".btoa")
-        arnoldsdk = os.path.join(btoa, "dependencies", "arnoldSDK")
-        arnoldusd = os.path.join(btoa, "installs", "arnoldusd")
-        
-        os.environ["ARNOLD_PLUGIN_PATH"] = os.path.join(arnoldusd, "procedural")
-        os.environ["PXR_PLUGINPATH_NAME"] = os.environ.get("PXR_PLUGINPATH_NAME", "") + ":" + os.path.join(arnoldusd, "plugin") + ":" + os.path.join(arnoldsdk, "plugins", "usd")
+        arnold = bpy.context.scene.arnold
+        plugin_path = arnold.hdArnoldPluginPath
 
-        pxr.Plug.Registry().RegisterPlugins([os.path.join(arnoldusd, "plugin")])
-
+        print(f"Loading Plugin from: {plugin_path}...")
+        pxr.Plug.Registry().RegisterPlugins(plugin_path)
 
     def get_render_settings(self, engine_type):
         # Explicitly define AOV bindings for Arnold
         return {
             'aovToken:color': "color",
-            'aovToken:depth': "depth",
-            'aovToken:diffuse': "diffuse",
-            'aovToken:specular': "specular",
-            'aovToken:emission': "emission",
         }
     
     def update_render_passes(self, scene, render_layer):
         # Register standard AOVs for rendering
         self.register_pass(scene, render_layer, 'Combined', 4, 'RGBA', 'COLOR')
         
-        # Register additional passes if needed
-        if render_layer.use_pass_z:
-            self.register_pass(scene, render_layer, 'Depth', 1, 'Z', 'VALUE')
-        if render_layer.use_pass_diffuse_color:
-            self.register_pass(scene, render_layer, 'Diffuse', 3, 'RGB', 'COLOR')
-        if render_layer.use_pass_glossy_direct:
-            self.register_pass(scene, render_layer, 'Specular', 3, 'RGB', 'COLOR')
-        # Add more passes as needed
-
     def update(self, data, depsgraph):
         super().update(data, depsgraph)
-
 
 def register():
     bpy.utils.register_class(ArnoldRenderEngine)
