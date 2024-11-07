@@ -3,14 +3,12 @@ from bpy.props import *
 
 class ArnoldSceneProperties(bpy.types.PropertyGroup):
 
-    hdArnoldPluginPath: StringProperty(
+    arnoldUSDPath: StringProperty(
         name="Arnold Renderer Plugin Path",
         description="Path to the ArnoldUSD Hydra Delegate Plugin",
         subtype="FILE_PATH",
-        default=os.path.join(os.path.expanduser("~"), ".btoa", "installs", "arnoldusd", "plugin")
+        default=os.path.join(os.path.expanduser("~"), ".btoa", "installs", "arnoldusd")
     )
-
-
 
 classes = [ArnoldSceneProperties]
 

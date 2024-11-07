@@ -1,0 +1,8 @@
+vector2 mx_transform_uv(vector2 texcoord)
+{
+    float vlookup = 1.0 - texcoord.y;
+    float vfloor  = floor(texcoord.y);
+    float vfrac   = texcoord.y - vfloor;
+    vlookup = vfloor + (1.0 - vfrac);
+    return vector2(texcoord.x, vlookup);
+}

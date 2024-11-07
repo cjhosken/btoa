@@ -1,0 +1,96 @@
+#!/bin/bash
+#
+# rlm        Startup script for the  RLM License Server
+#
+# description: RLM License Server
+# processname: rlm
+
+###############################################################################
+#
+# To use this start/stop/status script, you should:
+# - Set the 'rlmdir' variable to the path where you installed the RLM License
+#   Server
+# - Place this script in
+#   (a) /etc/rc.d/init.d/ (Red Hat/Fedora). Also /etc/init.d/ which is linked
+#       to /etc/rc.d/init.d/
+#   (b) /etc/init.d/ (Debian/Ubuntu/SUSE)
+#
+# You can then start/stop/restart/status the RLM License Server by executing:
+# - Red Hat/Fedora:
+#   $ service rlmd start
+#   $ service rlmd stop
+#   $ service rlmd restart
+#   $ service rlmd status
+# - Debian/Ubuntu/SUSE:
+#   $ /etc/rc.d/init.d/rlmd start
+#   $ /etc/rc.d/init.d/rlmd stop
+#   $ /etc/rc.d/init.d/rlmd restart
+#   $ /etc/rc.d/init.d/rlmd status
+#
+###############################################################################
+
+###############################################################################
+#
+# Path to the RLM License Server installation
+rlmdir=
+###############################################################################
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+name=rlm
+rlm=$rlmdir/rlm
+rlmutil=$rlmdir/rlmutil
+debuglog+=$rlmdir/rlm.dlog
+options="-dlog $debuglog &"
+
+# Start rlmd in the C locale by default.
+RLM_LANG=${RLM_LANG-"C"}
+RETVAL=0
+
+# Start the RLM License Server
+start() {
+        echo -n $"Starting $name: "
+        LANG=$RLM_LANG daemon $rlm $options
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ]
+        return $RETVAL
+}
+
+# Stop the RLM License Server
+# Note that we should execute "rlmutil rlmdown" before killing the rlm parent
+stop() {
+        echo -n $"Stopping $name: "
+        ${rlmutil} rlmdown -q
+        killproc $rlm
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ]
+        return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status $rlm
+        RETVAL=$?
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: $prog {start|stop|restart|status}"
+        exit 1
+esac
+
+exit $RETVAL
+
+

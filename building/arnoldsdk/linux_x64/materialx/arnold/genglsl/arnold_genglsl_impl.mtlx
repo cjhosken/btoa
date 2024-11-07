@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <implementation name="ARNOLD_IM_image_genglsl" nodedef="ARNOLD_ND_image" file="arnold_image_color4.glsl" function="arnold_image_color4" target="genglsl">
+    <input name="filter" type="string" implname="filtertype" />
+  </implementation>
+  <implementation name="ARNOLD_IM_image_color3_genglsl" nodedef="ARNOLD_ND_image_color3" file="arnold_image_color3.glsl" function="arnold_image_color3" target="genglsl">
+    <input name="filter" type="string" implname="filtertype" />
+  </implementation>
+  <implementation name="ARNOLD_IM_user_data_float_genglsl" nodedef="ARNOLD_ND_user_data_float" sourcecode="{{default}}" target="genglsl" ldx_viewport_support="partial" />
+  <implementation name="ARNOLD_IM_user_data_int_genglsl" nodedef="ARNOLD_ND_user_data_int" sourcecode="{{default}}" target="genglsl" ldx_viewport_support="partial" />
+  <implementation name="ARNOLD_IM_user_data_rgb_genglsl" nodedef="ARNOLD_ND_user_data_rgb" sourcecode="{{default}}" target="genglsl" ldx_viewport_support="partial" />
+  <implementation name="ARNOLD_IM_user_data_rgba_genglsl" nodedef="ARNOLD_ND_user_data_rgba" sourcecode="{{default}}" target="genglsl" ldx_viewport_support="partial" />
+  <implementation name="ARNOLD_IM_user_data_string_genglsl" nodedef="ARNOLD_ND_user_data_string" sourcecode="{{default}}" target="genglsl" ldx_viewport_support="partial" />
+</materialx>
