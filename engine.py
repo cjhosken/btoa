@@ -33,7 +33,8 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
     def get_render_settings(self, engine_type):
         # Explicitly define AOV bindings for Arnold
         return {
-            'aovToken:color': "color",
+            'add_aov:color': "color",
+            'add_aov:depth': "color",
         }
     
     def update_render_passes(self, scene, render_layer):
