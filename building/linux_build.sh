@@ -35,7 +35,7 @@ cd $BTOA_DIR/dependencies
 git remote add -f origin https://projects.blender.org/blender/lib-linux_x64.git
 git config core.sparseCheckout true
 
-echo -e "boost\nimath\nmaterialx\nopencolorio\nopenexr\nopenimagedenoise\nopenimageio\nopensubdiv\nopenvdb\npython\nusd\ntbb" > .git/info/sparse-checkout
+echo -e "boost\nimath\nmaterialx\nopencolorio\nopenexr\nopenimagedenoise\nopenimageio\nopensubdiv\nopenvdb\npython\nusd" > .git/info/sparse-checkout
 
 git fetch origin
 
