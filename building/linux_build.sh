@@ -54,7 +54,7 @@ cd $BTOA_DIR/source
 mkdir -p build
 cd build
 
-LD_LIBRARY_PATH=$BTOA_DIR/dependencies/boost/lib:$BTOA_DIR/dependencies/tbb/lib:$BTOA_DIR/dependencies/materialx/lib:$BTOA_DIR/dependencies/imath/lib:$BTOA_DIR/dependencies/openvdb/lib:$BTOA_DIR/dependencies/opensubdiv/lib:$BTOA_DIR/dependencies/openimageio/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=$BTOA_DIR/dependencies/boost/lib:$BTOA_DIR/dependencies/materialx/lib:$BTOA_DIR/dependencies/imath/lib:$BTOA_DIR/dependencies/openvdb/lib:$BTOA_DIR/dependencies/opensubdiv/lib:$BTOA_DIR/dependencies/openimageio/lib:$LD_LIBRARY_PATH
 
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
