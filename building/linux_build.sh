@@ -50,9 +50,6 @@ mkdir -p $BTOA_DIR/arnoldusd/arnoldsdk
 
 cp -r $SCRIPT_DIR/arnoldsdk/linux_x64/* $BTOA_DIR/arnoldusd/arnoldsdk
 
-rm -rf "$BTOA_DIR/source/cmake/modules/FindUSD.cmake"
-rm -rf "$BTOA_DIR/source/cmake/modules/FindTBB.cmake"
-
 mkdir -p $BTOA_DIR/source/build
 cd $BTOA_DIR/source/build
 
@@ -62,7 +59,8 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DARNOLD_LOCATION=$BTOA_DIR/arnoldusd/arnoldsdk \
     -DUSD_LOCATION=$BTOA_DIR/dependencies/usd \
-    -DPython3_ROOT=$BTOA_DIR/dependencies/python \
+    -DPYTHON_INCLUDE_DIR=$BTOA_DIR/dependencies/python/include \
+    -DPYTHON_LIBRARY=$BTOA_DIR/dependencies/python/lib/libpython3.11.a \
     -DCMAKE_PREFIX_PATH="$BTOA_DIR/dependencies" \
     -DCMAKE_INSTALL_PREFIX=$BTOA_DIR/arnoldusd \
     -DBUILD_SCHEMAS=OFF \
