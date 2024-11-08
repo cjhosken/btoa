@@ -30,6 +30,8 @@ cd /d "%BTOA_DIR%"
 :: Clone the Arnold USD repository
 git clone https://github.com/Autodesk/arnold-usd.git "%BTOA_DIR%\source"
 
+del "%BTOA_DIR%\source\cmake\modules\FindUSD.cmake"
+
 :: Initialize dependencies directory
 mkdir "%BTOA_DIR%\dependencies"
 cd /d "%BTOA_DIR%\dependencies"
@@ -69,26 +71,20 @@ mkdir "%BTOA_DIR%\arnoldusd\arnoldsdk"
 :: Copy ArnoldSDK files for linux_x64 (adjust for Windows as needed)
 xcopy /E /I "%SCRIPT_DIR%arnoldsdk\windows_x64" "%BTOA_DIR%\arnoldusd\arnoldsdk" /Y
 
-del "%BTOA_DIR%\source\cmake\modules\FindUSD.cmake"
-del "%BTOA_DIR%\source\cmake\modules\FindTBB.cmake"
+mkdir "%BTOA_DIR%\source\build"
+cd "%BTOA_DIR%\source\build"
 
-:: Create build directory
-cd /d "%BTOA_DIR%\source"
-mkdir build
-cd build
-
-:: Set environment variables for library paths
-set DYLD_LIBRARY_PATH=%BTOA_DIR%\dependencies\tbb\lib;%BTOA_DIR%\dependencies\boost\lib;%BTOA_DIR%\dependencies\materialx\lib;%BTOA_DIR%\dependencies\imath\lib;%BTOA_DIR%\dependencies\openvdb\lib;%BTOA_DIR%\dependencies\opensubdiv\lib;%BTOA_DIR%\dependencies\openimageio\lib;%LD_LIBRARY_PATH%
-
-:: Run CMake with the necessary flags
 cmake .. ^
-    -DARNOLD_LOCATION=%BTOA_DIR%\arnoldusd\arnoldsdk ^
-    -DUSD_LOCATION=%BTOA_DIR%\dependencies\usd ^
     -DCMAKE_PREFIX_PATH="%BTOA_DIR%\dependencies" ^
-    -DCMAKE_INSTALL_PREFIX=%BTOA_DIR%\arnoldusd ^
+    -DCMAKE_INSTALL_PREFIX="%BTOA_DIR%\arnoldusd" ^
+    -DUSD_INCLUDE_DIR="%BTOA_DIR%\dependencies\usd\include" ^
+    -DTBB_INCLUDE_DIRS="%BTOA_DIR%\dependencies\tbb\include" ^
+    -DARNOLD_LOCATION="%BTOA_DIR%\arnoldusd\arnoldsdk" ^
     -DBUILD_SCHEMAS=OFF ^
     -DBUILD_USDGENSCHEMA_ARNOLD=OFF ^
     -DBUILD_DOCS=OFF
+
 cmake --build .
+cmake --install . --prefix "%BTOA_DIR%\arnoldusd"
 
 echo ArnoldUSD has been successfully built at %BTOA_DIR%!
