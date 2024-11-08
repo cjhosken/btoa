@@ -1,4 +1,4 @@
-import bpy, os
+import bpy, os, sys, ctypes
 
 class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
     bl_idname = "ARNOLD"
@@ -16,18 +16,15 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
         bpy.app.timers.register(cls.load_plugin, first_interval=0.01)
 
     def load_plugin():
-        import pxr.Plug
         arnold = bpy.context.scene.arnold
         usd_path = arnold.arnoldUSDPath
         plugin_path = os.path.join(usd_path, "plugin")
-        usd_path = os.path.join(arnold.arnoldUSDPath, "plugin")
-        sdk_path = os.path.join(os.path.expanduser("~"), ".btoa", "arnoldSDK")
 
         os.environ["ARNOLD_PLUGIN_PATH"] = os.path.join(usd_path, "procedural")
         os.environ["PXR_PLUGINPATH_NAME"] = os.path.join(plugin_path) + ":" + os.environ.get("PXR_PLUGINPATH_NAME")
-        os.environ["LD_LIBRARY_PATH"] = os.path.join(sdk_path, "bin") + ":" + os.environ.get("LD_LIBRARY_PATH")
 
         print(f"Loading Plugin from: {plugin_path}...")
+        import pxr.Plug
         pxr.Plug.Registry().RegisterPlugins(plugin_path)
 
     def get_render_settings(self, engine_type):

@@ -73,4 +73,18 @@ cmake .. \
 make
 make install
 
-echo "ArnoldUSD has been successfully built at $BTOA_DIR!"
+# Define the path to be added
+LD_LIBRARY_PATH_UPDATE="$BTOA_DIR/arnoldusd/arnoldsdk/bin"
+
+# Check if LD_LIBRARY_PATH is already set in .bashrc, and add it if not
+if ! grep -q "export LD_LIBRARY_PATH=.*$LD_LIBRARY_PATH_UPDATE" "$HOME/.bashrc"; then
+    echo "\nexport LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH_UPDATE:\$LD_LIBRARY_PATH\"" >> "$HOME/.bashrc"
+    echo "LD_LIBRARY_PATH updated in .bashrc"
+else
+    echo "LD_LIBRARY_PATH is already set in .bashrc"
+fi
+
+# Source .bashrc to make it available in the current session
+source "$HOME/.bashrc"
+
+echo "ArnoldUSD has been successfully built at $BTOA_DIR, and LD_LIBRARY_PATH has been updated!"

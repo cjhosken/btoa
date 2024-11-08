@@ -7,7 +7,7 @@ class ArnoldSceneProperties(bpy.types.PropertyGroup):
         name="Arnold Renderer Plugin Path",
         description="Path to the ArnoldUSD Hydra Delegate Plugin",
         subtype="FILE_PATH",
-        default=os.path.join(os.path.expanduser("~"), ".btoa", "installs", "arnoldusd")
+        default=os.path.join(os.path.expanduser("~"), ".btoa", "arnoldusd")
     )
 
 classes = [ArnoldSceneProperties]
