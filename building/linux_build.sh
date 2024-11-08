@@ -41,6 +41,8 @@ git fetch origin
 
 git checkout 483736b00b6a767342e30f5bd95eebcc3c6a4219
 
+git pull
+
 cd $BTOA_DIR
 
 cp -r $SCRIPT_DIR/configs/linux_x64/* $BTOA_DIR/dependencies
@@ -53,9 +55,8 @@ cp -r $SCRIPT_DIR/arnoldsdk/linux_x64/* $BTOA_DIR/arnoldusd/arnoldsdk
 del "$BTOA_DIR/source/cmake/modules/FindUSD.cmake"
 del "$BTOA_DIR/source/cmake/modules/FindTBB.cmake"
 
-cd $BTOA_DIR/source 
-mkdir -p build
-cd build
+mkdir -p $BTOA_DIR/source/build
+cd $BTOA_DIR/source/build
 
 LD_LIBRARY_PATH=$BTOA_DIR/dependencies/boost/lib:$BTOA_DIR/dependencies/materialx/lib:$BTOA_DIR/dependencies/imath/lib:$BTOA_DIR/dependencies/openvdb/lib:$BTOA_DIR/dependencies/opensubdiv/lib:$BTOA_DIR/dependencies/openimageio/lib:$LD_LIBRARY_PATH
 
