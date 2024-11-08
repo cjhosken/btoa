@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<materialx version="1.38">
+
+  <!-- ======================================================================== -->
+  <!-- Derived target definition for Arnold                                     -->
+  <!-- ======================================================================== -->
+  <targetdef name="arnold" inherit="genosl"/>
+
+</materialx>

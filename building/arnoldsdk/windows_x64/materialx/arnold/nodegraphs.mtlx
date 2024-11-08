@@ -1,0 +1,1557 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="ARNOLD_NG_abs" nodedef="ARNOLD_ND_abs">
+    <absval name="absval1" type="color3" nodedef="ND_absval_color3">
+      <input name="in" type="color3" interfacename="input" />
+    </absval>
+    <output name="out" type="color3" nodename="absval1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_add" nodedef="ARNOLD_ND_add">
+    <add name="add1" type="color3" nodedef="ND_add_color3">
+      <input name="in1" type="color3" interfacename="input1" />
+      <input name="in2" type="color3" interfacename="input2" />
+    </add>
+    <output name="out" type="color3" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_ambient_occlusion" nodedef="ARNOLD_ND_ambient_occlusion" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_read_float" nodedef="ARNOLD_ND_aov_read_float" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_read_int" nodedef="ARNOLD_ND_aov_read_int" ldx_viewport_support="false">
+    <constant name="dummy1" type="integer" nodedef="ND_constant_integer" />
+    <output name="out" type="integer" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_read_rgb" nodedef="ARNOLD_ND_aov_read_rgb" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_read_rgba" nodedef="ARNOLD_ND_aov_read_rgba" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_write_float" nodedef="ARNOLD_ND_aov_write_float">
+    <dot name="node1" type="surfaceshader" nodedef="ND_dot_surfaceshader">
+      <input name="in" type="surfaceshader" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="surfaceshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_write_int" nodedef="ARNOLD_ND_aov_write_int">
+    <dot name="node1" type="surfaceshader" nodedef="ND_dot_surfaceshader">
+      <input name="in" type="surfaceshader" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="surfaceshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_write_rgb" nodedef="ARNOLD_ND_aov_write_rgb">
+    <dot name="node1" type="surfaceshader" nodedef="ND_dot_surfaceshader">
+      <input name="in" type="surfaceshader" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="surfaceshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_write_rgba" nodedef="ARNOLD_ND_aov_write_rgba">
+    <dot name="node1" type="surfaceshader" nodedef="ND_dot_surfaceshader">
+      <input name="in" type="surfaceshader" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="surfaceshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_aov_write_vector" nodedef="ARNOLD_ND_aov_write_vector">
+    <dot name="node1" type="surfaceshader" nodedef="ND_dot_surfaceshader">
+      <input name="in" type="surfaceshader" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="surfaceshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_atan" nodedef="ARNOLD_ND_atan" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_bias_float" nodedef="ARNOLD_ND_bias_float">
+    <backdrop name="compute_bias" xpos="2.5" ypos="-1.5" width="8" height="5" />
+    <dot name="in_t" type="float" nodedef="ND_dot_float" xpos="3" ypos="-1">
+      <input name="in" type="float" interfacename="t" />
+    </dot>
+    <divide name="bias_inverse" type="float" nodedef="ND_divide_float" xpos="3" ypos="0.5">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" interfacename="bias" />
+    </divide>
+    <subtract name="t_complement" type="float" nodedef="ND_subtract_float" xpos="4.5" ypos="2">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" interfacename="t" />
+    </subtract>
+    <subtract name="subtract" type="float" nodedef="ND_subtract_float" xpos="4.5" ypos="0.5">
+      <input name="in1" type="float" nodename="bias_inverse" />
+      <input name="in2" type="float" value="2" />
+    </subtract>
+    <multiply name="multiply" type="float" nodedef="ND_multiply_float" xpos="6" ypos="0.5">
+      <input name="in1" type="float" nodename="subtract" />
+      <input name="in2" type="float" nodename="t_complement" />
+    </multiply>
+    <add name="add" type="float" nodedef="ND_add_float" xpos="7.5" ypos="0.5">
+      <input name="in1" type="float" nodename="multiply" />
+      <input name="in2" type="float" value="1" />
+    </add>
+    <divide name="divide" type="float" nodedef="ND_divide_float" xpos="9" ypos="-1">
+      <input name="in1" type="float" nodename="in_t" />
+      <input name="in2" type="float" nodename="add" />
+    </divide>
+    <backdrop name="compute_pole" xpos="5.5" ypos="-5" width="5" height="3.5" />
+    <dot name="B" type="float" nodedef="ND_dot_float" xpos="6" ypos="-3">
+      <input name="in" type="float" nodename="subtract" />
+    </dot>
+    <add name="add1" type="float" nodedef="ND_add_float" xpos="7.5" ypos="-4.5">
+      <input name="in1" type="float" nodename="B" />
+      <input name="in2" type="float" value="1" />
+    </add>
+    <divide name="divide2" type="float" nodedef="ND_divide_float" xpos="9" ypos="-3">
+      <input name="in1" type="float" nodename="add1" />
+      <input name="in2" type="float" nodename="B" />
+    </divide>
+    <backdrop name="handle_pole_edge_cases" xpos="11" ypos="-8" width="11.5" height="8.5" />
+    <dot name="in_t1" type="float" nodedef="ND_dot_float" xpos="4.5" ypos="-6">
+      <input name="in" type="float" nodename="in_t" />
+    </dot>
+    <dot name="in_t2" type="float" nodedef="ND_dot_float" xpos="11.5" ypos="-6">
+      <input name="in" type="float" nodename="in_t1" />
+    </dot>
+    <dot name="in_bias" type="float" nodedef="ND_dot_float" xpos="4.5" ypos="-7.5">
+      <input name="in" type="float" interfacename="bias" />
+    </dot>
+    <dot name="in_bias1" type="float" nodedef="ND_dot_float" xpos="15" ypos="-7.5">
+      <input name="in" type="float" nodename="in_bias" />
+    </dot>
+    <dot name="pole" type="float" nodedef="ND_dot_float" xpos="11.5" ypos="-4.5">
+      <input name="in" type="float" nodename="divide2" />
+    </dot>
+    <dot name="result" type="float" nodedef="ND_dot_float" xpos="11.5" ypos="-1">
+      <input name="in" type="float" nodename="divide" />
+    </dot>
+    <ifgreatereq name="if_t_geq_pole" type="float" nodedef="ND_ifgreatereq_float" xpos="13.5" ypos="-3">
+      <input name="value1" type="float" nodename="in_t2" />
+      <input name="value2" type="float" nodename="pole" />
+      <input name="in1" type="float" value="1e+30" />
+      <input name="in2" type="float" nodename="result" />
+    </ifgreatereq>
+    <ifgreater name="if_bias_lt_half" type="float" nodedef="ND_ifgreater_float" xpos="16.5" ypos="-3">
+      <input name="value1" type="float" value="0.5" />
+      <input name="value2" type="float" nodename="in_bias1" />
+      <input name="in1" type="float" nodename="if_t_geq_pole" />
+      <input name="in2" type="float" nodename="result" />
+    </ifgreater>
+    <ifgreatereq name="if_t_leq_pole" type="float" nodedef="ND_ifgreatereq_float" xpos="18" ypos="-4.5">
+      <input name="value1" type="float" nodename="pole" />
+      <input name="value2" type="float" nodename="in_t2" />
+      <input name="in1" type="float" value="-1e+30" />
+      <input name="in2" type="float" nodename="if_bias_lt_half" />
+    </ifgreatereq>
+    <ifgreater name="if_bias_gt_half" type="float" nodedef="ND_ifgreater_float" xpos="21" ypos="-4.5">
+      <input name="value1" type="float" nodename="in_bias1" />
+      <input name="value2" type="float" value="0.5" />
+      <input name="in1" type="float" nodename="if_t_leq_pole" />
+      <input name="in2" type="float" nodename="if_bias_lt_half" />
+    </ifgreater>
+    <backdrop name="handle_bias_edge_cases" xpos="23" ypos="-8" width="11.5" height="7" />
+    <dot name="in_t3" type="float" nodedef="ND_dot_float" xpos="23.5" ypos="-6">
+      <input name="in" type="float" nodename="in_t2" />
+    </dot>
+    <dot name="in_bias2" type="float" nodedef="ND_dot_float" xpos="25.5" ypos="-7.5">
+      <input name="in" type="float" nodename="in_bias1" />
+    </dot>
+    <ifgreater name="if_t_lt_0" type="float" nodedef="ND_ifgreater_float" xpos="25.5" ypos="-4.5">
+      <input name="value1" type="float" value="0" />
+      <input name="value2" type="float" nodename="in_t3" />
+      <input name="in1" type="float" value="-1e+30" />
+      <input name="in2" type="float" value="1" />
+    </ifgreater>
+    <ifgreatereq name="if_bias_geq1" type="float" nodedef="ND_ifgreatereq_float" xpos="27.5" ypos="-3">
+      <input name="value1" type="float" nodename="in_bias2" />
+      <input name="value2" type="float" value="1" />
+      <input name="in1" type="float" nodename="if_t_lt_0" />
+      <input name="in2" type="float" nodename="if_bias_gt_half" />
+    </ifgreatereq>
+    <ifgreater name="if_t_lt1" type="float" nodedef="ND_ifgreater_float" xpos="29.5" ypos="-6">
+      <input name="value2" type="float" nodename="in_t3" />
+      <input name="value1" type="float" value="1" />
+      <input name="in1" type="float" value="0" />
+      <input name="in2" type="float" value="1e+30" />
+    </ifgreater>
+    <ifgreatereq name="if_bias_leq_0" type="float" nodedef="ND_ifgreatereq_float" xpos="31.5" ypos="-3">
+      <input name="value1" type="float" value="0" />
+      <input name="value2" type="float" nodename="in_bias2" />
+      <input name="in1" type="float" nodename="if_t_lt1" />
+      <input name="in2" type="float" nodename="if_bias_geq1" />
+    </ifgreatereq>
+    <output name="out" type="float" nodename="if_bias_leq_0" xpos="33" ypos="-3" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_blackbody" nodedef="ARNOLD_ND_blackbody" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_bump2d" nodedef="ARNOLD_ND_bump2d" ldx_viewport_support="partial">
+    <dot name="dot1" type="vector3" nodedef="ND_dot_vector3">
+      <input name="in" type="vector3" interfacename="normal" />
+    </dot>
+    <output name="out" type="vector3" nodename="dot1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_bump3d" nodedef="ARNOLD_ND_bump3d" ldx_viewport_support="false">
+    <constant name="dummy1" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out" type="vector3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_c4d_texture_tag" nodedef="ARNOLD_ND_c4d_texture_tag" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_c4d_texture_tag_rgba" nodedef="ARNOLD_ND_c4d_texture_tag_rgba" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_cache" nodedef="ARNOLD_ND_cache">
+    <dot name="node1" type="color3" nodedef="ND_dot_color3">
+      <input name="in" type="color3" interfacename="input" />
+    </dot>
+    <output name="out" type="color3" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_camera_projection" nodedef="ARNOLD_ND_camera_projection" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_car_paint" nodedef="ARNOLD_ND_car_paint" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_cell_noise" nodedef="ARNOLD_ND_cell_noise" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_checkerboard" nodedef="ARNOLD_ND_checkerboard" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_clamp" nodedef="ARNOLD_ND_clamp" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_clip_geo" nodedef="ARNOLD_ND_clip_geo" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_color_convert" nodedef="ARNOLD_ND_color_convert" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_color_correct" nodedef="ARNOLD_ND_color_correct">
+    <separate4 name="in_rgba" type="multioutput" nodedef="ND_separate4_color4" xpos="-7.5" ypos="0">
+      <input name="in" type="color4" interfacename="input" />
+    </separate4>
+    <backdrop name="apply_invert" xpos="-4" ypos="-6" width="5" height="3.5" />
+    <combine3 name="in_rbg" type="color3" nodedef="ND_combine3_color3" xpos="-3.5" ypos="-5.5">
+      <input name="in1" type="float" nodename="in_rgba" output="outr" />
+      <input name="in2" type="float" nodename="in_rgba" output="outg" />
+      <input name="in3" type="float" nodename="in_rgba" output="outb" />
+    </combine3>
+    <subtract name="in_rgb_inverted" type="color3" nodedef="ND_subtract_color3" xpos="-2" ypos="-4">
+      <input name="in1" type="color3" value="1, 1, 1" />
+      <input name="in2" type="color3" nodename="in_rbg" />
+    </subtract>
+    <ifequal name="apply_invert1" type="color3" nodedef="ND_ifequal_color3B" xpos="-0.5" ypos="-5.5">
+      <input name="value1" type="boolean" interfacename="invert" />
+      <input name="value2" type="boolean" value="false" />
+      <input name="in1" type="color3" nodename="in_rbg" />
+      <input name="in2" type="color3" nodename="in_rgb_inverted" />
+    </ifequal>
+    <backdrop name="apply_gamma" xpos="1.5" ypos="-6" width="9.5" height="5" />
+    <divide name="inv_gamma" type="float" nodedef="ND_divide_float" xpos="2" ypos="-2.5">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" interfacename="gamma" />
+    </divide>
+    <power name="apply_gamma2" type="color3" nodedef="ND_power_color3FA" xpos="3.5" ypos="-2.5">
+      <input name="in1" type="color3" nodename="apply_invert1" />
+      <input name="in2" type="float" nodename="inv_gamma" />
+    </power>
+    <separate3 name="apply_gamma_components" type="multioutput" nodedef="ND_separate3_color3" xpos="5" ypos="-2.5">
+      <input name="in" type="color3" nodename="apply_gamma2" />
+    </separate3>
+    <separate3 name="rgb_components" type="multioutput" nodedef="ND_separate3_color3" xpos="5" ypos="-5.5">
+      <input name="in" type="color3" nodename="apply_invert1" />
+    </separate3>
+    <ifgreater name="pirck_r" type="float" nodedef="ND_ifgreater_float" xpos="8" ypos="-5.5">
+      <input name="value1" type="float" nodename="rgb_components" output="outr" />
+      <input name="value2" type="float" value="0" />
+      <input name="in2" type="float" nodename="rgb_components" output="outr" />
+      <input name="in1" type="float" nodename="apply_gamma_components" output="outr" />
+    </ifgreater>
+    <ifgreater name="pick_g" type="float" nodedef="ND_ifgreater_float" xpos="8" ypos="-4">
+      <input name="value1" type="float" nodename="rgb_components" output="outg" />
+      <input name="value2" type="float" value="0" />
+      <input name="in2" type="float" nodename="rgb_components" output="outg" />
+      <input name="in1" type="float" nodename="apply_gamma_components" output="outg" />
+    </ifgreater>
+    <ifgreater name="pick_b" type="float" nodedef="ND_ifgreater_float" xpos="8" ypos="-2.5">
+      <input name="value1" type="float" nodename="rgb_components" output="outb" />
+      <input name="value2" type="float" value="0" />
+      <input name="in1" type="float" nodename="apply_gamma_components" output="outb" />
+      <input name="in2" type="float" nodename="rgb_components" output="outb" />
+    </ifgreater>
+    <combine3 name="rgb" type="color3" nodedef="ND_combine3_color3" xpos="9.5" ypos="-4">
+      <input name="in1" type="float" nodename="pirck_r" />
+      <input name="in2" type="float" nodename="pick_g" />
+      <input name="in3" type="float" nodename="pick_b" />
+    </combine3>
+    <backdrop name="convert_to_hsv" xpos="11.5" ypos="-4.5" width="3.5" height="2" />
+    <rgbtohsv name="rgb_to_hsv" type="color3" nodedef="ND_rgbtohsv_color3" xpos="12" ypos="-4">
+      <input name="in" type="color3" nodename="rgb" />
+    </rgbtohsv>
+    <separate3 name="hsv_components" type="multioutput" nodedef="ND_separate3_color3" xpos="13.5" ypos="-4">
+      <input name="in" type="color3" nodename="rgb_to_hsv" />
+    </separate3>
+    <backdrop name="apply_hue_shift" xpos="15.5" ypos="-11" width="5" height="3.5" />
+    <add name="apply_hue_shift1" type="float" nodedef="ND_add_float" xpos="16" ypos="-10.5">
+      <input name="in1" type="float" nodename="hsv_components" output="outr" />
+      <input name="in2" type="float" interfacename="hue_shift" />
+    </add>
+    <floor name="hue_floor" type="float" nodedef="ND_floor_float" xpos="17.5" ypos="-9">
+      <input name="in" type="float" nodename="apply_hue_shift1" />
+    </floor>
+    <subtract name="hue_in_0_1" type="float" nodedef="ND_subtract_float" xpos="19" ypos="-10.5">
+      <input name="in1" type="float" nodename="apply_hue_shift1" />
+      <input name="in2" type="float" nodename="hue_floor" />
+    </subtract>
+    <backdrop name="apply_saturation" xpos="15.5" ypos="-7" width="5" height="2" />
+    <multiply name="apply_saturation1" type="float" nodedef="ND_multiply_float" xpos="16" ypos="-6.5">
+      <input name="in1" type="float" nodename="hsv_components" output="outg" />
+      <input name="in2" type="float" interfacename="saturation" />
+    </multiply>
+    <clamp name="clamp_saturation_to_0_1" type="float" nodedef="ND_clamp_float" xpos="19" ypos="-6.5">
+      <input name="in" type="float" nodename="apply_saturation1" />
+    </clamp>
+    <backdrop name="convert_to_rgb" xpos="21" ypos="-4.5" width="3.5" height="2" />
+    <combine3 name="hsv" type="color3" nodedef="ND_combine3_color3" xpos="21.5" ypos="-4">
+      <input name="in1" type="float" nodename="hue_in_0_1" />
+      <input name="in2" type="float" nodename="clamp_saturation_to_0_1" />
+      <input name="in3" type="float" nodename="hsv_components" output="outb" />
+    </combine3>
+    <hsvtorgb name="hsv_to_rgb" type="color3" nodedef="ND_hsvtorgb_color3" xpos="23" ypos="-4">
+      <input name="in" type="color3" nodename="hsv" />
+    </hsvtorgb>
+    <backdrop name="apply_contrast" xpos="25" ypos="-4.5" width="5" height="2" />
+    <subtract name="apply_contrast_subtract" type="color3" nodedef="ND_subtract_color3FA" xpos="25.5" ypos="-4">
+      <input name="in1" type="color3" nodename="hsv_to_rgb" />
+      <input name="in2" type="float" interfacename="contrast_pivot" />
+    </subtract>
+    <multiply name="apply_contrast_multiply" type="color3" nodedef="ND_multiply_color3FA" xpos="27" ypos="-4">
+      <input name="in1" type="color3" nodename="apply_contrast_subtract" />
+      <input name="in2" type="float" interfacename="contrast" />
+    </multiply>
+    <add name="apply_contrast_add" type="color3" nodedef="ND_add_color3FA" xpos="28.5" ypos="-4">
+      <input name="in1" type="color3" nodename="apply_contrast_multiply" />
+      <input name="in2" type="float" interfacename="contrast_pivot" />
+    </add>
+    <backdrop name="apply_exposure" xpos="30.5" ypos="-4.5" width="3.5" height="3.5" />
+    <power name="two_pow_exposure" type="float" nodedef="ND_power_float" xpos="31" ypos="-2.5">
+      <input name="in1" type="float" value="2" />
+      <input name="in2" type="float" interfacename="exposure" />
+    </power>
+    <multiply name="apply_exposure1" type="color3" nodedef="ND_multiply_color3FA" xpos="32.5" ypos="-4">
+      <input name="in1" type="color3" nodename="apply_contrast_add" />
+      <input name="in2" type="float" nodename="two_pow_exposure" />
+    </multiply>
+    <backdrop name="apply_multiply_and_add" xpos="34.5" ypos="-4.5" width="3.5" height="2" />
+    <multiply name="apply_multiply" type="color3" nodedef="ND_multiply_color3" xpos="35" ypos="-4">
+      <input name="in2" type="color3" interfacename="multiply" />
+      <input name="in1" type="color3" nodename="apply_exposure1" />
+    </multiply>
+    <add name="apply_add" type="color3" nodedef="ND_add_color3" xpos="36.5" ypos="-4">
+      <input name="in1" type="color3" nodename="apply_multiply" />
+      <input name="in2" type="color3" interfacename="add" />
+    </add>
+    <backdrop name="compute_luminance" xpos="1.5" ypos="-0.5" width="6.5" height="3.5" />
+    <luminance name="luminance1" type="color3" nodedef="ND_luminance_color3" xpos="2" ypos="1.5">
+      <input name="in" type="color3" nodename="apply_invert1" />
+    </luminance>
+    <separate3 name="luminance_components" type="multioutput" nodedef="ND_separate3_color3" xpos="3.5" ypos="1.5">
+      <input name="in" type="color3" nodename="luminance1" />
+    </separate3>
+    <add name="luminance_sum1" type="float" nodedef="ND_add_float" xpos="5" ypos="0">
+      <input name="in1" type="float" nodename="luminance_components" output="outr" />
+      <input name="in2" type="float" nodename="luminance_components" output="outg" />
+    </add>
+    <add name="luminance_sum2" type="float" nodedef="ND_add_float" xpos="6.5" ypos="1.5">
+      <input name="in1" type="float" nodename="luminance_sum1" />
+      <input name="in2" type="float" nodename="luminance_components" output="outb" />
+    </add>
+    <backdrop name="apply_invert_alpha" xpos="-4" ypos="3.5" width="5" height="3.5" />
+    <dot name="in_alpha" type="float" nodedef="ND_dot_float" xpos="-3.5" ypos="4">
+      <input name="in" type="float" nodename="in_rgba" output="outa" />
+    </dot>
+    <subtract name="in_alpha_inverted" type="float" nodedef="ND_subtract_float" xpos="-2" ypos="5.5">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" nodename="in_alpha" />
+    </subtract>
+    <ifequal name="apply_invert_alpha1" type="float" nodedef="ND_ifequal_floatB" xpos="-0.5" ypos="4">
+      <input name="value1" type="boolean" interfacename="invert_alpha" />
+      <input name="value2" type="boolean" value="false" />
+      <input name="in1" type="float" nodename="in_alpha" />
+      <input name="in2" type="float" nodename="in_alpha_inverted" />
+    </ifequal>
+    <ifequal name="pick_alpha" type="float" nodedef="ND_ifequal_floatB" xpos="9.5" ypos="4">
+      <input name="value1" type="boolean" interfacename="alpha_is_luminance" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" nodename="luminance_sum2" />
+      <input name="in2" type="float" nodename="apply_invert_alpha1" />
+    </ifequal>
+    <backdrop name="apply_alpha_multiply_and_alpha_add" xpos="34.5" ypos="-0.5" width="3.5" height="2" />
+    <multiply name="apply_alpha_multiply" type="float" nodedef="ND_multiply_float" xpos="35" ypos="0">
+      <input name="in1" type="float" nodename="pick_alpha" />
+      <input name="in2" type="float" interfacename="alpha_multiply" />
+    </multiply>
+    <add name="apply_alpha_add" type="float" nodedef="ND_add_float" xpos="36.5" ypos="0">
+      <input name="in1" type="float" nodename="apply_alpha_multiply" />
+      <input name="in2" type="float" interfacename="alpha_add" />
+    </add>
+    <backdrop name="combine_rgb_and_alpha" xpos="38.5" ypos="-4.5" width="3.5" height="3.5" />
+    <separate3 name="out_rgb" type="multioutput" nodedef="ND_separate3_color3" xpos="39" ypos="-4">
+      <input name="in" type="color3" nodename="apply_add" />
+    </separate3>
+    <dot name="out_alpha" type="float" nodedef="ND_dot_float" xpos="39" ypos="-2.5">
+      <input name="in" type="float" nodename="apply_alpha_add" />
+    </dot>
+    <combine4 name="out_rgba" type="color4" nodedef="ND_combine4_color4" xpos="40.5" ypos="-4">
+      <input name="in1" type="float" nodename="out_rgb" output="outr" />
+      <input name="in2" type="float" nodename="out_rgb" output="outg" />
+      <input name="in3" type="float" nodename="out_rgb" output="outb" />
+      <input name="in4" type="float" nodename="out_alpha" />
+    </combine4>
+    <backdrop name="apply_mask" xpos="42.5" ypos="-4.5" width="5" height="3.5" />
+    <mix name="apply_mask1" type="color4" nodedef="ND_mix_color4" xpos="43" ypos="-4">
+      <input name="fg" type="color4" nodename="out_rgba" />
+      <input name="mix" type="float" interfacename="mask" />
+      <input name="bg" type="color4" interfacename="input" />
+    </mix>
+    <ifgreater name="mask_upper_bound" type="color4" nodedef="ND_ifgreater_color4" xpos="44.5" ypos="-2.5">
+      <input name="value1" type="float" value="1" />
+      <input name="value2" type="float" interfacename="mask" value="0" />
+      <input name="in1" type="color4" nodename="apply_mask1" />
+      <input name="in2" type="color4" nodename="out_rgba" />
+    </ifgreater>
+    <ifgreatereq name="mask_lower_bound" type="color4" nodedef="ND_ifgreatereq_color4" xpos="46" ypos="-2.5">
+      <input name="value1" type="float" value="0" />
+      <input name="value2" type="float" interfacename="mask" />
+      <input name="in1" type="color4" interfacename="input" />
+      <input name="in2" type="color4" nodename="mask_upper_bound" />
+    </ifgreatereq>
+    <output name="out" type="color4" nodename="mask_lower_bound" xpos="48" ypos="-2.5" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_color_correct_color3" nodedef="ARNOLD_ND_color_correct_color3">
+    <color_correct name="color_correct1" type="color4" nodedef="ARNOLD_ND_color_correct">
+      <input name="input" type="color4" interfacename="input" />
+      <input name="alpha_is_luminance" type="boolean" interfacename="alpha_is_luminance" />
+      <input name="alpha_multiply" type="float" interfacename="alpha_multiply" />
+      <input name="alpha_add" type="float" interfacename="alpha_add" />
+      <input name="invert" type="boolean" interfacename="invert" />
+      <input name="invert_alpha" type="boolean" interfacename="invert_alpha" />
+      <input name="gamma" type="float" interfacename="gamma" />
+      <input name="hue_shift" type="float" interfacename="hue_shift" />
+      <input name="saturation" type="float" interfacename="saturation" />
+      <input name="contrast" type="float" interfacename="contrast" />
+      <input name="contrast_pivot" type="float" interfacename="contrast_pivot" />
+      <input name="exposure" type="float" interfacename="exposure" />
+      <input name="multiply" type="color3" interfacename="multiply" />
+      <input name="add" type="color3" interfacename="add" />
+      <input name="mask" type="float" interfacename="mask" />
+    </color_correct>
+    <convert name="convert2" type="color3" nodedef="ND_convert_color4_color3">
+      <input name="in" type="color4" nodename="color_correct1" />
+    </convert>
+    <output name="out" type="color3" nodename="convert2" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_color_jitter" nodedef="ARNOLD_ND_color_jitter" ldx_viewport_support="partial">
+    <convert name="convert1" type="color4" nodedef="ND_convert_color3_color4">
+      <input name="in" type="color3" interfacename="input" />
+    </convert>
+    <output name="out" type="color4" nodename="convert1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_compare" nodedef="ARNOLD_ND_compare" ldx_viewport_support="false">
+    <constant name="dummy1" type="boolean" nodedef="ND_constant_boolean" />
+    <output name="out" type="boolean" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_complement" nodedef="ARNOLD_ND_complement">
+    <subtract name="subtract1" type="color3" nodedef="ND_subtract_color3">
+      <input name="in1" type="color3" value="1, 1, 1" />
+      <input name="in2" type="color3" interfacename="input" />
+    </subtract>
+    <output name="out" type="color3" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_complex_ior" nodedef="ARNOLD_ND_complex_ior" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_composite" nodedef="ARNOLD_ND_composite" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_cross" nodedef="ARNOLD_ND_cross">
+    <crossproduct name="crossproduct1" type="vector3" nodedef="ND_crossproduct_vector3">
+      <input name="in1" type="vector3" interfacename="input1" />
+      <input name="in2" type="vector3" interfacename="input2" />
+    </crossproduct>
+    <output name="out" type="vector3" nodename="crossproduct1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_cryptomatte" nodedef="ARNOLD_ND_cryptomatte" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_curvature" nodedef="ARNOLD_ND_curvature" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_distance" nodedef="ARNOLD_ND_distance" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+    <constant name="dummy2" type="color3" nodedef="ND_constant_color3" />
+    <output name="out_rgb" type="color3" nodename="dummy2" />
+    <constant name="dummy3" type="float" nodedef="ND_constant_float" />
+    <output name="out_distance" type="float" nodename="dummy3" />
+    <constant name="dummy4" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out_direction" type="vector3" nodename="dummy4" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_divide" nodedef="ARNOLD_ND_divide">
+    <divide name="divide1" type="color3" nodedef="ND_divide_color3">
+      <input name="in1" type="color3" interfacename="input1" />
+      <input name="in2" type="color3" interfacename="input2" />
+    </divide>
+    <output name="out" type="color3" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_exp" nodedef="ARNOLD_ND_exp">
+    <convert name="convert1" type="vector3" nodedef="ND_convert_color3_vector3">
+      <input name="in" type="color3" interfacename="input" />
+    </convert>
+    <exp name="exp1" type="vector3" nodedef="ND_exp_vector3">
+      <input name="in" type="vector3" nodename="convert1" />
+    </exp>
+    <convert name="convert2" type="color3" nodedef="ND_convert_vector3_color3">
+      <input name="in" type="vector3" nodename="exp1" />
+    </convert>
+    <output name="out" type="color3" nodename="convert2" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_facing_ratio" nodedef="ARNOLD_ND_facing_ratio" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_flakes" nodedef="ARNOLD_ND_flakes" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_flat" nodedef="ARNOLD_ND_flat" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_float_to_int" nodedef="ARNOLD_ND_float_to_int" ldx_viewport_support="false">
+    <constant name="dummy1" type="integer" nodedef="ND_constant_integer" />
+    <output name="out" type="integer" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_float_to_matrix" nodedef="ARNOLD_ND_float_to_matrix" ldx_viewport_support="false">
+    <constant name="dummy1" type="matrix44" nodedef="ND_constant_matrix44" />
+    <output name="out" type="matrix44" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_float_to_rgb" nodedef="ARNOLD_ND_float_to_rgb">
+    <combine3 name="combine3_1" type="color3" nodedef="ND_combine3_color3">
+      <input name="in1" type="float" interfacename="r" />
+      <input name="in2" type="float" interfacename="g" />
+      <input name="in3" type="float" interfacename="b" />
+    </combine3>
+    <output name="out" type="color3" nodename="combine3_1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_float_to_rgba" nodedef="ARNOLD_ND_float_to_rgba">
+    <combine4 name="combine4_1" type="color4" nodedef="ND_combine4_color4">
+      <input name="in1" type="float" interfacename="r" />
+      <input name="in2" type="float" interfacename="g" />
+      <input name="in3" type="float" interfacename="b" />
+      <input name="in4" type="float" interfacename="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="combine4_1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_fraction" nodedef="ARNOLD_ND_fraction">
+    <sign name="sign1" type="color3" nodedef="ARNOLD_ND_sign">
+      <input name="input" type="color3" interfacename="input" />
+    </sign>
+    <absval name="absval1" type="color3" nodedef="ND_absval_color3">
+      <input name="in" type="color3" interfacename="input" />
+    </absval>
+    <modulo name="modulo1" type="color3" nodedef="ND_modulo_color3">
+      <input name="in1" type="color3" nodename="absval1" />
+    </modulo>
+    <multiply name="multiply1" type="color3" nodedef="ARNOLD_ND_multiply">
+      <input name="input1" type="color3" nodename="sign1" />
+      <input name="input2" type="color3" nodename="modulo1" />
+    </multiply>
+    <output name="out" type="color3" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_gain_float" nodedef="ARNOLD_ND_gain_float">
+    <dot name="in_t" type="float" nodedef="ND_dot_float" xpos="1.5" ypos="-6">
+      <input name="in" type="float" interfacename="t" />
+    </dot>
+    <multiply name="t_times_two" type="float" nodedef="ND_multiply_float" xpos="3" ypos="-4.5">
+      <input name="in1" type="float" nodename="in_t" />
+      <input name="in2" type="float" value="2" />
+    </multiply>
+    <dot name="in_gain" type="float" nodedef="ND_dot_float" xpos="3" ypos="-3">
+      <input name="in" type="float" interfacename="gain" />
+    </dot>
+    <bias name="bias1" type="float" nodedef="ARNOLD_ND_bias_float" xpos="7.5" ypos="-4.5">
+      <input name="t" type="float" nodename="t_times_two" />
+      <input name="bias" type="float" nodename="in_gain" />
+    </bias>
+    <multiply name="halved1" type="float" nodedef="ND_multiply_float" xpos="10.5" ypos="-4.5">
+      <input name="in1" type="float" nodename="bias1" />
+      <input name="in2" type="float" value="0.5" />
+    </multiply>
+    <subtract name="t_times_two_minus_one" type="float" nodedef="ND_subtract_float" xpos="6" ypos="-3">
+      <input name="in1" type="float" nodename="t_times_two" />
+      <input name="in2" type="float" value="1" />
+    </subtract>
+    <subtract name="one_minus_gain" type="float" nodedef="ND_subtract_float" xpos="6" ypos="-1.5">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" nodename="in_gain" />
+    </subtract>
+    <bias name="bias2" type="float" nodedef="ARNOLD_ND_bias_float" xpos="7.5" ypos="-3">
+      <input name="t" type="float" nodename="t_times_two_minus_one" />
+      <input name="bias" type="float" nodename="one_minus_gain" />
+    </bias>
+    <multiply name="halved2" type="float" nodedef="ND_multiply_float" xpos="9" ypos="-3">
+      <input name="in1" type="float" nodename="bias2" />
+      <input name="in2" type="float" value="0.5" />
+    </multiply>
+    <add name="plus_half" type="float" nodedef="ND_add_float" xpos="10.5" ypos="-3">
+      <input name="in1" type="float" nodename="halved2" />
+      <input name="in2" type="float" value="0.5" />
+    </add>
+    <dot name="in_t1" type="float" nodedef="ND_dot_float" xpos="10.5" ypos="-6">
+      <input name="in" type="float" nodename="in_t" />
+    </dot>
+    <ifgreater name="if_t_lt_half1" type="float" nodedef="ND_ifgreater_float" xpos="13.5" ypos="-3">
+      <input name="value1" type="float" value="0.5" />
+      <input name="value2" type="float" nodename="in_t1" />
+      <input name="in1" type="float" nodename="halved1" />
+      <input name="in2" type="float" nodename="plus_half" />
+    </ifgreater>
+    <ifgreater name="if_t_gt_1" type="float" nodedef="ND_ifgreater_float" xpos="12" ypos="-7.5">
+      <input name="value1" type="float" nodename="in_t1" />
+      <input name="value2" type="float" value="1" />
+      <input name="in1" type="float" value="1e+30" />
+      <input name="in2" type="float" value="0.5" />
+    </ifgreater>
+    <ifgreater name="if_t_lt_0" type="float" nodedef="ND_ifgreater_float" xpos="14.5" ypos="-7.5">
+      <input name="value1" type="float" value="0" />
+      <input name="value2" type="float" nodename="in_t1" />
+      <input name="in1" type="float" value="-1e+30" />
+      <input name="in2" type="float" nodename="if_t_gt_1" />
+    </ifgreater>
+    <dot name="in_gain1" type="float" nodedef="ND_dot_float" xpos="13.5" ypos="0">
+      <input name="in" type="float" interfacename="gain" />
+    </dot>
+    <ifgreatereq name="if_gain_geq_one" type="float" nodedef="ND_ifgreatereq_float" xpos="16.5" ypos="-3">
+      <input name="value1" type="float" nodename="in_gain1" />
+      <input name="value2" type="float" value="1" />
+      <input name="in1" type="float" nodename="if_t_lt_0" />
+      <input name="in2" type="float" nodename="if_t_lt_half1" />
+    </ifgreatereq>
+    <ifgreater name="if_t_lt_half2" type="float" nodedef="ND_ifgreater_float" xpos="16.5" ypos="-6">
+      <input name="value1" type="float" value="0.5" />
+      <input name="value2" type="float" nodename="in_t1" />
+      <input name="in1" type="float" value="0" />
+      <input name="in2" type="float" value="1" />
+    </ifgreater>
+    <ifgreatereq name="if_gain_leq_zero" type="float" nodedef="ND_ifgreatereq_float" xpos="19.5" ypos="-3">
+      <input name="value1" type="float" value="0" />
+      <input name="value2" type="float" nodename="in_gain1" />
+      <input name="in1" type="float" nodename="if_t_lt_half2" />
+      <input name="in2" type="float" nodename="if_gain_geq_one" />
+    </ifgreatereq>
+    <output name="out" type="float" nodename="if_gain_leq_zero" xpos="21" ypos="-3" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_hair" nodedef="ARNOLD_ND_hair" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_is_finite" nodedef="ARNOLD_ND_is_finite" ldx_viewport_support="false">
+    <constant name="dummy1" type="boolean" nodedef="ND_constant_boolean" />
+    <output name="out" type="boolean" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_lambert" nodedef="ARNOLD_ND_lambert" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_layer_float" nodedef="ARNOLD_ND_layer_float" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_layer_rgba" nodedef="ARNOLD_ND_layer_rgba" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_layer_shader" nodedef="ARNOLD_ND_layer_shader" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_length" nodedef="ARNOLD_ND_length" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_log" nodedef="ARNOLD_ND_log" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_matrix_interpolate" nodedef="ARNOLD_ND_matrix_interpolate" ldx_viewport_support="false">
+    <constant name="dummy1" type="matrix44" nodedef="ND_constant_matrix44" />
+    <output name="out" type="matrix44" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_matrix_multiply_vector" nodedef="ARNOLD_ND_matrix_multiply_vector" ldx_viewport_support="false">
+    <constant name="dummy1" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out" type="vector3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_matrix_transform" nodedef="ARNOLD_ND_matrix_transform" ldx_viewport_support="false">
+    <constant name="dummy1" type="matrix44" nodedef="ND_constant_matrix44" />
+    <output name="out" type="matrix44" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_matte" nodedef="ARNOLD_ND_matte" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_max" nodedef="ARNOLD_ND_max">
+    <max name="max1" type="color3" nodedef="ND_max_color3">
+      <input name="in1" type="color3" interfacename="input1" />
+      <input name="in2" type="color3" interfacename="input2" />
+    </max>
+    <output name="out" type="color3" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_maya_layered_shader" nodedef="ARNOLD_ND_maya_layered_shader" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_min" nodedef="ARNOLD_ND_min">
+    <min name="min1" type="color3" nodedef="ND_min_color3">
+      <input name="in1" type="color3" interfacename="input1" />
+      <input name="in2" type="color3" interfacename="input2" />
+    </min>
+    <output name="out" type="color3" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_mix_rgba" nodedef="ARNOLD_ND_mix_rgba">
+    <mix name="mix1" type="color4" nodedef="ND_mix_color4">
+      <input name="fg" type="color4" interfacename="input2" />
+      <input name="bg" type="color4" interfacename="input1" />
+      <input name="mix" type="float" interfacename="mix" />
+    </mix>
+    <output name="out" type="color4" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_mix_shader" nodedef="ARNOLD_ND_mix_shader" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_modulo" nodedef="ARNOLD_ND_modulo">
+    <modulo name="modulo1" type="color3" nodedef="ND_modulo_color3">
+      <input name="in1" type="color3" interfacename="input" />
+      <input name="in2" type="color3" interfacename="divisor" />
+    </modulo>
+    <output name="out" type="color3" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_motion_vector" nodedef="ARNOLD_ND_motion_vector" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_multiply" nodedef="ARNOLD_ND_multiply">
+    <multiply name="multiply1" type="color3" nodedef="ND_multiply_color3">
+      <input name="in1" type="color3" interfacename="input1" />
+      <input name="in2" type="color3" interfacename="input2" />
+    </multiply>
+    <output name="out" type="color3" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_negate" nodedef="ARNOLD_ND_negate">
+    <subtract name="subtract1" type="color3" nodedef="ND_subtract_color3">
+      <input name="in1" type="color3" value="0, 0, 0" />
+      <input name="in2" type="color3" interfacename="input" />
+    </subtract>
+    <output name="out" type="color3" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_noise" nodedef="ARNOLD_ND_noise" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_normal_map" nodedef="ARNOLD_ND_normal_map">
+    <backdrop name="reorderChannels" xpos="2.0" ypos="-24.5" width="13" height="11.0" />
+    <dot name="in" type="vector3" nodedef="ND_dot_vector3" xpos="2.5" ypos="-19.5">
+      <input name="in" type="vector3" interfacename="input" />
+    </dot>
+    <separate3 name="XYZ_components" type="multioutput" nodedef="ND_separate3_vector3" xpos="5.5" ypos="-19.5">
+      <input name="in" type="vector3" nodename="in" />
+    </separate3>
+    <combine3 name="XZY" type="vector3" nodedef="ND_combine3_vector3" xpos="8.5" ypos="-22.5">
+      <input name="in1" type="float" nodename="XYZ_components" output="outx" />
+      <input name="in3" type="float" nodename="XYZ_components" output="outy" />
+      <input name="in2" type="float" nodename="XYZ_components" output="outz" />
+    </combine3>
+    <dot name="XYZ" type="vector3" nodedef="ND_dot_vector3" xpos="8.5" ypos="-24.0">
+      <input name="in" type="vector3" nodename="in" />
+    </dot>
+    <combine3 name="YXZ" type="vector3" nodedef="ND_combine3_vector3" xpos="8.5" ypos="-21.0">
+      <input name="in1" type="float" nodename="XYZ_components" output="outy" />
+      <input name="in2" type="float" nodename="XYZ_components" output="outx" />
+      <input name="in3" type="float" nodename="XYZ_components" output="outz" />
+    </combine3>
+    <combine3 name="YZX" type="vector3" nodedef="ND_combine3_vector3" xpos="8.5" ypos="-19.5">
+      <input name="in1" type="float" nodename="XYZ_components" output="outy" />
+      <input name="in2" type="float" nodename="XYZ_components" output="outz" />
+      <input name="in3" type="float" nodename="XYZ_components" output="outx" />
+    </combine3>
+    <combine3 name="ZXY" type="vector3" nodedef="ND_combine3_vector3" xpos="8.5" ypos="-18.0">
+      <input name="in1" type="float" nodename="XYZ_components" output="outz" />
+      <input name="in2" type="float" nodename="XYZ_components" output="outx" />
+      <input name="in3" type="float" nodename="XYZ_components" output="outy" />
+    </combine3>
+    <combine3 name="ZYX" type="vector3" nodedef="ND_combine3_vector3" xpos="8.5" ypos="-16.5">
+      <input name="in1" type="float" nodename="XYZ_components" output="outz" />
+      <input name="in2" type="float" nodename="XYZ_components" output="outy" />
+      <input name="in3" type="float" nodename="XYZ_components" output="outx" />
+    </combine3>
+    <dot name="in_order" type="integer" nodedef="ND_dot_integer" xpos="8.5" ypos="-15.0">
+      <input name="in" type="integer" interfacename="order" />
+    </dot>
+    <switch name="input_reordered1" type="vector3" nodedef="ND_switch_vector3I" xpos="11.5" ypos="-18.0">
+      <input name="in1" type="vector3" nodename="XYZ" />
+      <input name="in2" type="vector3" nodename="XZY" />
+      <input name="in3" type="vector3" nodename="YXZ" />
+      <input name="in4" type="vector3" nodename="YZX" />
+      <input name="in5" type="vector3" nodename="ZXY" />
+      <input name="which" type="integer" nodename="in_order" />
+    </switch>
+    <ifequal name="input_reordered2" type="vector3" nodedef="ND_ifequal_vector3I" xpos="13.5" ypos="-15.0">
+      <input name="value1" type="integer" nodename="in_order" />
+      <input name="value2" type="integer" value="5" />
+      <input name="in1" type="vector3" nodename="ZYX" />
+      <input name="in2" type="vector3" nodename="input_reordered1" />
+    </ifequal>
+    <backdrop name="colorToSigned" xpos="15.5" ypos="-17.0" width="8.0" height="3.5" />
+    <multiply name="multiply1" type="vector3" nodedef="ND_multiply_vector3FA" xpos="16.0" ypos="-16.5">
+      <input name="in1" type="vector3" nodename="input_reordered2" />
+      <input name="in2" type="float" value="2" />
+    </multiply>
+    <subtract name="subtract1" type="vector3" nodedef="ND_subtract_vector3FA" xpos="18.0" ypos="-16.5">
+      <input name="in1" type="vector3" nodename="multiply1" />
+      <input name="in2" type="float" value="1" />
+    </subtract>
+    <ifequal name="if_color_to_signed" type="vector3" nodedef="ND_ifequal_vector3B" xpos="20.0" ypos="-15.0">
+      <input name="value1" type="boolean" interfacename="color_to_signed" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="vector3" nodename="subtract1" />
+      <input name="in2" type="vector3" nodename="input_reordered2" />
+    </ifequal>
+    <backdrop name="invert" xpos="17.5" ypos="-13.0" width="6.0" height="5.0" />
+    <ifequal name="if_invert_x" type="float" nodedef="ND_ifequal_floatB" xpos="18.0" ypos="-12.5">
+      <input name="value1" type="boolean" interfacename="invert_x" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" value="-1" />
+      <input name="in2" type="float" value="1" />
+    </ifequal>
+    <ifequal name="if_invert_y" type="float" nodedef="ND_ifequal_floatB" xpos="18.0" ypos="-11.0">
+      <input name="value1" type="boolean" interfacename="invert_y" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" value="-1" />
+      <input name="in2" type="float" value="1" />
+    </ifequal>
+    <ifequal name="if_invert_z" type="float" nodedef="ND_ifequal_floatB" xpos="18.0" ypos="-9.5">
+      <input name="value1" type="boolean" interfacename="invert_z" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" value="-1" />
+      <input name="in2" type="float" value="1" />
+    </ifequal>
+    <combine3 name="invert_xyz" type="vector3" nodedef="ND_combine3_vector3" xpos="20.0" ypos="-12.5">
+      <input name="in1" type="float" nodename="if_invert_x" />
+      <input name="in2" type="float" nodename="if_invert_y" />
+      <input name="in3" type="float" nodename="if_invert_z" />
+    </combine3>
+    <multiply name="apply_invert" type="vector3" nodedef="ND_multiply_vector3" xpos="22.0" ypos="-12.5">
+      <input name="in1" type="vector3" nodename="if_color_to_signed" />
+      <input name="in2" type="vector3" nodename="invert_xyz" />
+    </multiply>
+    <backdrop name="fromTangetSpace" xpos="24" ypos="-10.0" width="12.0" height="6.0" />
+    <separate3 name="input_components" type="multioutput" nodedef="ND_separate3_vector3" xpos="24.5" ypos="-9.5">
+      <input name="in" type="vector3" nodename="apply_invert" />
+    </separate3>
+    <normalize name="normal_nomalized" type="vector3" nodedef="ND_normalize_vector3" xpos="24.5" ypos="-8.0">
+      <input name="in" type="vector3" interfacename="normal" />
+    </normalize>
+    <normalize name="tangent_normalized" type="vector3" nodedef="ND_normalize_vector3" xpos="24.5" ypos="-6.5">
+      <input name="in" type="vector3" interfacename="tangent" />
+    </normalize>
+    <crossproduct name="bitanget" type="vector3" nodedef="ND_crossproduct_vector3" xpos="26.5" ypos="-5.5">
+      <input name="in1" type="vector3" nodename="normal_nomalized" />
+      <input name="in2" type="vector3" nodename="tangent_normalized" />
+    </crossproduct>
+    <normalize name="bitangent_nomalized" type="vector3" nodedef="ND_normalize_vector3" xpos="28.5" ypos="-5.5">
+      <input name="in" type="vector3" nodename="bitanget" />
+    </normalize>
+    <multiply name="z_times_normal" type="vector3" nodedef="ND_multiply_vector3FA" xpos="30.5" ypos="-9.5">
+      <input name="in1" type="vector3" nodename="normal_nomalized" />
+      <input name="in2" type="float" nodename="input_components" output="outz" />
+    </multiply>
+    <multiply name="x_times_tanget" type="vector3" nodedef="ND_multiply_vector3FA" xpos="30.5" ypos="-8.0">
+      <input name="in1" type="vector3" nodename="tangent_normalized" />
+      <input name="in2" type="float" nodename="input_components" output="outx" />
+    </multiply>
+    <multiply name="y_times_bitanget" type="vector3" nodedef="ND_multiply_vector3FA" xpos="30.5" ypos="-6.5">
+      <input name="in1" type="vector3" nodename="bitangent_nomalized" />
+      <input name="in2" type="float" nodename="input_components" output="outy" />
+    </multiply>
+    <add name="add1" type="vector3" nodedef="ND_add_vector3" xpos="32.5" ypos="-5.5">
+      <input name="in1" type="vector3" nodename="x_times_tanget" />
+      <input name="in2" type="vector3" nodename="y_times_bitanget" />
+    </add>
+    <add name="tangent_space_output" type="vector3" nodedef="ND_add_vector3" xpos="34.5" ypos="-5.5">
+      <input name="in1" type="vector3" nodename="z_times_normal" />
+      <input name="in2" type="vector3" nodename="add1" />
+    </add>
+    <transformnormal name="object_space_output" type="vector3" nodedef="ND_transformnormal_vector3" xpos="35.0" ypos="-12.5">
+      <input name="in" type="vector3" nodename="apply_invert" />
+      <input name="fromspace" type="string" value="object" />
+      <input name="tospace" type="string" value="world" />
+    </transformnormal>
+    <ifequal name="if_tangent_space" type="vector3" nodedef="ND_ifequal_vector3B" xpos="37.0" ypos="-3.0">
+      <input name="value1" type="boolean" interfacename="tangent_space" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="vector3" nodename="tangent_space_output" />
+      <input name="in2" type="vector3" nodename="object_space_output" />
+    </ifequal>
+    <backdrop name="applyStrength" xpos="39" ypos="-3.5" width="6.0" height="5.5" />
+    <normalize name="output" type="vector3" nodedef="ND_normalize_vector3" xpos="39.5" ypos="-3.0">
+      <input name="in" type="vector3" nodename="if_tangent_space" />
+    </normalize>
+    <normal name="normal1" type="vector3" nodedef="ND_normal_vector3" xpos="39.5" ypos="-1.5">
+      <input name="space" type="string" value="world" />
+    </normal>
+    <mix name="apply_strength" type="vector3" nodedef="ND_mix_vector3" xpos="41.5" ypos="0.0">
+      <input name="fg" type="vector3" nodename="output" />
+      <input name="bg" type="vector3" nodename="normal1" />
+      <input name="mix" type="float" interfacename="strength" />
+    </mix>
+    <normalize name="normalize1" type="vector3" nodedef="ND_normalize_vector3" xpos="43.5" ypos="0.0">
+      <input name="in" type="vector3" nodename="apply_strength" />
+    </normalize>
+    <output name="out" type="vector3" nodename="normalize1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_normalize" nodedef="ARNOLD_ND_normalize">
+    <normalize name="normalize1" type="vector3" nodedef="ND_normalize_vector3">
+      <input name="in" type="vector3" interfacename="input" />
+    </normalize>
+    <output name="out" type="vector3" nodename="normalize1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_openpbr_surface" nodedef="ARNOLD_ND_openpbr_surface" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_passthrough" nodedef="ARNOLD_ND_passthrough" ldx_viewport_support="partial">
+    <dot name="node1" type="surfaceshader" nodedef="ND_dot_surfaceshader">
+      <input name="in" type="surfaceshader" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="surfaceshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_passthrough_volumeshader" nodedef="ARNOLD_ND_passthrough_volumeshader" ldx_viewport_support="partial">
+    <dot name="node1" type="volumeshader" nodedef="ND_dot_volumeshader">
+      <input name="in" type="volumeshader" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="volumeshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_physical_sky" nodedef="ARNOLD_ND_physical_sky" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_pow" nodedef="ARNOLD_ND_pow">
+    <power name="power1" type="color3" nodedef="ND_power_color3">
+      <input name="in1" type="color3" interfacename="base" />
+      <input name="in2" type="color3" interfacename="exponent" />
+    </power>
+    <output name="out" type="color3" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_query_shape" nodedef="ARNOLD_ND_query_shape" ldx_viewport_support="false">
+    <constant name="dummy1" type="boolean" nodedef="ND_constant_boolean" />
+    <output name="out" type="boolean" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_ramp_float" nodedef="ARNOLD_ND_ramp_float" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_ramp_rgb" nodedef="ARNOLD_ND_ramp_rgb" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_random" nodedef="ARNOLD_ND_random" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_range" nodedef="ARNOLD_ND_range">
+    <remap name="canonical_linar" type="color3" nodedef="ND_remap_color3FA" xpos="3" ypos="-3">
+      <input name="in" type="color3" interfacename="input" />
+      <input name="inlow" type="float" interfacename="input_min" />
+      <input name="inhigh" type="float" interfacename="input_max" />
+      <input name="outlow" type="float" value="0" />
+      <input name="outhigh" type="float" value="1" />
+    </remap>
+    <subtract name="minus_input_min" type="color3" nodedef="ND_subtract_color3FA" xpos="3" ypos="-4.5">
+      <input name="in1" type="color3" interfacename="input" />
+      <input name="in2" type="float" interfacename="input_min" />
+    </subtract>
+    <multiply name="times_big" type="color3" nodedef="ND_multiply_color3FA" xpos="4.5" ypos="-4.5">
+      <input name="in1" type="color3" nodename="minus_input_min" />
+      <input name="in2" type="float" value="1e+12" />
+    </multiply>
+    <ifequal name="canonical" type="color3" nodedef="ND_ifequal_color3" xpos="6" ypos="-3">
+      <input name="value1" type="float" interfacename="input_min" />
+      <input name="value2" type="float" interfacename="input_max" />
+      <input name="in1" type="color3" nodename="times_big" />
+      <input name="in2" type="color3" nodename="canonical_linar" />
+    </ifequal>
+    <smoothstep name="canonical_smoothstep" type="color3" nodedef="ND_smoothstep_color3" xpos="8" ypos="-4.5">
+      <input name="in" type="color3" nodename="canonical" />
+      <input name="low" type="color3" value="0, 0, 0" />
+      <input name="high" type="color3" value="1, 1, 1" />
+    </smoothstep>
+    <ifequal name="apply_smoothstep" type="color3" nodedef="ND_ifequal_color3B" xpos="10" ypos="-3">
+      <input name="value1" type="boolean" interfacename="smoothstep" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="color3" nodename="canonical_smoothstep" />
+      <input name="in2" type="color3" nodename="canonical" />
+    </ifequal>
+    <separate3 name="bias_inputs" type="multioutput" nodedef="ND_separate3_color3" xpos="12" ypos="-4.5">
+      <input name="in" type="color3" nodename="apply_smoothstep" />
+    </separate3>
+    <dot name="in_bias" type="float" nodedef="ND_dot_float" xpos="3" ypos="-9">
+      <input name="in" type="float" interfacename="bias" />
+    </dot>
+    <dot name="in_bias1" type="float" nodedef="ND_dot_float" xpos="12" ypos="-7.5">
+      <input name="in" type="float" nodename="in_bias" />
+    </dot>
+    <bias name="getBias_r" type="float" nodedef="ARNOLD_ND_bias_float" xpos="14" ypos="-7.5">
+      <input name="t" type="float" nodename="bias_inputs" output="outr" />
+      <input name="bias" type="float" nodename="in_bias1" />
+    </bias>
+    <bias name="getBias_g" type="float" nodedef="ARNOLD_ND_bias_float" xpos="14" ypos="-6">
+      <input name="t" type="float" nodename="bias_inputs" output="outg" />
+      <input name="bias" type="float" nodename="in_bias1" />
+    </bias>
+    <bias name="getBias_b" type="float" nodedef="ARNOLD_ND_bias_float" xpos="14" ypos="-4.5">
+      <input name="t" type="float" nodename="bias_inputs" output="outb" />
+      <input name="bias" type="float" nodename="in_bias1" />
+    </bias>
+    <combine3 name="getBias" type="color3" nodedef="ND_combine3_color3" xpos="16" ypos="-4.5">
+      <input name="in1" type="float" nodename="getBias_r" />
+      <input name="in2" type="float" nodename="getBias_g" />
+      <input name="in3" type="float" nodename="getBias_b" />
+    </combine3>
+    <dot name="in_bias2" type="float" nodedef="ND_dot_float" xpos="16" ypos="-9">
+      <input name="in" type="float" nodename="in_bias" />
+    </dot>
+    <ifequal name="applyBias" type="color3" nodedef="ND_ifequal_color3" xpos="18" ypos="-3">
+      <input name="value1" type="float" nodename="in_bias2" />
+      <input name="value2" type="float" value="0.5" />
+      <input name="in1" type="color3" nodename="apply_smoothstep" />
+      <input name="in2" type="color3" nodename="getBias" />
+    </ifequal>
+    <separate3 name="gain_inputs" type="multioutput" nodedef="ND_separate3_color3" xpos="20" ypos="-7.5">
+      <input name="in" type="color3" nodename="applyBias" />
+    </separate3>
+    <dot name="in_gain" type="float" nodedef="ND_dot_float" xpos="18" ypos="-1.5">
+      <input name="in" type="float" interfacename="gain" />
+    </dot>
+    <subtract name="gain_inverse" type="float" nodedef="ND_subtract_float" xpos="20" ypos="-4.5">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" nodename="in_gain" />
+    </subtract>
+    <gain name="getGain_r" type="float" nodedef="ARNOLD_ND_gain_float" xpos="22" ypos="-7.5">
+      <input name="t" type="float" nodename="gain_inputs" output="outr" />
+      <input name="gain" type="float" nodename="gain_inverse" />
+    </gain>
+    <gain name="getGain_g" type="float" nodedef="ARNOLD_ND_gain_float" xpos="22" ypos="-6">
+      <input name="t" type="float" nodename="gain_inputs" output="outg" />
+      <input name="gain" type="float" nodename="gain_inverse" />
+    </gain>
+    <gain name="getGain_b" type="float" nodedef="ARNOLD_ND_gain_float" xpos="22" ypos="-4.5">
+      <input name="t" type="float" nodename="gain_inputs" output="outb" />
+      <input name="gain" type="float" nodename="gain_inverse" />
+    </gain>
+    <combine3 name="getGain" type="color3" nodedef="ND_combine3_color3" xpos="24" ypos="-4.5">
+      <input name="in1" type="float" nodename="getGain_r" />
+      <input name="in2" type="float" nodename="getGain_g" />
+      <input name="in3" type="float" nodename="getGain_b" />
+    </combine3>
+    <ifequal name="applyGain" type="color3" nodedef="ND_ifequal_color3" xpos="26" ypos="-3">
+      <input name="value1" type="float" nodename="in_gain" />
+      <input name="value2" type="float" value="0.5" />
+      <input name="in1" type="color3" nodename="applyBias" />
+      <input name="in2" type="color3" nodename="getGain" />
+    </ifequal>
+    <remap name="remapped" type="color3" nodedef="ND_remap_color3FA" xpos="28" ypos="-1.5">
+      <input name="in" type="color3" nodename="applyGain" />
+      <input name="inlow" type="float" value="0" />
+      <input name="inhigh" type="float" value="1" />
+      <input name="outlow" type="float" interfacename="output_min" />
+      <input name="outhigh" type="float" interfacename="output_max" />
+    </remap>
+    <subtract name="minus_contrast_pivot" type="color3" nodedef="ND_subtract_color3FA" xpos="29.5" ypos="0">
+      <input name="in1" type="color3" nodename="remapped" />
+      <input name="in2" type="float" interfacename="contrast_pivot" />
+    </subtract>
+    <multiply name="times_contrast" type="color3" nodedef="ND_multiply_color3FA" xpos="31" ypos="1.5">
+      <input name="in1" type="color3" nodename="minus_contrast_pivot" />
+      <input name="in2" type="float" interfacename="contrast" />
+    </multiply>
+    <add name="plus_contrast_pivot" type="color3" nodedef="ND_add_color3FA" xpos="32.5" ypos="3">
+      <input name="in1" type="color3" nodename="times_contrast" />
+      <input name="in2" type="float" interfacename="contrast_pivot" />
+    </add>
+    <output name="out" type="color3" nodename="plus_contrast_pivot" xpos="34" ypos="3" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_ray_switch_rgba" nodedef="ARNOLD_ND_ray_switch_rgba" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_ray_switch_shader" nodedef="ARNOLD_ND_ray_switch_shader" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_reciprocal" nodedef="ARNOLD_ND_reciprocal">
+    <divide name="divide1" type="color3" nodedef="ND_divide_color3">
+      <input name="in1" type="color3" value="1, 1, 1" />
+      <input name="in2" type="color3" interfacename="input" />
+    </divide>
+    <output name="out" type="color3" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_rgb_to_float" nodedef="ARNOLD_ND_rgb_to_float" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_rgb_to_vector" nodedef="ARNOLD_ND_rgb_to_vector" ldx_viewport_support="false">
+    <constant name="dummy1" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out" type="vector3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_rgba_to_float" nodedef="ARNOLD_ND_rgba_to_float" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_round_corners" nodedef="ARNOLD_ND_round_corners" ldx_viewport_support="false">
+    <constant name="dummy1" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out" type="vector3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_shadow_matte" nodedef="ARNOLD_ND_shadow_matte" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_shuffle" nodedef="ARNOLD_ND_shuffle">
+    <separate3 name="separate_rgb" type="multioutput" nodedef="ND_separate3_color3" xpos="2" ypos="-6">
+      <input name="in" type="color3" interfacename="color" />
+    </separate3>
+    <dot name="in_r" type="float" nodedef="ND_dot_float" xpos="4" ypos="-8">
+      <input name="in" type="float" nodename="separate_rgb" output="outr" />
+    </dot>
+    <dot name="in_g" type="float" nodedef="ND_dot_float" xpos="4" ypos="-6">
+      <input name="in" type="float" nodename="separate_rgb" output="outg" />
+    </dot>
+    <dot name="in_b" type="float" nodedef="ND_dot_float" xpos="4" ypos="-4">
+      <input name="in" type="float" nodename="separate_rgb" output="outb" />
+    </dot>
+    <dot name="in_a" type="float" nodedef="ND_dot_float" xpos="4" ypos="-2">
+      <input name="in" type="float" interfacename="alpha" />
+    </dot>
+    <switch name="out_r" type="float" nodedef="ND_switch_floatI" xpos="6" ypos="-8">
+      <input name="in1" type="float" nodename="in_r" />
+      <input name="in2" type="float" nodename="in_g" />
+      <input name="in3" type="float" nodename="in_b" />
+      <input name="in4" type="float" nodename="in_a" />
+      <input name="which" type="integer" interfacename="channel_r" />
+    </switch>
+    <switch name="out_g" type="float" nodedef="ND_switch_floatI" xpos="6" ypos="-6">
+      <input name="in1" type="float" nodename="in_r" />
+      <input name="in2" type="float" nodename="in_g" />
+      <input name="in3" type="float" nodename="in_b" />
+      <input name="in4" type="float" nodename="in_a" />
+      <input name="which" type="integer" interfacename="channel_g" />
+    </switch>
+    <switch name="out_b" type="float" nodedef="ND_switch_floatI" xpos="6" ypos="-4">
+      <input name="in1" type="float" nodename="in_r" />
+      <input name="in2" type="float" nodename="in_g" />
+      <input name="in3" type="float" nodename="in_b" />
+      <input name="in4" type="float" nodename="in_a" />
+      <input name="which" type="integer" interfacename="channel_b" />
+    </switch>
+    <switch name="out_a" type="float" nodedef="ND_switch_floatI" xpos="6" ypos="-2">
+      <input name="in1" type="float" nodename="in_r" />
+      <input name="in2" type="float" nodename="in_g" />
+      <input name="in3" type="float" nodename="in_b" />
+      <input name="in4" type="float" nodename="in_a" />
+      <input name="which" type="integer" interfacename="channel_a" />
+    </switch>
+    <combine4 name="combine_rgba" type="color4" nodedef="ND_combine4_color4" xpos="8" ypos="-2">
+      <input name="in1" type="float" nodename="out_r" />
+      <input name="in2" type="float" nodename="out_g" />
+      <input name="in3" type="float" nodename="out_b" />
+      <input name="in4" type="float" nodename="out_a" />
+    </combine4>
+    <ifequal name="negate_r1" type="float" nodedef="ND_ifequal_floatB" xpos="6" ypos="0">
+      <input name="value1" type="boolean" interfacename="negate_r" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" value="-1" />
+      <input name="in2" type="float" value="1" />
+    </ifequal>
+    <ifequal name="negate_g1" type="float" nodedef="ND_ifequal_floatB" xpos="6" ypos="2">
+      <input name="value1" type="boolean" interfacename="negate_g" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" value="-1" />
+      <input name="in2" type="float" value="1" />
+    </ifequal>
+    <ifequal name="negate_b1" type="float" nodedef="ND_ifequal_floatB" xpos="6" ypos="4">
+      <input name="value1" type="boolean" interfacename="negate_b" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" value="-1" />
+      <input name="in2" type="float" value="1" />
+    </ifequal>
+    <ifequal name="negate_a1" type="float" nodedef="ND_ifequal_floatB" xpos="6" ypos="6">
+      <input name="value1" type="boolean" interfacename="negate_a" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" value="-1" />
+      <input name="in2" type="float" value="1" />
+    </ifequal>
+    <combine4 name="negations" type="color4" nodedef="ND_combine4_color4" xpos="8" ypos="0">
+      <input name="in1" type="float" nodename="negate_r1" />
+      <input name="in2" type="float" nodename="negate_g1" />
+      <input name="in3" type="float" nodename="negate_b1" />
+      <input name="in4" type="float" nodename="negate_a1" />
+    </combine4>
+    <multiply name="multiply1" type="color4" nodedef="ND_multiply_color4" xpos="10" ypos="0">
+      <input name="in1" type="color4" nodename="combine_rgba" />
+      <input name="in2" type="color4" nodename="negations" />
+    </multiply>
+    <output name="out" type="color4" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_sign" nodedef="ARNOLD_ND_sign">
+    <sign name="sign1" type="color3" nodedef="ND_sign_color3">
+      <input name="in" type="color3" interfacename="input" />
+    </sign>
+    <output name="out" type="color3" nodename="sign1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_skin" nodedef="ARNOLD_ND_skin" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_sky" nodedef="ARNOLD_ND_sky" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_space_transform" nodedef="ARNOLD_ND_space_transform" ldx_viewport_support="false">
+    <constant name="dummy1" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out" type="vector3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_sqrt" nodedef="ARNOLD_ND_sqrt">
+    <max name="max1" type="color3" nodedef="ND_max_color3">
+      <input name="in1" type="color3" value="0, 0, 0" />
+      <input name="in2" type="color3" interfacename="input" />
+    </max>
+    <convert name="convert1" type="vector3" nodedef="ND_convert_color3_vector3">
+      <input name="in" type="color3" nodename="max1" />
+    </convert>
+    <sqrt name="sqrt1" type="vector3" nodedef="ND_sqrt_vector3">
+      <input name="in" type="vector3" nodename="convert1" />
+    </sqrt>
+    <convert name="convert2" type="color3" nodedef="ND_convert_vector3_color3">
+      <input name="in" type="vector3" nodename="sqrt1" />
+    </convert>
+    <output name="out" type="color3" nodename="convert2" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_standard" nodedef="ARNOLD_ND_standard" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_standard_hair" nodedef="ARNOLD_ND_standard_hair" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_standard_surface" nodedef="ARNOLD_ND_standard_surface">
+    <standard_surface name="standard_surface1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader">
+      <input name="base" type="float" interfacename="base" />
+      <input name="base_color" type="color3" interfacename="base_color" />
+      <input name="diffuse_roughness" type="float" interfacename="diffuse_roughness" />
+      <input name="specular" type="float" interfacename="specular" />
+      <input name="specular_color" type="color3" interfacename="specular_color" />
+      <input name="specular_roughness" type="float" interfacename="specular_roughness" />
+      <input name="specular_IOR" type="float" interfacename="specular_IOR" />
+      <input name="specular_anisotropy" type="float" interfacename="specular_anisotropy" />
+      <input name="specular_rotation" type="float" interfacename="specular_rotation" />
+      <input name="metalness" type="float" interfacename="metalness" />
+      <input name="transmission" type="float" interfacename="transmission" />
+      <input name="transmission_color" type="color3" interfacename="transmission_color" />
+      <input name="transmission_depth" type="float" interfacename="transmission_depth" />
+      <input name="transmission_scatter" type="color3" interfacename="transmission_scatter" />
+      <input name="transmission_scatter_anisotropy" type="float" interfacename="transmission_scatter_anisotropy" />
+      <input name="transmission_dispersion" type="float" interfacename="transmission_dispersion" />
+      <input name="transmission_extra_roughness" type="float" interfacename="transmission_extra_roughness" />
+      <input name="subsurface" type="float" interfacename="subsurface" />
+      <input name="subsurface_color" type="color3" interfacename="subsurface_color" />
+      <input name="subsurface_radius" type="color3" interfacename="subsurface_radius" />
+      <input name="subsurface_scale" type="float" interfacename="subsurface_scale" />
+      <input name="subsurface_anisotropy" type="float" interfacename="subsurface_anisotropy" />
+      <input name="sheen" type="float" interfacename="sheen" />
+      <input name="sheen_color" type="color3" interfacename="sheen_color" />
+      <input name="sheen_roughness" type="float" interfacename="sheen_roughness" />
+      <input name="coat" type="float" interfacename="coat" />
+      <input name="coat_color" type="color3" interfacename="coat_color" />
+      <input name="coat_roughness" type="float" interfacename="coat_roughness" />
+      <input name="coat_anisotropy" type="float" interfacename="coat_anisotropy" />
+      <input name="coat_rotation" type="float" interfacename="coat_rotation" />
+      <input name="coat_IOR" type="float" interfacename="coat_IOR" />
+      <input name="coat_normal" type="vector3" interfacename="coat_normal" />
+      <input name="coat_affect_color" type="float" interfacename="coat_affect_color" />
+      <input name="coat_affect_roughness" type="float" interfacename="coat_affect_roughness" />
+      <input name="thin_film_thickness" type="float" interfacename="thin_film_thickness" />
+      <input name="thin_film_IOR" type="float" interfacename="thin_film_IOR" />
+      <input name="emission" type="float" interfacename="emission" />
+      <input name="emission_color" type="color3" interfacename="emission_color" />
+      <input name="opacity" type="color3" interfacename="opacity" />
+      <input name="thin_walled" type="boolean" interfacename="thin_walled" />
+      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="tangent" type="vector3" interfacename="tangent" />
+    </standard_surface>
+    <output name="out" type="surfaceshader" nodename="standard_surface1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_state_float" nodedef="ARNOLD_ND_state_float" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+    <constant name="dummy2" type="float" nodedef="ND_constant_float" />
+    <output name="out_variable" type="float" nodename="dummy2" />
+    <constant name="dummy3" type="float" nodedef="ND_constant_float" />
+    <output name="sx" type="float" nodename="dummy3" />
+    <constant name="dummy4" type="float" nodedef="ND_constant_float" />
+    <output name="sy" type="float" nodename="dummy4" />
+    <constant name="dummy5" type="float" nodedef="ND_constant_float" />
+    <output name="px" type="float" nodename="dummy5" />
+    <constant name="dummy6" type="float" nodedef="ND_constant_float" />
+    <output name="py" type="float" nodename="dummy6" />
+    <constant name="dummy7" type="float" nodedef="ND_constant_float" />
+    <output name="time" type="float" nodename="dummy7" />
+    <constant name="dummy8" type="float" nodedef="ND_constant_float" />
+    <output name="Rl" type="float" nodename="dummy8" />
+    <constant name="dummy9" type="float" nodedef="ND_constant_float" />
+    <output name="bu" type="float" nodename="dummy9" />
+    <constant name="dummy10" type="float" nodedef="ND_constant_float" />
+    <output name="bv" type="float" nodename="dummy10" />
+    <constant name="dummy11" type="float" nodedef="ND_constant_float" />
+    <output name="u" type="float" nodename="dummy11" />
+    <constant name="dummy12" type="float" nodedef="ND_constant_float" />
+    <output name="v" type="float" nodename="dummy12" />
+    <constant name="dummy13" type="float" nodedef="ND_constant_float" />
+    <output name="area" type="float" nodename="dummy13" />
+    <constant name="dummy14" type="float" nodedef="ND_constant_float" />
+    <output name="dudx" type="float" nodename="dummy14" />
+    <constant name="dummy15" type="float" nodedef="ND_constant_float" />
+    <output name="dudy" type="float" nodename="dummy15" />
+    <constant name="dummy16" type="float" nodedef="ND_constant_float" />
+    <output name="dvdx" type="float" nodename="dummy16" />
+    <constant name="dummy17" type="float" nodedef="ND_constant_float" />
+    <output name="dvdy" type="float" nodename="dummy17" />
+    <constant name="dummy18" type="float" nodedef="ND_constant_float" />
+    <output name="shutter_start" type="float" nodename="dummy18" />
+    <constant name="dummy19" type="float" nodedef="ND_constant_float" />
+    <output name="shutter_end" type="float" nodename="dummy19" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_state_int" nodedef="ARNOLD_ND_state_int" ldx_viewport_support="false">
+    <constant name="dummy1" type="integer" nodedef="ND_constant_integer" />
+    <output name="out" type="integer" nodename="dummy1" />
+    <constant name="dummy2" type="integer" nodedef="ND_constant_integer" />
+    <output name="out_variable" type="integer" nodename="dummy2" />
+    <constant name="dummy3" type="integer" nodedef="ND_constant_integer" />
+    <output name="x" type="integer" nodename="dummy3" />
+    <constant name="dummy4" type="integer" nodedef="ND_constant_integer" />
+    <output name="y" type="integer" nodename="dummy4" />
+    <constant name="dummy5" type="integer" nodedef="ND_constant_integer" />
+    <output name="si" type="integer" nodename="dummy5" />
+    <constant name="dummy6" type="integer" nodedef="ND_constant_integer" />
+    <output name="Rt" type="integer" nodename="dummy6" />
+    <constant name="dummy7" type="integer" nodedef="ND_constant_integer" />
+    <output name="transp_index" type="integer" nodename="dummy7" />
+    <constant name="dummy8" type="integer" nodedef="ND_constant_integer" />
+    <output name="tid" type="integer" nodename="dummy8" />
+    <constant name="dummy9" type="integer" nodedef="ND_constant_integer" />
+    <output name="bounces" type="integer" nodename="dummy9" />
+    <constant name="dummy10" type="integer" nodedef="ND_constant_integer" />
+    <output name="bounces_diffuse" type="integer" nodename="dummy10" />
+    <constant name="dummy11" type="integer" nodedef="ND_constant_integer" />
+    <output name="bounces_specular" type="integer" nodename="dummy11" />
+    <constant name="dummy12" type="integer" nodedef="ND_constant_integer" />
+    <output name="bounces_reflect" type="integer" nodename="dummy12" />
+    <constant name="dummy13" type="integer" nodedef="ND_constant_integer" />
+    <output name="bounces_transmit" type="integer" nodename="dummy13" />
+    <constant name="dummy14" type="integer" nodedef="ND_constant_integer" />
+    <output name="bounces_volume" type="integer" nodename="dummy14" />
+    <constant name="dummy15" type="integer" nodedef="ND_constant_integer" />
+    <output name="fhemi" type="integer" nodename="dummy15" />
+    <constant name="dummy16" type="integer" nodedef="ND_constant_integer" />
+    <output name="fi" type="integer" nodename="dummy16" />
+    <constant name="dummy17" type="integer" nodedef="ND_constant_integer" />
+    <output name="nlights" type="integer" nodename="dummy17" />
+    <constant name="dummy18" type="integer" nodedef="ND_constant_integer" />
+    <output name="inclusive_traceset" type="integer" nodename="dummy18" />
+    <constant name="dummy19" type="integer" nodedef="ND_constant_integer" />
+    <output name="skip_shadow" type="integer" nodename="dummy19" />
+    <constant name="dummy20" type="integer" nodedef="ND_constant_integer" />
+    <output name="sc" type="integer" nodename="dummy20" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_state_vector" nodedef="ARNOLD_ND_state_vector" ldx_viewport_support="false">
+    <constant name="dummy1" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out" type="vector3" nodename="dummy1" />
+    <constant name="dummy2" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out_variable" type="vector3" nodename="dummy2" />
+    <constant name="dummy3" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="Ro" type="vector3" nodename="dummy3" />
+    <constant name="dummy4" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="Rd" type="vector3" nodename="dummy4" />
+    <constant name="dummy5" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="Po" type="vector3" nodename="dummy5" />
+    <constant name="dummy6" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="P" type="vector3" nodename="dummy6" />
+    <constant name="dummy7" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="dPdx" type="vector3" nodename="dummy7" />
+    <constant name="dummy8" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="dPdy" type="vector3" nodename="dummy8" />
+    <constant name="dummy9" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="N" type="vector3" nodename="dummy9" />
+    <constant name="dummy10" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="Nf" type="vector3" nodename="dummy10" />
+    <constant name="dummy11" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="Ng" type="vector3" nodename="dummy11" />
+    <constant name="dummy12" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="Ngf" type="vector3" nodename="dummy12" />
+    <constant name="dummy13" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="Ns" type="vector3" nodename="dummy13" />
+    <constant name="dummy14" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="dPdu" type="vector3" nodename="dummy14" />
+    <constant name="dummy15" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="dPdv" type="vector3" nodename="dummy15" />
+    <constant name="dummy16" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="dDdx" type="vector3" nodename="dummy16" />
+    <constant name="dummy17" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="dDdy" type="vector3" nodename="dummy17" />
+    <constant name="dummy18" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="dNdx" type="vector3" nodename="dummy18" />
+    <constant name="dummy19" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="dNdy" type="vector3" nodename="dummy19" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_subtract" nodedef="ARNOLD_ND_subtract">
+    <subtract name="subtract1" type="color3" nodedef="ND_subtract_color3">
+      <input name="in1" type="color3" interfacename="input1" />
+      <input name="in2" type="color3" interfacename="input2" />
+    </subtract>
+    <output name="out" type="color3" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_switch_rgba" nodedef="ARNOLD_ND_switch_rgba" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_switch_shader" nodedef="ARNOLD_ND_switch_shader" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_thin_film" nodedef="ARNOLD_ND_thin_film" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_toon" nodedef="ARNOLD_ND_toon" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_trace_set" nodedef="ARNOLD_ND_trace_set">
+    <dot name="node1" type="surfaceshader" nodedef="ND_dot_surfaceshader">
+      <input name="in" type="surfaceshader" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="surfaceshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_trigo" nodedef="ARNOLD_ND_trigo" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_triplanar" nodedef="ARNOLD_ND_triplanar" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_two_sided" nodedef="ARNOLD_ND_two_sided" ldx_viewport_support="partial">
+    <dot name="node1" type="surfaceshader" nodedef="ND_dot_surfaceshader">
+      <input name="in" type="surfaceshader" interfacename="front" />
+    </dot>
+    <output name="out" type="surfaceshader" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_user_data_float" nodedef="ARNOLD_ND_user_data_float" ldx_viewport_support="partial">
+    <dot name="node1" type="float" nodedef="ND_dot_float">
+      <input name="in" type="float" interfacename="default" />
+    </dot>
+    <output name="out" type="float" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_user_data_int" nodedef="ARNOLD_ND_user_data_int" ldx_viewport_support="partial">
+    <dot name="node1" type="integer" nodedef="ND_dot_integer">
+      <input name="in" type="integer" interfacename="default" />
+    </dot>
+    <output name="out" type="integer" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_user_data_rgb" nodedef="ARNOLD_ND_user_data_rgb" ldx_viewport_support="partial">
+    <dot name="node1" type="color3" nodedef="ND_dot_color3">
+      <input name="in" type="color3" interfacename="default" />
+    </dot>
+    <output name="out" type="color3" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_user_data_rgba" nodedef="ARNOLD_ND_user_data_rgba" ldx_viewport_support="partial">
+    <dot name="node1" type="color4" nodedef="ND_dot_color4">
+      <input name="in" type="color4" interfacename="default" />
+    </dot>
+    <output name="out" type="color4" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_user_data_string" nodedef="ARNOLD_ND_user_data_string" ldx_viewport_support="partial">
+    <dot name="node1" type="string" nodedef="ND_dot_string">
+      <input name="in" type="string" interfacename="attribute" />
+    </dot>
+    <output name="out" type="string" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_utility" nodedef="ARNOLD_ND_utility" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_uv_projection" nodedef="ARNOLD_ND_uv_projection" ldx_viewport_support="false">
+    <dot name="node1" type="color4" nodedef="ND_dot_color4">
+      <input name="in" type="color4" interfacename="projection_color" />
+    </dot>
+    <output name="out" type="color4" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_uv_transform" nodedef="ARNOLD_ND_uv_transform" ldx_viewport_support="false">
+    <dot name="node1" type="color4" nodedef="ND_dot_color4">
+      <input name="in" type="color4" interfacename="passthrough" />
+    </dot>
+    <output name="out" type="color4" nodename="node1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_vector_map" nodedef="ARNOLD_ND_vector_map" ldx_viewport_support="false">
+    <constant name="dummy1" type="vector3" nodedef="ND_constant_vector3" />
+    <output name="out" type="vector3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_vector_to_rgb" nodedef="ARNOLD_ND_vector_to_rgb" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_visible_light" nodedef="ARNOLD_ND_visible_light" ldx_viewport_support="false">
+    <standard_surface name="dummy1" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_volume_sample_float" nodedef="ARNOLD_ND_volume_sample_float" ldx_viewport_support="false">
+    <constant name="dummy1" type="float" nodedef="ND_constant_float" />
+    <output name="out" type="float" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_volume_sample_rgb" nodedef="ARNOLD_ND_volume_sample_rgb" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+  <nodegraph name="ARNOLD_NG_wireframe" nodedef="ARNOLD_ND_wireframe" ldx_viewport_support="false">
+    <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
+    <output name="out" type="color3" nodename="dummy1" />
+  </nodegraph>
+</materialx>

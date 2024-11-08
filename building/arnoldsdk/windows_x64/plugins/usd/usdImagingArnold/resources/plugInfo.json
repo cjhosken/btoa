@@ -1,0 +1,55 @@
+{
+  "Plugins": [
+    {
+      "Info": {
+        "Types": {
+          "UsdImagingArnoldAlembicAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldAlembic"},
+"UsdImagingArnoldBoxAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldBox"},
+"UsdImagingArnoldConeAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldCone"},
+"UsdImagingArnoldCurvesAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldCurves"},
+"UsdImagingArnoldDiskAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldDisk"},
+"UsdImagingArnoldGinstanceAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldGinstance"},
+"UsdImagingArnoldImplicitAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldImplicit"},
+"UsdImagingArnoldNurbsAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldNurbs"},
+"UsdImagingArnoldPlaneAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldPlane"},
+"UsdImagingArnoldPointsAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldPoints"},
+"UsdImagingArnoldPolymeshAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldPolymesh"},
+"UsdImagingArnoldProceduralAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldProcedural"},
+"UsdImagingArnoldSphereAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldSphere"},
+"UsdImagingArnoldUsdAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldUsd"},
+"UsdImagingArnoldVolumeAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldVolume"},
+"UsdImagingArnoldVolumeImplicitAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldVolumeImplicit"},
+          "UsdImagingArnoldUsdLuxLightFilterAdapter": {
+            "bases": [
+              "UsdImagingPrimAdapter"
+            ],
+            "primTypeName": "ArnoldUsdLuxLightFilter"
+          },
+          "ArnoldNodeGraphAdapter": {
+            "bases": [
+              "UsdImagingPrimAdapter"
+            ],
+            "primTypeName": "ArnoldNodeGraph"
+          },
+          "ArnoldProceduralCustomAdapter": {
+            "bases": [
+              "UsdImagingGprimAdapter"
+            ],
+            "primTypeName": "ArnoldProceduralCustom"
+          },
+          "ArnoldOptionsAdapter": {
+            "bases": [
+              "UsdImagingPrimAdapter"
+            ],
+            "primTypeName": "ArnoldOptions"
+          }
+        }
+      },
+      "LibraryPath": "../../usd_proc.dll",
+      "Name": "usdImagingArnold",
+      "ResourcePath": "resources",
+      "Root": "..",
+      "Type": "library"
+    }
+  ]
+}

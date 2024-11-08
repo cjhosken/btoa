@@ -43,7 +43,7 @@ git checkout 483736b00b6a767342e30f5bd95eebcc3c6a4219
 
 cd $BTOA_DIR
 
-cp -r $SCRIPT_DIR/configs/linux_x64/* $BTOA_DIR/dependencies
+cp -r $SCRIPT_DIR/configs/* $BTOA_DIR/dependencies
 
 mkdir -p $BTOA_DIR/arnoldusd
 mkdir -p $BTOA_DIR/arnoldusd/arnoldsdk
@@ -54,14 +54,14 @@ cd $BTOA_DIR/source
 mkdir -p build
 cd build
 
-LD_LIBRARY_PATH=$BTOA_DIR/dependencies/boost/lib:$BTOA_DIR/dependencies/materialx/lib:$BTOA_DIR/dependencies/imath/lib:$BTOA_DIR/dependencies/openvdb/lib:$BTOA_DIR/dependencies/opensubdiv/lib:$BTOA_DIR/dependencies/openimageio/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=$BTOA_DIR/dependencies/tbb/lib:$BTOA_DIR/dependencies/boost/lib:$BTOA_DIR/dependencies/materialx/lib:$BTOA_DIR/dependencies/imath/lib:$BTOA_DIR/dependencies/openvdb/lib:$BTOA_DIR/dependencies/opensubdiv/lib:$BTOA_DIR/dependencies/openimageio/lib:$LD_LIBRARY_PATH
 
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DARNOLD_LOCATION=$BTOA_DIR/arnoldusd/arnoldsdk \
     -DUSD_LOCATION=$BTOA_DIR/dependencies/usd \
     -DPython3_ROOT=$BTOA_DIR/dependencies/python \
-    -DCMAKE_PREFIX_PATH="$BTOA_DIR/dependencies" \
+    -DCMAKE_PREFIX_PATH="$BTOA_DIR/dependencies:$BTOA_DIR/dependencies/tbb/include" \
     -DCMAKE_INSTALL_PREFIX=$BTOA_DIR/arnoldusd \
     -DBUILD_SCHEMAS=OFF \
     -DBUILD_USDGENSCHEMA_ARNOLD=OFF \

@@ -1,0 +1,13 @@
+Autodesk
+
+TERMS OF USE
+
+THE TERMS AVAILABLE AT https://www.autodesk.com/company/terms-of-use/en/general-terms#software (“Terms of Use”) APPLY TO THE ADDITIONAL BENEFIT RELATED TO THE OFFERING. By accepting these Terms of Use or by accessing or using the Benefit related to the Offerings, you confirm your acceptance of these Terms of Use and other applicable Terms and your agreement to be a party to this binding contract. If you do not agree, you do not have the right to access or use our the Benefit or Offerings.
+
+You agree to these Terms of Use on behalf of the company or other legal entity for which you are acting (for example, as an employee or contractor) or, if there is no company or legal entity, on behalf of yourself as an individual (in either case, “You”). You represent and warrant that you have the right and authority (as well as the capacity—for example, you are of sufficient legal age) to act on behalf of and bind such entity (if any) and yourself.
+
+Additional capitalized terms are defined in these Terms of Use.
+
+Arnold Software License Restriction.  In addition to any restrictions as set forth in the Autodesk Terms of Use (including any terms incorporated by reference therein) You may not run Arnold Software in a legacy "ray server" mode.
+
+You may distribute Arnold SDK as an integrated part of your Developed Application (the “Arnold Runtime Library”), solely as embedded or incorporated into your Developed Application, solely to third parties to whom you license or sell your Developed Application, in each case pursuant to an agreement that is no less protective of Autodesk and its licensors than the Autodesk Terms of Use (the “Arnold Runtime License”).  “Developed Application” means games, applications, software or other content that you develop with the Arnold Runtime Library. The rendering created from your Developed Application will include a watermark.  To create a rendering without such watermark, you may direct licensees of your Developed Application to autodesk.com for available options to purchase a subscription to Arnold software.

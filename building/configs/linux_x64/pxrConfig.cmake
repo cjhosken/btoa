@@ -16,11 +16,20 @@ get_filename_component(PXR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 #set(PXR_PATCH_VERSION "05")
 #set(PXR_VERSION "2405")
 
-
 # Set the root directory for USD
-set(USD_ROOT "$ENV{HOME}/.btoa/dependencies/usd")
+if(WIN32)
+    set(USD_ROOT "$ENV{USERPROFILE}\\.btoa\\dependencies\\usd")
+else()
+    set(USD_ROOT "$ENV{HOME}/.btoa/dependencies/usd")
+endif()
+
 # Path to the USD monolithic library
-set(PXR_usd_ms_LIBRARY "${USD_ROOT}/lib/libusd_ms.so")
+set(PXR_usd_ms_LIBRARY "${USD_ROOT}/lib/libusd_ms.so")  # This will be used for non-Windows platforms
+
+# On Windows, the library file extension will be .lib for static or .dll for dynamic
+if(WIN32)
+    set(PXR_usd_ms_LIBRARY "${USD_ROOT}\\lib\\usd_ms.lib")  # .lib for static linking
+endif()
 
 # Set include directories
 set(PXR_INCLUDE_DIRS "${USD_ROOT}/include" CACHE PATH "Path to the pxr include directory")
@@ -93,15 +102,13 @@ add_library(usdUtils INTERFACE IMPORTED)
 set_target_properties(usdUtils PROPERTIES IMPORTED_LOCATION "${PXR_usd_ms_LIBRARY}")
 
 add_library(usdVol INTERFACE IMPORTED)
-set_target_properties(usdUtils PROPERTIES IMPORTED_LOCATION "${PXR_usd_ms_LIBRARY}")
+set_target_properties(usdVol PROPERTIES IMPORTED_LOCATION "${PXR_usd_ms_LIBRARY}")
 
 add_library(usdSkel INTERFACE IMPORTED)
-set_target_properties(usdUtils PROPERTIES IMPORTED_LOCATION "${PXR_usd_ms_LIBRARY}")
+set_target_properties(usdSkel PROPERTIES IMPORTED_LOCATION "${PXR_usd_ms_LIBRARY}")
 
 add_library(usdRender INTERFACE IMPORTED)
 set_target_properties(usdRender PROPERTIES IMPORTED_LOCATION "${PXR_usd_ms_LIBRARY}")
-
-
 
 # Initialize PXR_LIBRARIES with the path to the monolithic library
 set(PXR_LIBRARIES "${PXR_usd_ms_LIBRARY}")
@@ -119,5 +126,6 @@ endif()
 message(STATUS "PXR_INCLUDE_DIRS: ${PXR_INCLUDE_DIRS}")
 message(STATUS "PXR_LIBRARIES: ${PXR_LIBRARIES}")
 
+# Set include directories and link libraries
 include_directories(${PXR_INCLUDE_DIRS})
 link_libraries(${PXR_LIBRARIES})

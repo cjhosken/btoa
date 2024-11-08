@@ -4,7 +4,7 @@ bl_info = {
     "name" : "Blender to Arnold",
     "author" : "Christopher Hosken",
     "version" : (7, 3, 5, 0),
-    "blender" : (4, 1, 1),
+    "blender" : (4, 3, 2),
     "description" : "Autodesk's Arnold Renderer integration into Blender",
     "warning" : "This Addon is currently under development",
     "support": "COMMUNITY",
