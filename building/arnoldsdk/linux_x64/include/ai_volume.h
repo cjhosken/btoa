@@ -24,7 +24,7 @@ struct AtShaderGlobals;
 /** \defgroup ai_volumes Volume Plugin API
  *
  * Interaction with custom volumes, implicit surfaces and formats at render time.
- * 
+ *
  * \details
  * This is accomplished by providing the renderer some
  * callback functions which are called as needed (when the object is hit by a

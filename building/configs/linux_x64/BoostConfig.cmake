@@ -13,4 +13,3 @@ message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
 
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARIES})
-

@@ -497,6 +497,10 @@
     </crossproduct>
     <output name="out" type="vector3" nodename="crossproduct1" />
   </nodegraph>
+  <nodegraph name="ARNOLD_NG_cryptomatte" nodedef="ARNOLD_ND_cryptomatte" ldx_viewport_support="false">
+    <constant name="dummy1" type="color4" nodedef="ND_constant_color4" />
+    <output name="out" type="color4" nodename="dummy1" />
+  </nodegraph>
   <nodegraph name="ARNOLD_NG_curvature" nodedef="ARNOLD_ND_curvature" ldx_viewport_support="false">
     <constant name="dummy1" type="color3" nodedef="ND_constant_color3" />
     <output name="out" type="color3" nodename="dummy1" />

@@ -1,4 +1,4 @@
-The current build is for Arnold 7.3.4.1 in Blender 4.2.3 LTS
+The current build is for Arnold 7.3.5.0 in Blender 4.2.3 LTS
 
 Prerequesites:
 

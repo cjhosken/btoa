@@ -35,7 +35,7 @@ cd $BTOA_DIR/dependencies
 git remote add -f origin https://projects.blender.org/blender/lib-linux_x64.git
 git config core.sparseCheckout true
 
-echo -e "boost\nimath\nmaterialx\nopencolorio\nopenexr\nopenimagedenoise\nopenimageio\nopensubdiv\nopenvdb\npython\nusd" > .git/info/sparse-checkout
+echo -e "boost\nimath\nmaterialx\nopencolorio\nopenexr\nopenimagedenoise\nopenimageio\nopensubdiv\nopenvdb\npython\nusd\ntbb" > .git/info/sparse-checkout
 
 git fetch origin
 
@@ -45,26 +45,24 @@ cd $BTOA_DIR
 
 cp -r $SCRIPT_DIR/configs/linux_x64/* $BTOA_DIR/dependencies
 
-mkdir -p $BTOA_DIR/installs
-mkdir -p $BTOA_DIR/installs/arnoldusd
-mkdir -p $BTOA_DIR/installs/arnoldusd/arnoldsdk
+mkdir -p $BTOA_DIR/arnoldusd
+mkdir -p $BTOA_DIR/arnoldusd/arnoldsdk
 
-cp -r $SCRIPT_DIR/arnoldsdk/linux_x64/* $BTOA_DIR/installs/arnoldusd/arnoldsdk
-
+cp -r $SCRIPT_DIR/arnoldsdk/linux_x64/* $BTOA_DIR/arnoldusd/arnoldsdk
 
 cd $BTOA_DIR/source 
 mkdir -p build
 cd build
 
-LD_LIBRARY_PATH=$BTOA_DIR/dependencies/boost/lib:$BTOA_DIR/dependencies/materialx/lib:$BTOA_DIR/dependencies/imath/lib:$BTOA_DIR/dependencies/openvdb/lib:$BTOA_DIR/dependencies/opensubdiv/lib:$BTOA_DIR/dependencies/openimageio/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=$BTOA_DIR/dependencies/boost/lib:$BTOA_DIR/dependencies/tbb/lib:$BTOA_DIR/dependencies/materialx/lib:$BTOA_DIR/dependencies/imath/lib:$BTOA_DIR/dependencies/openvdb/lib:$BTOA_DIR/dependencies/opensubdiv/lib:$BTOA_DIR/dependencies/openimageio/lib:$LD_LIBRARY_PATH
 
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
-    -DARNOLD_LOCATION=$BTOA_DIR/installs/arnoldusd/arnoldsdk \
+    -DARNOLD_LOCATION=$BTOA_DIR/arnoldusd/arnoldsdk \
     -DUSD_LOCATION=$BTOA_DIR/dependencies/usd \
     -DPython3_ROOT=$BTOA_DIR/dependencies/python \
-    -DCMAKE_PREFIX_PATH=$BTOA_DIR/dependencies \
-    -DCMAKE_INSTALL_PREFIX=$BTOA_DIR/installs/arnoldusd \
+    -DCMAKE_PREFIX_PATH="$BTOA_DIR/dependencies" \
+    -DCMAKE_INSTALL_PREFIX=$BTOA_DIR/arnoldusd \
     -DBUILD_SCHEMAS=OFF \
     -DBUILD_USDGENSCHEMA_ARNOLD=OFF \
     -DBUILD_DOCS=OFF

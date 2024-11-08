@@ -22,6 +22,11 @@ struct AtMatrixBase
       return !memcmp(data, m.data, sizeof(AtMatrixBase));
    }
 
+   AI_DEVICE constexpr bool operator!=(const AtMatrixBase& m) const
+   {
+      return !(*this == m);
+   }
+
    AI_DEVICE constexpr const T* operator[](int t) const
    {
       return (const T*) &(data[t][0]);

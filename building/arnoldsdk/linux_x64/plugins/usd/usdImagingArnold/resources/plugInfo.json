@@ -8,6 +8,7 @@
 "UsdImagingArnoldConeAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldCone"},
 "UsdImagingArnoldCurvesAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldCurves"},
 "UsdImagingArnoldDiskAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldDisk"},
+"UsdImagingArnoldGinstanceAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldGinstance"},
 "UsdImagingArnoldImplicitAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldImplicit"},
 "UsdImagingArnoldNurbsAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldNurbs"},
 "UsdImagingArnoldPlaneAdapter":{"bases":["UsdImagingGprimAdapter"],"primTypeName":"ArnoldPlane"},

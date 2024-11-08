@@ -1,7 +1,12 @@
+// Copyright 2022 Autodesk, Inc.  All rights reserved.
+//
+// Use of this software is subject to the terms of the Autodesk license
+// agreement provided at the time of installation or download, or which
+// otherwise accompanies this software in either electronic or hard copy form.
+
 // Copyright Contributors to the Open Shading Language project.
 // SPDX-License-Identifier: BSD-3-Clause
 // https://github.com/AcademySoftwareFoundation/OpenShadingLanguage
-
 
 #ifndef STDOSL_H
 #define STDOSL_H
@@ -233,7 +238,7 @@ void fresnel (vector I, normal N, float eta,
         F *= sqr (beta / (g+c));
         Kr = F;
         Kt = (1.0 - Kr) * eta*eta;
-        // OPT: the following recomputes some of the above values, but it 
+        // OPT: the following recomputes some of the above values, but it
         // gives us the same result as if the shader-writer called refract()
         T = refract(I, N, eta);
     } else {
@@ -452,7 +457,8 @@ closure color emission() BUILTIN;
 closure color background() BUILTIN;
 closure color diffuse(normal N) BUILTIN;
 closure color oren_nayar (normal N, float sigma) BUILTIN;
-#if 1 // Arnold specific trac#6424
+
+// Arnold closures
 closure color translucent(normal N, float sigma) BUILTIN;
 closure color translucent(normal N) { return translucent(N, 0.0); }
 closure color oren_nayar(normal N) { return oren_nayar(N, 0.0); }
@@ -460,8 +466,7 @@ closure color sheen(normal N, float roughness) BUILTIN;
 closure color metal(string distribution, normal N, vector U,
                     color n, color k,
                     float xalpha, float yalpha) BUILTIN;
-#endif
-#if 0 // arnold doesn't support these
+#if 0 // Unsupported closures in Arnold
 closure color phong(normal N, float exponent) BUILTIN;
 closure color ward(normal N, vector T,float ax, float ay) BUILTIN;
 #endif
@@ -472,13 +477,16 @@ closure color microfacet(string distribution, normal N, float alpha, float eta,
 {
     return microfacet(distribution, N, vector(0), alpha, alpha, eta, refr);
 }
+
+
+
 closure color reflection(normal N, float eta) BUILTIN;
 closure color reflection(normal N) { return reflection (N, 0.0); }
 closure color refraction(normal N, float eta) BUILTIN;
 closure color transparent() BUILTIN;
 closure color debug(string tag) BUILTIN;
 closure color holdout() BUILTIN;
-#if 1 // Arnold specific
+#if 1 // Arnold closures
 closure color empirical_bssrdf(vector mfp, color albedo) BUILTIN;
 closure color randomwalk_bssrdf(vector mfp, color albedo, float g) BUILTIN;
 closure color volume_absorption() BUILTIN;
@@ -486,15 +494,22 @@ closure color volume_emission() BUILTIN;
 closure color volume_henyey_greenstein(color absorption, color scattering,
                                        color emission, float g) BUILTIN;
 closure color volume_matte() BUILTIN;
-#else // arnold doesn't support these
+#else // Unsupported closures in Arnold
 closure color subsurface(float eta, float g, color mfp, color albedo) BUILTIN;
 #endif
 
-#ifdef MATERIALX_CLOSURES
+
 
 // -------------------------------------------------------------//
-// BSDF closures                                                //
+// MaterialX BSDF closures                                      //
 // -------------------------------------------------------------//
+
+#define NO_FRESNEL            0
+#define SCHLICK_FRESNEL       1
+#define CONDUCTOR_FRESNEL     2
+#define CONDUCTOR_FRESNEL_F82 3
+#define DIELECTRIC_FRESNEL    4
+
 // Constructs a diffuse reflection BSDF based on the Oren-Nayar reflectance model.
 //
 //  \param  N           Normal vector of the surface point beeing shaded.
@@ -502,9 +517,11 @@ closure color subsurface(float eta, float g, color mfp, color albedo) BUILTIN;
 //  \param  roughness   Surface roughness [0,1]. A value of 0.0 gives Lambertian reflectance.
 //  \param  label       Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color oren_nayar_diffuse_bsdf(normal N, color albedo, float roughness) BUILTIN;
+closure color oren_nayar_diffuse_bsdf(normal N, color albedo, float roughness)               { return albedo * oren_nayar(N, roughness/sqrt(2.0));                 }
+closure color oren_nayar_diffuse_bsdf(normal N, color albedo, float roughness, string label) { return albedo * oren_nayar(N, roughness/sqrt(2.0), "label", label); }
 
-// Constructs a diffuse reflection BSDF based on the corresponding component of 
+
+// Constructs a diffuse reflection BSDF based on the corresponding component of
 // the Disney Principled shading model.
 //
 //  \param  N           Normal vector of the surface point beeing shaded.
@@ -512,25 +529,27 @@ closure color oren_nayar_diffuse_bsdf(normal N, color albedo, float roughness) B
 //  \param  roughness   Surface roughness [0,1].
 //  \param  label       Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color burley_diffuse_bsdf(normal N, color albedo, float roughness) BUILTIN;
+closure color burley_diffuse_bsdf(normal N, color albedo, float roughness)               { return oren_nayar_diffuse_bsdf(N, albedo, roughness);        }
+closure color burley_diffuse_bsdf(normal N, color albedo, float roughness, string label) { return oren_nayar_diffuse_bsdf(N, albedo, roughness, label); }
+
 
 // Constructs a reflection and/or transmission BSDF based on a microfacet reflectance
-// model and a Fresnel curve for dielectrics. The two tint parameters control the 
+// model and a Fresnel curve for dielectrics. The two tint parameters control the
 // contribution of each reflection/transmission lobe. The tints should remain 100% white
 // for a physically correct dielectric, but can be tweaked for artistic control or set
 // to 0.0 for disabling a lobe.
 // The closure may be vertically layered over a base BSDF for the surface beneath the
-// dielectric layer. This is done using the layer() closure. By chaining multiple 
+// dielectric layer. This is done using the layer() closure. By chaining multiple
 // dielectric_bsdf closures you can describe a surface with multiple specular lobes.
 // If transmission is enabled (transmission_tint > 0.0) the closure may be layered over
 // a VDF closure describing the surface interior to handle absorption and scattering
 // inside the medium.
 //
-//  \param  N                   Normal vector of the surface point beeing shaded.
-//  \param  U                   Tangent vector of the surface point beeing shaded.
-//  \param  reflection_tint     Weight per color channel for the reflection lobe. Should be (1,1,1) for a physically-correct dielectric surface, 
+//  \param  N                   Normal vector of the surface point being shaded.
+//  \param  U                   Tangent vector of the surface point being shaded.
+//  \param  reflection_tint     Weight per color channel for the reflection lobe. Should be (1,1,1) for a physically-correct dielectric surface,
 //                              but can be tweaked for artistic control. Set to (0,0,0) to disable reflection.
-//  \param  transmission_tint   Weight per color channel for the transmission lobe. Should be (1,1,1) for a physically-correct dielectric surface, 
+//  \param  transmission_tint   Weight per color channel for the transmission lobe. Should be (1,1,1) for a physically-correct dielectric surface,
 //                              but can be tweaked for artistic control. Set to (0,0,0) to disable transmission.
 //  \param  roughness_x         Surface roughness in the U direction with a perceptually linear response over its range.
 //  \param  roughness_y         Surface roughness in the V direction with a perceptually linear response over its range.
@@ -540,7 +559,60 @@ closure color burley_diffuse_bsdf(normal N, color albedo, float roughness) BUILT
 //  \param  thinfilm_ior        Optional float parameter for refraction index of the thin film layer.
 //  \param  label               Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color dielectric_bsdf(normal N, vector U, color reflection_tint, color transmission_tint, float roughness_x, float roughness_y, float ior, string distribution) BUILTIN;
+closure color dielectric_bsdf_helper(normal N, vector U,
+                                     color reflection_tint, color transmission_tint,
+                                     float roughness_x, float roughness_y,
+                                     float ior,
+                                     string distribution,
+                                     float thinfilm_thickness,
+                                     float thinfilm_ior)
+{
+   closure color result = 0;
+   if (luminance(reflection_tint) != 0.0)
+   {
+      int refract = 0;
+      result += reflection_tint * microfacet(distribution, N, U, roughness_x, roughness_y, ior, refract,
+                                             "fresnel_mode", DIELECTRIC_FRESNEL,
+                                             "thinfilm_thickness", thinfilm_thickness,
+                                             "thinfilm_ior", thinfilm_ior);
+   }
+   if (luminance(transmission_tint) != 0.0)
+   {
+      int refract = 1;
+      result += transmission_tint * microfacet(distribution, N, U, roughness_x, roughness_y, ior, refract,
+                                               "fresnel_mode", NO_FRESNEL, // since albedo-scaling accounts for the transmission Fresnel
+                                               "thinfilm_thickness", thinfilm_thickness,
+                                               "thinfilm_ior", thinfilm_ior);
+   }
+   return result;
+}
+
+closure color dielectric_bsdf(normal N, vector U,
+                              color reflection_tint, color transmission_tint,
+                              float roughness_x, float roughness_y,
+                              float ior,
+                              string distribution)
+{
+   return dielectric_bsdf_helper(N, U, reflection_tint, transmission_tint, roughness_x, roughness_y, ior, distribution, 0.0, 1.0);
+}
+
+closure color dielectric_bsdf(normal N, vector U,
+                              color reflection_tint, color transmission_tint,
+                              float roughness_x, float roughness_y,
+                              float ior,
+                              string distribution,
+                              string label1, float value1,
+                              string label2, float value2)
+{
+   float thinfilm_thickness = 0.0;
+   float thinfilm_ior = 1.0;
+   if      (label1 == "thinfilm_thickness") thinfilm_thickness = value1;
+   else if (label1 == "thinfilm_ior")       thinfilm_ior       = value1;
+   if      (label2 == "thinfilm_thickness") thinfilm_thickness = value2;
+   else if (label2 == "thinfilm_ior")       thinfilm_ior       = value2;
+   return dielectric_bsdf_helper(N, U, reflection_tint, transmission_tint, roughness_x, roughness_y, ior, distribution, thinfilm_thickness, thinfilm_ior);
+}
+
 
 // Constructs a reflection BSDF based on a microfacet reflectance model.
 // Uses a Fresnel curve with complex refraction index for conductors/metals.
@@ -558,13 +630,44 @@ closure color dielectric_bsdf(normal N, vector U, color reflection_tint, color t
 //  \param  thinfilm_ior        Optional float parameter for refraction index of the thin film layer.
 //  \param  label               Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color conductor_bsdf(normal N, vector U, float roughness_x, float roughness_y, color ior, color extinction, string distribution) BUILTIN;
+closure color conductor_bsdf(normal N, vector U,
+                             float roughness_x, float roughness_y,
+                             color ior, color extinction,
+                             string distribution) BUILTIN;
+
+
+// Converts the artistic parameterization reflectivity and edge_tint to complex IOR values.
+// To be used with the conductor_bsdf() closure.
+// [OG14] "Artist Friendly Metallic Fresnel", http://jcgt.org/published/0003/04/03/paper.pdf
+//
+//  \param  reflectivity  Reflectivity per color channel at facing angles ('r' parameter in [OG14]).
+//  \param  edge_tint     Color bias for grazing angles ('g' parameter in [OG14]).
+//                        NOTE: This is not equal to 'f90' in a Schlick Fresnel parameterization.
+//  \param  ior           Output refraction index.
+//  \param  extinction    Output extinction coefficient.
+//
+void artistic_ior(color reflectivity, color edge_tint,
+                  output color ior, output color extinction)
+{
+    color r = clamp(reflectivity, 0.0, 0.99);
+    color r_sqrt = sqrt(r);
+    color n_min = (1.0 - r) / (1.0 + r);
+    color n_max = (1.0 + r_sqrt) / (1.0 - r_sqrt);
+    ior = mix(n_max, n_min, edge_tint);
+
+    color np1 = ior + 1.0;
+    color nm1 = ior - 1.0;
+    color k2 = (np1*np1 * r - nm1*nm1) / (1.0 - r);
+    k2 = max(k2, 0.0);
+    extinction = sqrt(k2);
+}
+
 
 // Constructs a reflection and/or transmission BSDF based on a microfacet reflectance model
 // and a generalized Schlick Fresnel curve. The two tint parameters control the contribution
 // of each reflection/transmission lobe.
 // The closure may be vertically layered over a base BSDF for the surface beneath the
-// dielectric layer. This is done using the layer() closure. By chaining multiple 
+// dielectric layer. This is done using the layer() closure. By chaining multiple
 // dielectric_bsdf closures you can describe a surface with multiple specular lobes.
 // If transmission is enabled (transmission_tint > 0.0) the closure may be layered over
 // a VDF closure describing the surface interior to handle absorption and scattering
@@ -583,7 +686,70 @@ closure color conductor_bsdf(normal N, vector U, float roughness_x, float roughn
 //  \param  thinfilm_ior        Optional float parameter for refraction index of the thin film layer.
 //  \param  label               Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color generalized_schlick_bsdf(normal N, vector U, color reflection_tint, color transmission_tint, float roughness_x, float roughness_y, color f0, color f90, float exponent, string distribution) BUILTIN;
+
+closure color generalized_schlick_bsdf_helper(normal N, vector U,
+                                              color reflection_tint, color transmission_tint,
+                                              float roughness_x, float roughness_y,
+                                              color f0, color f90,
+                                              float exponent,
+                                              string distribution,
+                                              float thinfilm_thickness,
+                                              float thinfilm_ior)
+{
+
+   closure color result = 0;
+   if (luminance(reflection_tint) != 0.0)
+   {
+      result += reflection_tint * conductor_bsdf(N, U,
+                                                 roughness_x, roughness_y,
+                                                 f0, f90,
+                                                 "ggx",
+                                                 "fresnel_mode", CONDUCTOR_FRESNEL_F82,
+                                                 "thinfilm_thickness", thinfilm_thickness,
+                                                 "thinfilm_ior", thinfilm_ior);
+   }
+   if (luminance(transmission_tint) != 0.0)
+   {
+      // Interpret a transmissive generalized Schlick lobe as a dielectric BTDF
+      // with scalar IOR determined by the Gulbrandsen approx.
+      color ior;
+      color extinction;
+      artistic_ior(f0, f90, ior, extinction);
+      float ior_scalar = (ior.r + ior.g + ior.b)/3.0;
+      int refract = 1;
+      result += transmission_tint * microfacet(distribution, N, U, roughness_x, roughness_y, ior_scalar, refract);
+   }
+   return result;
+}
+
+closure color generalized_schlick_bsdf(normal N, vector U,
+                                       color reflection_tint, color transmission_tint,
+                                       float roughness_x, float roughness_y,
+                                       color f0, color f90,
+                                       float exponent,
+                                       string distribution,
+                                       string label1, float value1,
+                                       string label2, float value2)
+{
+   float thinfilm_thickness = 0.0;
+   float thinfilm_ior = 1.0;
+   if      (label1 == "thinfilm_thickness") thinfilm_thickness = value1;
+   else if (label1 == "thinfilm_ior")       thinfilm_ior       = value1;
+   if      (label2 == "thinfilm_thickness") thinfilm_thickness = value2;
+   else if (label2 == "thinfilm_ior")       thinfilm_ior       = value2;
+   return generalized_schlick_bsdf_helper(N, U, reflection_tint, transmission_tint, roughness_x, roughness_y, f0, f90, exponent, distribution, thinfilm_thickness, thinfilm_ior);
+}
+
+closure color generalized_schlick_bsdf(normal N, vector U,
+                                       color reflection_tint, color transmission_tint,
+                                       float roughness_x, float roughness_y,
+                                       color f0, color f90,
+                                       float exponent,
+                                       string distribution)
+{
+   return generalized_schlick_bsdf_helper(N, U, reflection_tint, transmission_tint, roughness_x, roughness_y, f0, f90, exponent, distribution, 0.0, 1.0);
+}
+
 
 // Constructs a translucent (diffuse transmission) BSDF based on the Lambert reflectance model.
 //
@@ -591,7 +757,11 @@ closure color generalized_schlick_bsdf(normal N, vector U, color reflection_tint
 //  \param  albedo      Surface albedo.
 //  \param  label       Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color translucent_bsdf(normal N, color albedo) BUILTIN;
+closure color translucent_bsdf(normal N, color albedo)
+{
+   return albedo * translucent(N);
+}
+
 
 // Constructs a closure that represents straight transmission through a surface.
 //
@@ -601,22 +771,40 @@ closure color translucent_bsdf(normal N, color albedo) BUILTIN;
 //  - This is not a node in the MaterialX library, but the surface shader constructor
 //    node has an 'opacity' parameter to control textured cutout opacity.
 //
-closure color transparent_bsdf() BUILTIN;
+closure color transparent_bsdf()             { return transparent();               }
+closure color transparent_bsdf(string label) { return transparent("label", label); }
+
 
 // Constructs a BSSRDF for subsurface scattering within a homogeneous medium.
 //
 //  \param  N                   Normal vector of the surface point beeing shaded.
 //  \param  albedo              Single-scattering albedo of the medium.
-//  \param  transmission_depth  Distance travelled inside the medium by white light before its color becomes transmission_color by Beer's law.
+//  \param  transmission_depth  Distance traveled inside the medium by white light before its color becomes transmission_color by Beer's law.
 //                              Given in scene length units, range [0,infinity). Together with transmission_color this determines the extinction
 //                              coefficient of the medium.
 //  \param  transmission_color  Desired color resulting from white light transmitted a distance of 'transmission_depth' through the medium.
 //                              Together with transmission_depth this determines the extinction coefficient of the medium.
-//  \param  anisotropy          Scattering anisotropy [-1,1]. Negative values give backwards scattering, positive values give forward scattering, 
+//  \param  anisotropy          Scattering anisotropy [-1,1]. Negative values give backwards scattering, positive values give forward scattering,
 //                              and 0.0 gives uniform scattering.
 //  \param  label               Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color subsurface_bssrdf(normal N, color albedo, float transmission_depth, color transmission_color, float anisotropy) BUILTIN;
+closure color subsurface_bssrdf(normal N,
+                                color albedo,
+                                float transmission_depth,
+                                color transmission_color,
+                                float anisotropy,
+                                string label)
+{
+   color extinction = -log(transmission_color) / transmission_depth;
+   vector mfp = 1.0 / vector(extinction);
+   int randomwalk_version = 3;
+   return randomwalk_bssrdf(mfp, albedo, anisotropy, "version", randomwalk_version, "label", label);
+}
+closure color subsurface_bssrdf(normal N, color albedo, float transmission_depth, color transmission_color, float anisotropy)
+{
+   return subsurface_bssrdf(N, albedo, transmission_depth, transmission_color, anisotropy, "");
+}
+
 
 // Constructs a microfacet BSDF for the back-scattering properties of cloth-like materials.
 // This closure may be vertically layered over a base BSDF, where energy that is not reflected
@@ -627,7 +815,12 @@ closure color subsurface_bssrdf(normal N, color albedo, float transmission_depth
 //  \param  roughness   Surface roughness [0,1].
 //  \param  label       Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color sheen_bsdf(normal N, color albedo, float roughness) BUILTIN;
+closure color sheen_bsdf(normal N,
+                         color albedo,
+                         float roughness)
+{
+   return albedo * sheen(N, roughness);
+}
 
 
 // -------------------------------------------------------------//
@@ -639,7 +832,10 @@ closure color sheen_bsdf(normal N, color albedo, float roughness) BUILTIN;
 //  \param  emittance   Radiant emittance of light leaving the surface.
 //  \param  label       Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color uniform_edf(color emittance) BUILTIN;
+closure color uniform_edf(color emittance)
+{
+   return emittance * emission();
+}
 
 
 // -------------------------------------------------------------//
@@ -651,29 +847,39 @@ closure color uniform_edf(color emittance) BUILTIN;
 //
 //  \param  albedo      Volume single-scattering albedo.
 //  \param  extinction  Volume extinction coefficient.
-//  \param  anisotropy  Scattering anisotropy [-1,1]. Negative values give backwards scattering, positive values give forward scattering, 
+//  \param  anisotropy  Scattering anisotropy [-1,1]. Negative values give backwards scattering, positive values give forward scattering,
 //                      and 0.0 gives uniform scattering.
 //  \param  label       Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color anisotropic_vdf(color albedo, color extinction, float anisotropy) BUILTIN;
+closure color anisotropic_vdf(color albedo,
+                              color extinction,
+                              float anisotropy)
+{
+   color scattering = albedo * extinction;
+   color absorption = extinction - scattering;
+   color emission = color(0.0);
+   return volume_henyey_greenstein(absorption, scattering, emission, anisotropy);
+}
+
 
 // Constructs a VDF for light passing through a dielectric homogenous medium, such as glass or liquids.
 // The parameters transmission_depth and transmission_color control the extinction coefficient of the medium
 // in and artist-friendly way. A priority can be set to determine the ordering of overlapping media.
 //
 //  \param  albedo              Single-scattering albedo of the medium.
-//  \param  transmission_depth  Distance travelled inside the medium by white light before its color becomes transmission_color by Beer's law.
+//  \param  transmission_depth  Distance traveled inside the medium by white light before its color becomes transmission_color by Beer's law.
 //                              Given in scene length units, range [0,infinity). Together with transmission_color this determines the extinction
 //                              coefficient of the medium.
 //  \param  transmission_color  Desired color resulting from white light transmitted a distance of 'transmission_depth' through the medium.
 //                              Together with transmission_depth this determines the extinction coefficient of the medium.
-//  \param  anisotropy          Scattering anisotropy [-1,1]. Negative values give backwards scattering, positive values give forward scattering, 
+//  \param  anisotropy          Scattering anisotropy [-1,1]. Negative values give backwards scattering, positive values give forward scattering,
 //                              and 0.0 gives uniform scattering.
 //  \param  ior                 Refraction index of the medium.
 //  \param  priority            Priority of this medium (for nested dielectrics).
 //  \param  label               Optional string parameter to name this component. For use in AOVs / LPEs.
 //
-closure color medium_vdf(color albedo, float transmission_depth, color transmission_color, float anisotropy, float ior, int priority) BUILTIN;
+//closure color medium_vdf(color albedo, float transmission_depth, color transmission_color, float anisotropy, float ior, int priority) BUILTIN;
+
 
 // -------------------------------------------------------------//
 // Layering closures                                            //
@@ -691,45 +897,17 @@ closure color medium_vdf(color albedo, float transmission_depth, color transmiss
 // - This could also be achieved by closure nesting where each layerable closure takes
 //   a closure color "base" input instead.
 // - One advantage having a dedicated layer() closure is that in the future we may want to
-//   introduce parameters to describe the sandwitched medium between the layer interfaces.
+//   introduce parameters to describe the sandwiched medium between the layer interfaces.
 //   Such parameterization could then be added on this layer() closure as extra arguments.
 // - Do we want/need parameters for the medium here now, or do we look at that later?
 //
-closure color layer(closure color top, closure color base) BUILTIN;
+closure color layer(closure color top,
+                    closure color base) BUILTIN;
+
 
 // NOTE: For "horizontal layering" closure mix() already exists in OSL.
 
 
-// -------------------------------------------------------------//
-// Utility functions                                            //
-// -------------------------------------------------------------//
-
-// Converts the artistic parameterization reflectivity and edge_tint to complex IOR values.
-// To be used with the conductor_bsdf() closure.
-// [OG14] "Artist Friendly Metallic Fresnel", http://jcgt.org/published/0003/04/03/paper.pdf
-//
-//  \param  reflectivity  Reflectivity per color channel at facing angles ('r' parameter in [OG14]).
-//  \param  edge_tint     Color bias for grazing angles ('g' parameter in [OG14]).
-//                        NOTE: This is not equal to 'f90' in a Schlick Fresnel parameterization.
-//  \param  ior           Output refraction index.
-//  \param  extinction    Output extinction coefficient.
-//
-void artistic_ior(color reflectivity, color edge_tint, output color ior, output color extinction)
-{
-    color r = clamp(reflectivity, 0.0, 0.99);
-    color r_sqrt = sqrt(r);
-    color n_min = (1.0 - r) / (1.0 + r);
-    color n_max = (1.0 + r_sqrt) / (1.0 - r_sqrt);
-    ior = mix(n_max, n_min, edge_tint);
-
-    color np1 = ior + 1.0;
-    color nm1 = ior - 1.0;
-    color k2 = (np1*np1 * r - nm1*nm1) / (1.0 - r);
-    k2 = max(k2, 0.0);
-    extinction = sqrt(k2);
-}
-
-#endif // MATERIALX_CLOSURES
 
 // Renderer state
 int backfacing () BUILTIN;

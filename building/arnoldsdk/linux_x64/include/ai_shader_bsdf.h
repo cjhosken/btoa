@@ -340,7 +340,8 @@ enum AtMetalFresnelMode
 AI_API AI_DEVICE AtBSDF* AiMetalBSDF(const AtShaderGlobals* sg, const AtRGB& weight,
                                      int distribution, const AtVector& N, const AtVector *U,
                                      AtMetalFresnelMode fresnel_mode,
-                                     const AtRGB& fresnel1, const AtRGB& fresnel2, float rx, float ry,
+                                     const AtRGB& fresnel1, const AtRGB& fresnel2, float fresnel_weight,
+                                     float rx, float ry,
                                      const AtString label = AtString());
 
 /* \}*/ // Metal BRDF

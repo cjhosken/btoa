@@ -1880,6 +1880,33 @@
     <input name="side" type="integer" value="0" uivisible="false" uiname="Side" />
   </nodedef>
   <implementation name="ARNOLD_IM_c4d_texture_tag_rgba_builtin_arnold" nodedef="ARNOLD_ND_c4d_texture_tag_rgba" target="arnold" />
+  <nodedef name="ARNOLD_ND_cryptomatte" node="cryptomatte">
+    <output name="out" type="color4" />
+    <input name="cryptomatte_depth" type="integer" value="6" uiname="Cryptomatte Depth" />
+    <input name="sidecar_manifests" type="boolean" value="false" uiname="Sidecar Manifests" />
+    <input name="strip_obj_namespaces" type="boolean" value="true" uiname="Strip Obj Namespaces" />
+    <input name="strip_mat_namespaces" type="boolean" value="true" uiname="Strip Mat Namespaces" />
+    <input name="aov_crypto_asset" type="string" value="crypto_asset" uiname="Aov Crypto Asset" />
+    <input name="aov_crypto_object" type="string" value="crypto_object" uiname="Aov Crypto Object" />
+    <input name="aov_crypto_material" type="string" value="crypto_material" uiname="Aov Crypto Material" />
+    <input name="preview_in_exr" type="boolean" value="false" uiname="Preview In Exr" />
+    <input name="custom_output_driver" type="boolean" value="false" uiname="Custom Output Driver" />
+    <input name="create_depth_outputs" type="boolean" value="true" uiname="Create Depth Outputs" />
+    <input name="process_maya" type="boolean" value="true" uiname="Process Maya" />
+    <input name="process_paths" type="boolean" value="true" uiname="Process Paths" />
+    <input name="process_obj_path_pipes" type="boolean" value="true" uiname="Process Obj Path Pipes" />
+    <input name="process_mat_path_pipes" type="boolean" value="true" uiname="Process Mat Path Pipes" />
+    <input name="process_legacy" type="boolean" value="true" uiname="Process Legacy" />
+    <input name="user_crypto_aov_0" type="string" value="" uiname="User Crypto Aov 0" />
+    <input name="user_crypto_src_0" type="string" value="" uiname="User Crypto Src 0" />
+    <input name="user_crypto_aov_1" type="string" value="" uiname="User Crypto Aov 1" />
+    <input name="user_crypto_src_1" type="string" value="" uiname="User Crypto Src 1" />
+    <input name="user_crypto_aov_2" type="string" value="" uiname="User Crypto Aov 2" />
+    <input name="user_crypto_src_2" type="string" value="" uiname="User Crypto Src 2" />
+    <input name="user_crypto_aov_3" type="string" value="" uiname="User Crypto Aov 3" />
+    <input name="user_crypto_src_3" type="string" value="" uiname="User Crypto Src 3" />
+  </nodedef>
+  <implementation name="ARNOLD_IM_cryptomatte_builtin_arnold" nodedef="ARNOLD_ND_cryptomatte" target="arnold" />
   <nodedef name="ARNOLD_ND_maya_layered_shader" node="maya_layered_shader" ldx_hide="true">
     <output name="out" type="surfaceshader" />
     <input name="compositingFlag" type="integer" value="0" enum="shader,texture" enumvalues="0,1" uivisible="false" uiname="Compositingflag" />

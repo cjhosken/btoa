@@ -194,7 +194,14 @@ AI_API AI_PURE       AtNode*                 AiNodeGetParent           (const At
 AI_API AI_PURE       AtUniverse*             AiNodeGetUniverse         (const AtNode* node);
 AI_API               AtUserParamIterator*    AiNodeGetUserParamIterator(const AtNode* node);
 AI_API               AtNode*                 AiNodeGetProcessedGeometry(AtNode* source_node, AtUniverse* dest_universe);
-AI_API               void                    AiNodeAddDependency       (AtNode* consumer, const AtNode* producer);
+AI_API               void                    AiNodeAddDependencyParam  (AtNode* consumer, const AtNode* producer, const AtString param);
+AI_API AI_DEPRECATED void                    AiNodeAddDependency       (AtNode* consumer, const AtNode* producer);
+AI_API               void                    AiNodeClearDependency     (AtNode* consumer, const AtNode* producer);
+
+inline void AiNodeAddDependency(AtNode* consumer, const AtNode* producer, const AtString param)
+{
+   AiNodeAddDependencyParam(consumer, producer, param);
+}
 
 #ifdef AI_CPU_COMPILER
 

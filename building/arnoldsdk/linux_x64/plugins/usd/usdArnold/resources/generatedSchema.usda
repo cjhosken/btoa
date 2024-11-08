@@ -1115,7 +1115,7 @@ class ArnoldUvCamera "ArnoldUvCamera"
     bool arnold:extend_edges = 1
     float arnold:far_clip = 1e30
     string arnold:filtermap = ""
-    int arnold:grid_size = 16
+    int arnold:grid_size = 0
     token arnold:handedness = "right" (
         allowedTokens = ["right", "left"]
     )
@@ -2401,6 +2401,15 @@ class ArnoldDiffFilter "ArnoldDiffFilter"
     token arnold:filter_weights = "box" (
         allowedTokens = ["blackman_harris", "box", "catrom", "gaussian", "mitnet", "sinc", "triangle"]
     )
+    float arnold:width = 2
+}
+
+class ArnoldCryptomatteFilter "ArnoldCryptomatteFilter"
+{
+    token arnold:filter = "gaussian" (
+        allowedTokens = ["box", "triangle", "catrom", "mitnet", "gaussian", "sinc", "blackman_harris", "disk", "cone"]
+    )
+    bool arnold:noop = 0
     float arnold:width = 2
 }
 
@@ -5188,7 +5197,7 @@ class ArnoldAlembic "ArnoldAlembic"
     bool arnold:invert_normals = 0
     string[] arnold:layers
     string[] arnold:light_group
-    bool arnold:make_instance = 0
+    bool arnold:make_instance = 1
     string arnold:material_attribute = ""
     matrix4d[] arnold:matrix
     bool arnold:matte = 0
@@ -5333,22 +5342,6 @@ class ArnoldAlembic "ArnoldAlembic"
         SetXformOpOrder(), and consulted by GetOrderedXformOps() and
         GetLocalTransformation()."""
     )
-}
-
-class ArnoldCryptomatteFilter "ArnoldCryptomatteFilter"
-{
-    token arnold:filter = "gaussian" (
-        allowedTokens = ["gaussian", "blackman_harris", "triangle", "box", "disk", "cone"]
-    )
-    bool arnold:noop = 0
-    int arnold:rank = -1
-    float arnold:width = 2
-}
-
-class ArnoldCryptomatteManifestDriver "ArnoldCryptomatteManifestDriver"
-{
-    string arnold:filename = "dummy.json"
-    string arnold:input = ""
 }
 
 class ArnoldProceduralCustom "ArnoldProceduralCustom"
