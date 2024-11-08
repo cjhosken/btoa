@@ -4,6 +4,7 @@ Prerequesites:
 
 - Git 1.7.0+
 - Cmake 3.30.0
+- TBB
 
 
 To see better debugging:
