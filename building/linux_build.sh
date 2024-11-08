@@ -41,8 +41,6 @@ git fetch origin
 
 git checkout 483736b00b6a767342e30f5bd95eebcc3c6a4219
 
-git pull
-
 cd $BTOA_DIR
 
 cp -r $SCRIPT_DIR/configs/linux_x64/* $BTOA_DIR/dependencies
@@ -52,8 +50,8 @@ mkdir -p $BTOA_DIR/arnoldusd/arnoldsdk
 
 cp -r $SCRIPT_DIR/arnoldsdk/linux_x64/* $BTOA_DIR/arnoldusd/arnoldsdk
 
-del "$BTOA_DIR/source/cmake/modules/FindUSD.cmake"
-del "$BTOA_DIR/source/cmake/modules/FindTBB.cmake"
+rm -rf "$BTOA_DIR/source/cmake/modules/FindUSD.cmake"
+rm -rf "$BTOA_DIR/source/cmake/modules/FindTBB.cmake"
 
 mkdir -p $BTOA_DIR/source/build
 cd $BTOA_DIR/source/build
@@ -79,7 +77,8 @@ LD_LIBRARY_PATH_UPDATE="$BTOA_DIR/arnoldusd/arnoldsdk/bin"
 
 # Check if LD_LIBRARY_PATH is already set in .bashrc, and add it if not
 if ! grep -q "export LD_LIBRARY_PATH=.*$LD_LIBRARY_PATH_UPDATE" "$HOME/.bashrc"; then
-    echo "\nexport LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH_UPDATE:\$LD_LIBRARY_PATH\"" >> "$HOME/.bashrc"
+    echo >> "$HOME/.bashrc"
+    echo "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH_UPDATE:\$LD_LIBRARY_PATH\"" >> "$HOME/.bashrc"
     echo "LD_LIBRARY_PATH updated in .bashrc"
 else
     echo "LD_LIBRARY_PATH is already set in .bashrc"

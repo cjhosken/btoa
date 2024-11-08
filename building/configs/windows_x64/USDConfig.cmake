@@ -14,7 +14,7 @@ get_filename_component(PXR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(USD_MAJOR_VERSION "0")
 set(USD_MINOR_VERSION "24")
 set(USD_PATCH_VERSION "05")
-set(USD_VERSION "0.24.05")
+set(USD_VERSION "2405")
 
 # Set the root directory for USD
 if(WIN32)
