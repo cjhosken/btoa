@@ -72,7 +72,7 @@ cmake .. \
     -Dpxr_DIR=$BTOA_DIR/dependencies/usd \
     -DPython3_ROOT=$BTOA_DIR/dependencies/python \
     -DBUILD_SCHEMAS=OFF \
-    -DBUILD_DOCS=ON \
+    -DBUILD_DOCS=OFF \
     -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
     -DCMAKE_INSTALL_RPATH="$BTOA_DIR/arnoldusd/arnoldsdk/bin;$BTOA_DIR/dependencies/tbb/lib" \
     -DCMAKE_BUILD_TYPE=Debug
