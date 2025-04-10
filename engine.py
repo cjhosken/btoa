@@ -21,7 +21,9 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
         plugin_path = os.path.join(usd_path, "plugin")
 
         os.environ["ARNOLD_PLUGIN_PATH"] = os.path.join(usd_path, "procedural")
-        os.environ["PXR_PLUGINPATH_NAME"] = os.path.join(plugin_path) + ":" + os.environ.get("PXR_PLUGINPATH_NAME")
+        os.environ["PYTHONPATH"] = os.path.join(usd_path, "lib", "python")
+        os.environ["PXR_PLUGINPATH_NAME"] = os.path.join(plugin_path) + ":" + os.path.join(usd_path, "lib", "usd") + ":" + os.environ.get("PXR_PLUGINPATH_NAME")
+        os.environ["LD_LIBRARY_PATH"] = os.path.join(usd_path, "lib") + ":" + os.environ.get("LD_LIBRARY_PATH")
 
         print(f"Loading Plugin from: {plugin_path}...")
         import pxr.Plug

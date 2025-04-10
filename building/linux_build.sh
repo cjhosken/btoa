@@ -2,6 +2,8 @@
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
+ARNOLD_VERISON=7.3.2.1
+
 DEFAULT_BTOA_DIR="$HOME/.btoa"
 
 # Initialize variables with default values
@@ -35,54 +37,44 @@ cd $BTOA_DIR/dependencies
 git remote add -f origin https://projects.blender.org/blender/lib-linux_x64.git
 git config core.sparseCheckout true
 
-echo -e "boost\nimath\nmaterialx\nopencolorio\nopenexr\nopenimagedenoise\nopenimageio\nopensubdiv\nopenvdb\npython\nusd" > .git/info/sparse-checkout
+echo -e "tbb\nimath\nmaterialx\nopencolorio\nopenexr\nopenimagedenoise\nopenimageio\nopensubdiv\nopenvdb\npython\nusd" > .git/info/sparse-checkout
 
 git fetch origin
 
-git checkout 483736b00b6a767342e30f5bd95eebcc3c6a4219
+git checkout blender-v4.4-release
 
 cd $BTOA_DIR
 
-cp -r $SCRIPT_DIR/configs/linux_x64/* $BTOA_DIR/dependencies
-
 mkdir -p $BTOA_DIR/arnoldusd
-mkdir -p $BTOA_DIR/arnoldusd/arnoldsdk
 
-cp -r $SCRIPT_DIR/arnoldsdk/linux_x64/* $BTOA_DIR/arnoldusd/arnoldsdk
+if [ ! -d "$BTOA_DIR/arnoldusd/arnoldsdk" ]; then
+    curl -L https://downloads.arnoldforblender.com/$ARNOLD_VERISON/Arnold-$ARNOLD_VERISON-linux.zip -o $BTOA_DIR/arnoldusd/arnoldsdk.zip
+    unzip $BTOA_DIR/arnoldusd/arnoldsdk.zip -d $BTOA_DIR/arnoldusd/arnoldsdk
+fi
+
+
+
+cp -r $SCRIPT_DIR/cmake/pxrConfig.cmake $BTOA_DIR/dependencies/usd/
 
 mkdir -p $BTOA_DIR/source/build
 cd $BTOA_DIR/source/build
 
-LD_LIBRARY_PATH=$BTOA_DIR/dependencies/boost/lib:$BTOA_DIR/dependencies/materialx/lib:$BTOA_DIR/dependencies/imath/lib:$BTOA_DIR/dependencies/openvdb/lib:$BTOA_DIR/dependencies/opensubdiv/lib:$BTOA_DIR/dependencies/openimageio/lib:$LD_LIBRARY_PATH
-
 cmake .. \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DARNOLD_LOCATION=$BTOA_DIR/arnoldusd/arnoldsdk \
-    -DUSD_LOCATION=$BTOA_DIR/dependencies/usd \
-    -DPYTHON_INCLUDE_DIR=$BTOA_DIR/dependencies/python/include \
-    -DPYTHON_LIBRARY=$BTOA_DIR/dependencies/python/lib/libpython3.11.a \
-    -DCMAKE_PREFIX_PATH="$BTOA_DIR/dependencies" \
+    -DCMAKE_CXX_STANDARD=14 \
+    -DCMAKE_TOOLCHAIN_FILE="" \
     -DCMAKE_INSTALL_PREFIX=$BTOA_DIR/arnoldusd \
+    -DCMAKE_PREFIX_PATH="$BTOA_DIR/dependencies" \
+    -DARNOLD_LOCATION=$BTOA_DIR/arnoldusd/arnoldsdk \
+    -DARNOLD_LIBRARY=$BTOA_DIR/arnoldusd/arnoldsdk/bin/libai.so \
+    -Dpxr_DIR=$BTOA_DIR/dependencies/usd \
+    -DPython3_ROOT=$BTOA_DIR/dependencies/python \
     -DBUILD_SCHEMAS=OFF \
-    -DBUILD_USDGENSCHEMA_ARNOLD=OFF \
-    -DBUILD_DOCS=OFF
+    -DCMAKE_INSTALL_RPATH="$BTOA_DIR/arnoldusd/arnoldsdk/bin;$BTOA_DIR/dependencies/tbb/lib;$BTOA_DIR/dependencies/materialx/lib;$BTOA_DIR/dependencies/imath/lib;$BTOA_DIR/dependencies/usd/lib;$BTOA_DIR/dependencies/openvdb/lib;$BTOA_DIR/dependencies/opensubdiv/lib;$BTOA_DIR/dependencies/openimageio/lib" \
+    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-as-needed -ltbb"
+
 
 make
 make install
-
-# Define the path to be added
-LD_LIBRARY_PATH_UPDATE="$BTOA_DIR/arnoldusd/arnoldsdk/bin"
-
-# Check if LD_LIBRARY_PATH is already set in .bashrc, and add it if not
-if ! grep -q "export LD_LIBRARY_PATH=.*$LD_LIBRARY_PATH_UPDATE" "$HOME/.bashrc"; then
-    echo >> "$HOME/.bashrc"
-    echo "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH_UPDATE:\$LD_LIBRARY_PATH\"" >> "$HOME/.bashrc"
-    echo "LD_LIBRARY_PATH updated in .bashrc"
-else
-    echo "LD_LIBRARY_PATH is already set in .bashrc"
-fi
-
-# Source .bashrc to make it available in the current session
-source "$HOME/.bashrc"
 
 echo "ArnoldUSD has been successfully built at $BTOA_DIR, and LD_LIBRARY_PATH has been updated!"
