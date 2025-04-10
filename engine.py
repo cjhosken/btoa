@@ -42,28 +42,20 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
     def get_render_settings(self, engine_type):
         # Return Arnold-specific render settings including required AOVs
         settings = {
-            'arnold:aov:RGBA': True,  # Main beauty pass
+            'aovToken:RGBA': True,  # Main beauty pass
             'arnold:aov:enable_progressive_render': True,
             'arnold:aov:background': [0, 0, 0, 1],
         }
+        if engine_type != 'VIEWPORT':
+            result |= {
+                'aovToken:RGBA': "color",
+                'aovToken:Depth': "depth",
+            }
         return settings
     
     def update_render_passes(self, scene=None, render_layer=None):
         # Register all AOV passes
-        self.register_pass(scene, render_layer, "Combined", 4, "RGBA", 'COLOR')
-        
-    def render(self, depsgraph):
-        # Ensure AOVs are properly set before rendering
-        self.update_render_passes(depsgraph.scene, depsgraph.view_layer)
-        super().render(depsgraph)
-
-    def view_update(self, context, depsgraph):
-        self.update_render_passes(depsgraph.scene, depsgraph.view_layer)
-        super().view_update(context, depsgraph)
-
-    def view_draw(self, context, depsgraph):
-        self.update_render_passes(depsgraph.scene, depsgraph.view_layer)
-        super().view_draw(context, depsgraph)
+        self.register_pass(scene, render_layer, "RGBA", 4, "RGBA", 'COLOR')
 
 def register():
     bpy.utils.register_class(ArnoldRenderEngine)
