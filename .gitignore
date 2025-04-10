@@ -160,6 +160,4 @@ cython_debug/
 #.idea/
 
 installer/
-
-
-Arnold*
+btoa/

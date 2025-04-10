@@ -4,7 +4,7 @@ SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 ARNOLD_VERISON=7.3.2.1
 
-DEFAULT_BTOA_DIR="$HOME/.btoa"
+DEFAULT_BTOA_DIR="$SCRIPT_DIR/../btoa"
 
 # Initialize variables with default values
 BTOA_DIR="$DEFAULT_BTOA_DIR"
@@ -41,7 +41,7 @@ echo -e "tbb\nimath\nmaterialx\nopencolorio\nopenexr\nopenimagedenoise\nopenimag
 
 git fetch origin
 
-git checkout blender-v4.4-release
+git checkout blender-v4.2-release
 
 cd $BTOA_DIR
 
@@ -56,6 +56,9 @@ fi
 
 cp -r $SCRIPT_DIR/cmake/pxrConfig.cmake $BTOA_DIR/dependencies/usd/
 
+
+cd $BTOA_DIR/source
+
 mkdir -p $BTOA_DIR/source/build
 cd $BTOA_DIR/source/build
 
@@ -69,12 +72,12 @@ cmake .. \
     -Dpxr_DIR=$BTOA_DIR/dependencies/usd \
     -DPython3_ROOT=$BTOA_DIR/dependencies/python \
     -DBUILD_SCHEMAS=OFF \
-    -DCMAKE_INSTALL_RPATH="$BTOA_DIR/arnoldusd/arnoldsdk/bin;$BTOA_DIR/dependencies/tbb/lib;$BTOA_DIR/dependencies/materialx/lib;$BTOA_DIR/dependencies/imath/lib;$BTOA_DIR/dependencies/usd/lib;$BTOA_DIR/dependencies/openvdb/lib;$BTOA_DIR/dependencies/opensubdiv/lib;$BTOA_DIR/dependencies/openimageio/lib" \
     -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-as-needed -ltbb"
+    -DCMAKE_INSTALL_RPATH="$BTOA_DIR/arnoldusd/arnoldsdk/bin;$BTOA_DIR/dependencies/tbb/lib" \
+    -DCMAKE_BUILD_TYPE=Debug
 
 
 make
 make install
 
-echo "ArnoldUSD has been successfully built at $BTOA_DIR, and LD_LIBRARY_PATH has been updated!"
+echo "ArnoldUSD has been successfully built at $BTOA_DIR!"

@@ -1,3 +1,4 @@
+from pathlib import Path
 import bpy, os, sys, ctypes
 
 class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
@@ -11,36 +12,45 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
 
     bl_delegate_id = "HdArnoldRendererPlugin"
 
+    def __init__(self):
+        super().__init__()
+        self._avos = [ "RGBA" ]
+
     @classmethod
     def register(cls):
-        bpy.app.timers.register(cls.load_plugin, first_interval=0.01)
+        delegate_root = os.path.join(Path(__file__).parent, "btoa")
+        delegate_dir = os.path.join(delegate_root, "arnoldusd")
+        os.environ["PATH"] = delegate_dir + os.pathsep + os.environ.get("PATH", "")
 
-    def load_plugin():
-        arnold = bpy.context.scene.arnold
-        usd_path = arnold.arnoldUSDPath
-        plugin_path = os.path.join(usd_path, "plugin")
-
-        os.environ["ARNOLD_PLUGIN_PATH"] = os.path.join(usd_path, "procedural")
-        os.environ["PYTHONPATH"] = os.path.join(usd_path, "lib", "python")
-        os.environ["PXR_PLUGINPATH_NAME"] = os.path.join(plugin_path) + ":" + os.path.join(usd_path, "lib", "usd") + ":" + os.environ.get("PXR_PLUGINPATH_NAME")
-        os.environ["LD_LIBRARY_PATH"] = os.path.join(usd_path, "lib") + ":" + os.environ.get("LD_LIBRARY_PATH")
-
-        print(f"Loading Plugin from: {plugin_path}...")
+        print(f"Loading Plugin from: {delegate_dir}...")
         import pxr.Plug
-        pxr.Plug.Registry().RegisterPlugins(plugin_path)
+        pxr.Plug.Registry().RegisterPlugins(str(os.path.join(delegate_dir, "plugin")))
 
     def get_render_settings(self, engine_type):
-        # Explicitly define AOV bindings for Arnold
-        return {
-            'arnold:aov:beauty': True
+        # Return Arnold-specific render settings including required AOVs
+        settings = {
+            'arnold:aov:RGBA': True,  # Main beauty pass
+            'arnold:aov:enable_progressive_render': True,
+            'arnold:aov:background': [0, 0, 0, 1],
         }
+        return settings
     
-    def update_render_passes(self, scene, render_layer):
-        # Register standard AOVs for rendering
-        self.register_pass(scene, render_layer, 'Combined', 4, 'RGBA', 'COLOR')
+    def update_render_passes(self, scene=None, render_layer=None):
+        # Register all AOV passes
+        self.register_pass(scene, render_layer, "Combined", 4, "RGBA", 'COLOR')
         
-    def update(self, data, depsgraph):
-        super().update(data, depsgraph)
+    def render(self, depsgraph):
+        # Ensure AOVs are properly set before rendering
+        self.update_render_passes(depsgraph.scene, depsgraph.view_layer)
+        super().render(depsgraph)
+
+    def view_update(self, context, depsgraph):
+        self.update_render_passes(depsgraph.scene, depsgraph.view_layer)
+        super().view_update(context, depsgraph)
+
+    def view_draw(self, context, depsgraph):
+        self.update_render_passes(depsgraph.scene, depsgraph.view_layer)
+        super().view_draw(context, depsgraph)
 
 def register():
     bpy.utils.register_class(ArnoldRenderEngine)
