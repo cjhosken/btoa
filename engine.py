@@ -18,13 +18,26 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
 
     @classmethod
     def register(cls):
-        delegate_root = os.path.join(Path(__file__).parent, "btoa")
-        delegate_dir = os.path.join(delegate_root, "arnoldusd")
-        os.environ["PATH"] = delegate_dir + os.pathsep + os.environ.get("PATH", "")
+        delegate_root = os.path.join(Path(__file__).parent, "btoa", "arnoldusd")
+        plugin_dir = os.path.join(delegate_root, "plugin")
+        os.environ["ARNOLD_PLUGIN_PATH"] = os.path.join(delegate_root, "procedural") + os.pathsep + os.environ.get("ARNOLD_PLUGIN_PATH", "")
+        os.environ["PYTHONPATH"] = os.path.join(delegate_root, "lib", "python") + os.pathsep + os.environ.get("PYTHONPATH", "")
+        os.environ["PXR_PLUGINPATH_NAME"] = plugin_dir + os.pathsep + os.path.join(delegate_root, "lib", "usd") + os.pathsep + os.environ.get("PXR_PLUGINPATH_NAME", "")
 
-        print(f"Loading Plugin from: {delegate_dir}...")
+        platform = sys.platform
+
+        # Check the platform and set the environment variable accordingly
+        if platform == "win32":  # Windows
+            os.environ["PATH"] = os.path.join(delegate_root, "lib") + os.pathsep + os.environ.get("PATH", "")
+        elif platform == "darwin":  # macOS
+            os.environ["DYLD_LIBRARY_PATH"] = os.path.join(delegate_root, "lib") + os.pathsep + os.environ.get("DYLD_LIBRARY_PATH", "")
+        else:  # Linux or other *nix-like systems
+            os.environ["LD_LIBRARY_PATH"] = os.path.join(delegate_root, "lib") + os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
+
+
+        print(f"Loading Plugin from: {plugin_dir}...")
         import pxr.Plug
-        pxr.Plug.Registry().RegisterPlugins(str(os.path.join(delegate_dir, "plugin")))
+        pxr.Plug.Registry().RegisterPlugins(plugin_dir)
 
     def get_render_settings(self, engine_type):
         # Return Arnold-specific render settings including required AOVs
