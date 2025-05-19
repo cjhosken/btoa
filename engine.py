@@ -12,10 +12,6 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
 
     bl_delegate_id = "HdArnoldRendererPlugin"
 
-    def __init__(self):
-        super().__init__()
-        self._avos = [ "RGBA" ]
-
     @classmethod
     def register(cls):
         delegate_root = os.path.join(Path(__file__).parent, "btoa", "arnoldusd")
@@ -40,25 +36,43 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
         pxr.Plug.Registry().RegisterPlugins(plugin_dir)
 
     def get_render_settings(self, engine_type):
-        # Return Arnold-specific render settings including required AOVs
+        if (engine_type == "VIEWPORT"):
+            pass
+        else:
+            pass
+        
         settings = {
-            'aovToken:RGBA': True,  # Main beauty pass
-            'arnold:aov:enable_progressive_render': True,
-            'arnold:aov:background': [0, 0, 0, 1],
+            "disableDepthOfField": False,
+            "includedPurposes": ["default"],
+            "materialBindingPurposes":["full", "allPurpose"],
+            "resultion":(1920, 1080),
         }
-        if engine_type != 'VIEWPORT':
-            result |= {
-                'aovToken:RGBA': "color",
-                'aovToken:Depth': "depth",
-            }
+
         return settings
+
+    def update_render_passes(self, scene, render_layer):
+        print(f"RENDER LAYER: {render_layer}")
+        self.register_pass(
+            scene, render_layer,
+            name="RGBA",          # Display name
+            channels=4,           # RGBA
+            type='COLOR',         # Color pass
+            aov_settings={
+                'arnold:filter': 'box_filter',
+                'dataType': 'color4f',
+                'driver:parameters:aov:clearValue': 0,
+                'driver:parameters:aov:format': 'color4f',
+                'driver:parameters:aov:multiSampled': False,
+                "driver:parameters:aov:name": "RGBA",
+                'sourceName': 'RGBA',
+                'sourceType': 'raw',
+                'arnold:driver': 'driver_exr'
+            }
+        )
+
+        print(scene)
     
-    def update_render_passes(self, scene=None, render_layer=None):
-        # Register all AOV passes
-        self.register_pass(scene, render_layer, "RGBA", 4, "RGBA", 'COLOR')
 
-def register():
-    bpy.utils.register_class(ArnoldRenderEngine)
-
-def unregister():
-    bpy.utils.unregister_class(ArnoldRenderEngine)
+register, unregister = bpy.utils.register_classes_factory((
+    ArnoldRenderEngine,
+))
