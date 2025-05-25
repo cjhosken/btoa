@@ -1,2 +1,0 @@
-# btoa
-Blender To Arnold
