@@ -60,9 +60,9 @@ cmake %SOURCE_DIR% ^
     -DCMAKE_CXX_STANDARD=17 ^
     -DBUILD_UNIT_TESTS=OFF ^
     -DBUILD_TESTSUITE=OFF ^
-    -DCMAKE_INSTALL_PREFIX="%SCRIPT_DIR%\arnoldusd" ^
+    -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^
     -DCMAKE_PREFIX_PATH="%SCRIPT_DIR%\build-deps" ^
-    -DARNOLD_LOCATION="%SCRIPT_DIR%\arnoldsdk" ^
+    -DARNOLD_LOCATION="%ARNOLD_DIR%" ^
     -DUSD_LOCATION="%SCRIPT_DIR%\build-deps\usd" ^
     -DPython3_ROOT="%SCRIPT_DIR%\build-deps\python\311" ^
     -DPython3_EXECUTABLE="%SCRIPT_DIR%\build-deps\python\311\bin\python.exe" ^
@@ -70,7 +70,7 @@ cmake %SOURCE_DIR% ^
     -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON ^
     -DBUILD_SCHEMAS=ON ^
     -DBUILD_USDGENSCHEMA_ARNOLD=ON ^
-    -DCMAKE_INSTALL_RPATH="%SCRIPT_DIR%\arnoldsdk\bin"
+    -DCMAKE_INSTALL_RPATH="%ARNOLD_DIR%\bin"
 
 cmake --build .
 cmake --install . --prefix "%INSTALL_DIR%"
