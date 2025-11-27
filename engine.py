@@ -14,8 +14,6 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
 
     @classmethod
     def register(cls):
-        bpy.utils.expose_bundled_python_modules()
-
         delegate_root = os.path.join(Path.home(), ".arnold", "install", "arnoldusd")
         plugin_dir = os.path.join(delegate_root, "plugin")
 
@@ -36,7 +34,7 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
             "includedPurposes": ["default"],
             "materialBindingPurposes":["full", "allPurpose"],
             "resolution":(1920, 1080),
-            "aovToken:RGBA":"color",
+            "aovToken:Combined":"RGBA",
         }
 
         return settings

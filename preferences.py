@@ -9,10 +9,9 @@ class ArnoldPreferences(bpy.types.AddonPreferences):
         layout = self.layout
         scene = context.scene
         arnold = scene.arnold
-        layout.operator("arnold.install", "Install Arnold")
-        layout.prop(arnold, "hdArnoldPluginPath")
+        layout.prop(arnold, "version")
+        layout.operator("arnold.install", text="Install Arnold")
     
-
 def register():
     bpy.utils.register_class(ArnoldPreferences)
 

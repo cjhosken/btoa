@@ -2,12 +2,13 @@ import bpy, os
 from bpy.props import *
 
 class ArnoldSceneProperties(bpy.types.PropertyGroup):
-
-    arnoldUSDPath: StringProperty(
-        name="Arnold Renderer Plugin Path",
-        description="Path to the ArnoldUSD Hydra Delegate Plugin",
-        subtype="FILE_PATH",
-        default=os.path.join(os.path.expanduser("~"), ".btoa", "arnoldusd")
+    version: EnumProperty(
+        name="Arnold Version",
+        description="Select Arnold version",
+        items=[
+            ('7.4.3.0', "7.4.3.0", "Arnold 7.4.3.0"),
+            ('7.4.2.0', "7.4.2.0", "Arnold 7.4.2.0"),
+        ]
     )
 
 classes = [ArnoldSceneProperties]
