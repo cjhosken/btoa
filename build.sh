@@ -6,7 +6,7 @@ set -e
 ############################
 
 BLENDER_VERSION="${1:-5.0}"   # default 5.0 if not passed
-ARNOLD_VERSION="${2:-7.4.3.0}" # default 7.4.3.0 if not passed
+ARNOLD_VERSION="${2:-7.4.4.0}" # default 7.4.4.0 if not passed
 
 # Paths
 ARNOLD_ROOT="$HOME/.arnold"
@@ -52,7 +52,7 @@ rm $ARNOLD_ROOT/source/arnoldsdk.tgz
 ############################
 
 # Currently Arnold USD is looking for an stddef.h file, but modern versions of TBB provide a version.h file instead.
-cp $ARNOLD_ROOT/source/blender/tbb/include/tbb/version.h $ARNOLD_ROOT/source/arnoldusd/deps/tbb/include/tbb/stddef.h 
+cp $ARNOLD_ROOT/source/blender/tbb/include/tbb/version.h $ARNOLD_ROOT/source/blender/tbb/include/tbb/tbb_stddef.h 
 
 ############################
 # CONFIGURE & BUILD
@@ -81,13 +81,3 @@ echo "==> Building Arnold USD…"
 cmake --build . --target install -- -j$(nproc)
 
 cp -r $ARNOLD_ROOT/source/arnoldsdk/* $ARNOLD_ROOT/install/arnoldusd
-
-mkdir -p $HOME/.config/blender/${BLENDER_VERSION}/scripts/startup/
-
-sed \
-    -e "s|__BLENDER_VERSION__|${BLENDER_VERSION}|g" \
-    -e "s|__ARNOLD_VERSION__|${ARNOLD_VERSION}|g" \
-    "$SCRIPT_DIR/arnold_env.py" > "$HOME/.config/blender/${BLENDER_VERSION}/scripts/startup/arnold_env.py"
-
-echo "==> DONE!"
-echo "Arnold USD installed into: ${ARNOLD_ROOT}/install/arnoldusd"
