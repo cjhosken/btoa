@@ -1,3 +1,8 @@
-# btoa
+# Building Blender To Arnold
 
-This is a Blender to Arnold plugin that uses Hydra USD to transfer data. Currently it is *BROKEN*. Please come back another time.
+Run the build.sh command!
+
+./build.sh BLENDER_VERSION ARNOLD_VERSION
+
+eg:
+`build.sh 5.0 7.4.4.0`
