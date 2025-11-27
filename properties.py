@@ -6,8 +6,7 @@ class ArnoldSceneProperties(bpy.types.PropertyGroup):
         name="Arnold Version",
         description="Select Arnold version",
         items=[
-            ('7.4.3.0', "7.4.3.0", "Arnold 7.4.3.0"),
-            ('7.4.2.0', "7.4.2.0", "Arnold 7.4.2.0"),
+            ('7.4.4.0', "7.4.4.0", "Arnold 7.4.4.0"),
         ]
     )
 
