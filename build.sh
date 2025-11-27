@@ -9,41 +9,49 @@ BLENDER_VERSION="${1:-5.0}"   # default 5.0 if not passed
 ARNOLD_VERSION="${2:-7.4.4.0}" # default 7.4.4.0 if not passed
 
 # Paths
-ARNOLD_ROOT="$HOME/.arnold"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+echo "$SCRIPT_DIR"
+
+ARNOLD_ROOT="$SCRIPT_DIR"
 BLENDER_LIB_REPO="https://projects.blender.org/blender/lib-linux_x64.git"
 ARNOLD_USD_REPO="https://github.com/Autodesk/arnold-usd.git"
 ARNOLD_SDK_URL="https://github.com/cjhosken/btoa/releases/download/arnoldsdk/Arnold-${ARNOLD_VERSION}-linux.tgz"
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-echo "$SCRIPT_DIR"
-
-rm -rf $ARNOLD_ROOT
+INSTALL_ROOT="$HOME/.btoa/btoa-$ARNOLD_VERSION"
 
 ############################
 # DIRECTORY SETUP
 ############################
 
 echo "==> Creating directory tree…"
-mkdir -p $ARNOLD_ROOT/{source,build,install}
-
-mkdir -p \
-    $ARNOLD_ROOT/source/{arnoldusd,blender,arnoldsdk} \
-    $ARNOLD_ROOT/install/{arnoldusd}
+mkdir -p $ARNOLD_ROOT/{source,build}
 
 ############################
 # FETCH SOURCES
 ############################
 
-echo "==> Cloning Arnold USD…"
-git clone --depth 1 -b "Arnold-$ARNOLD_VERSION" $ARNOLD_USD_REPO $ARNOLD_ROOT/source/arnoldusd
 
-echo "==> Cloning Blender libraries…"
-git clone --depth 1 -b "blender-v$BLENDER_VERSION-release" $BLENDER_LIB_REPO $ARNOLD_ROOT/source/blender
+# Clone Arnold USD if not exists
+if [ ! -d "$ARNOLD_ROOT/source/arnoldusd" ]; then
+    echo "==> Cloning Arnold USD…"
+    git clone --depth 1 -b "Arnold-$ARNOLD_VERSION" "$ARNOLD_USD_REPO" "$ARNOLD_ROOT/source/arnoldusd"
+else
+    echo "Arnold USD already exists at $ARNOLD_ROOT/source/arnoldusd, skipping clone."
+fi
+
+# Clone Blender libraries if not exists
+if [ ! -d "$ARNOLD_ROOT/source/blender" ]; then
+    echo "==> Cloning Blender libraries…"
+    git clone --depth 1 -b "blender-v$BLENDER_VERSION-release" "$BLENDER_LIB_REPO" "$ARNOLD_ROOT/source/blender"
+else
+    echo "Blender libraries already exist at $ARNOLD_ROOT/source/blender, skipping clone."
+fi
 
 echo "==> Downloading Arnold SDK ${ARNOLD_VERSION}…"
 wget -q $ARNOLD_SDK_URL -O $ARNOLD_ROOT/source/arnoldsdk.tgz
 
 echo "==> Unpacking Arnold SDK…"
+mkdir -p $ARNOLD_ROOT/source/arnoldsdk
 tar -xzf $ARNOLD_ROOT/source/arnoldsdk.tgz -C $ARNOLD_ROOT/source/arnoldsdk
 rm $ARNOLD_ROOT/source/arnoldsdk.tgz
 
@@ -62,7 +70,7 @@ echo "==> Running CMake…"
 cd $ARNOLD_ROOT/build
 
 cmake $ARNOLD_ROOT/source/arnoldusd \
-    -DCMAKE_INSTALL_PREFIX=$ARNOLD_ROOT/install/arnoldusd \
+    -DCMAKE_INSTALL_PREFIX=$INSTALL_ROOT \
     -DARNOLD_LOCATION=$ARNOLD_ROOT/source/arnoldsdk \
     -DUSD_INCLUDE_DIR=$ARNOLD_ROOT/source/blender/usd/include \
     -DUSD_LIBRARY_DIR=$ARNOLD_ROOT/source/blender/usd/lib \
@@ -80,4 +88,4 @@ cmake $ARNOLD_ROOT/source/arnoldusd \
 echo "==> Building Arnold USD…"
 cmake --build . --target install -- -j$(nproc)
 
-cp -r $ARNOLD_ROOT/source/arnoldsdk/* $ARNOLD_ROOT/install/arnoldusd
+cp -r $ARNOLD_ROOT/source/arnoldsdk/* $INSTALL_ROOT
