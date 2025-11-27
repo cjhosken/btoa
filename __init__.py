@@ -3,8 +3,8 @@ import bpy, os, sys
 bl_info = {
     "name" : "Blender to Arnold",
     "author" : "Christopher Hosken",
-    "version" : (7, 4, 2, 0),
-    "blender" : (4, 4, 0),
+    "version" : (7, 4, 3, 0),
+    "blender" : (5, 0, 0),
     "description" : "Autodesk's Arnold Renderer integration into Blender",
     "warning" : "This Addon is currently under development",
     "tracker_url":"",
