@@ -23,6 +23,7 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
         super().update(data, depsgraph)
 
     def get_render_settings(self, engine_type):
+        # This is taken from a .usda file out of houdini.
         settings = {
             "disableDepthOfField": False,
             "includedPurposes": ["default"],
@@ -38,11 +39,14 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
             "pixelAspectRatio":1,
             "aspectRatioConfirmPolicy":"expandAperture",
             "dataWindowNDC":(0, 0, 1, 1),
+            "aovToken:RGBA": "color",
             "orderedVars": [
                 "</Render/Products/Vars/Beauty>"
             ],
-            "aovBindings": [
-                {
+        }
+
+        # There are also render products. Not sure what to do with these.
+        x = {
                     "sourceName": "RGBA",
                     "sourceType":"raw",
                     "dataType":"color4f",
@@ -54,8 +58,6 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
                     "arnold:width":2,
                     "arnold:filter":"gaussian_filter"
                 }
-            ]
-        }
 
         return settings
 
