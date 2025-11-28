@@ -78,6 +78,7 @@ cmake $ARNOLD_ROOT/source/arnoldusd \
     -DPython3_ROOT=$ARNOLD_ROOT/source/blender/python \
     -DTBB_ROOT_DIR=$ARNOLD_ROOT/source/blender/tbb \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE="" \
     -DUSD_MONOLITHIC_BUILD=True \
     -DBUILD_USDGENSCHEMA_ARNOLD=OFF \
     -DBUILD_PROCEDURAL=OFF \
