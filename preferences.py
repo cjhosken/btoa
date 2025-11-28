@@ -9,8 +9,13 @@ class ArnoldPreferences(bpy.types.AddonPreferences):
         layout = self.layout
         scene = context.scene
         arnold = scene.arnold
+
+        blender_version = bpy.app.version_string.rsplit('.', 1)[0]  # e.g., "5.0"
+
         layout.prop(arnold, "version")
-        layout.operator("arnold.install", text="Install Arnold")
+    
+        if not os.path.exists(os.path.join(os.path.expanduser("~"), ".btoa", f"btoa-{blender_version}-{arnold.version}")):
+            layout.operator("arnold.install", text="Install Arnold")
     
 def register():
     bpy.utils.register_class(ArnoldPreferences)

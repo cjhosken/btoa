@@ -1,34 +1,24 @@
-import bpy, os, sys
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTIBILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-bl_info = {
-    "name" : "Blender to Arnold",
-    "author" : "Christopher Hosken",
-    "version" : (7, 4, 3, 0),
-    "blender" : (5, 0, 0),
-    "description" : "Autodesk's Arnold Renderer integration into Blender",
-    "warning" : "This Addon is currently under development",
-    "tracker_url":"",
-    "doc_url":"",
-    "community":"",
-    "downloads":"",
-    "main_web":"",
-    "support": "COMMUNITY",
-    "category" : "Render"
-}
+from . import auto_load
 
-from . import properties, engine, preferences, operators, ui
+auto_load.init()
 
 
 def register():
-    properties.register()
-    preferences.register()
-    engine.register()
-    operators.register()
-    ui.register()
+    auto_load.register()
+
 
 def unregister():
-    ui.unregister()
-    operators.unregister()
-    engine.unregister()
-    preferences.unregister()
-    properties.unregister()
+    auto_load.unregister()

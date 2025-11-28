@@ -3,7 +3,7 @@ import subprocess
 import os
 import urllib.request
 from pathlib import Path
-import tarfile
+import zipfile
 
 class ARNOLD_OT_install(bpy.types.Operator):
     bl_idname = "arnold.install"
@@ -17,31 +17,37 @@ class ARNOLD_OT_install(bpy.types.Operator):
         # Path to the folder where your addon lives
         addon_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-        if not os.path.exists(script_path):
-            self.report({'ERROR'}, f"build.sh not found: {script_path}")
-            return {'CANCELLED'}
-
         try:
             self.report({'INFO'}, "Arnold installation started…")
 
             # Download a file from github and extract it into ~/.arnold/install/arnoldusd
             btoa = Path.home() / ".btoa"
-            install_path = btoa / f"Arnold-{arnold.version}"
-            tgz_path = btoa / f"Arnold-{arnold.version}.tgz"
+            install_path = btoa / f"btoa-{blender_version}-{arnold.version}"
+            zip_path = btoa / f"btoa-{blender_version}-{arnold.version}.zip"
 
-            url = f"https://github.com/cjhosken/btoa/releases/download/arnoldsdk/Arnold-{arnold.version}-linux.tgz"
+            url = f"https://github.com/cjhosken/btoa/releases/download/btoa/btoa-{blender_version}-{arnold.version}-linux.zip"
 
-            os.mkdir(btoa, exist_ok=True)
-            urllib.request.urlretrieve(url, tgz_path)
-            with tarfile.open(tgz_path, "r:gz") as tar:
-                tar.extractall(path=install_path)
+            if not os.path.isdir(btoa):
+                os.mkdir(btoa)
+
+            urllib.request.urlretrieve(url, zip_path)
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                for member in zip_ref.infolist():
+                    # Skip top-level folder
+                    parts = Path(member.filename).parts
+                    if len(parts) <= 1:
+                        # skip the folder itself
+                        continue
+                    # Rebuild path without the first component
+                    target_path = install_path.joinpath(*parts[1:])
+                    if member.is_dir():
+                        target_path.mkdir(parents=True, exist_ok=True)
+                    else:
+                        target_path.parent.mkdir(parents=True, exist_ok=True)
+                        with zip_ref.open(member) as source, open(target_path, "wb") as target:
+                            target.write(source.read())
             
-            os.remove(tgz_path)
-
-            os.copy(
-                os.path.join(addon_dir, "arnold_env.py"),
-                os.path.join(bpy.utils.user_resource('SCRIPTS'), "startup", "arnold_env.py")
-            )
+            os.remove(zip_path)
 
             with open(os.path.join(addon_dir, "arnold_env.py"), "r") as f:
                 content = f.read()
@@ -55,7 +61,7 @@ class ARNOLD_OT_install(bpy.types.Operator):
             self.report({'ERROR'}, f"Build script failed: {e}")
             return {'CANCELLED'}
         
-        self.repot({'INFO'}, "Arnold installation completed! Please restart Blender.")
+        self.report({'INFO'}, "Arnold installation completed! Please restart Blender.")
 
         return {'FINISHED'}
 

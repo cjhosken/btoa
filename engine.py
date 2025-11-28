@@ -3,7 +3,7 @@ import bpy, os, sys, ctypes
 
 class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
     bl_idname = "ARNOLD"
-    bl_label = "Arnold"
+    bl_label = "HdArnold"
     bl_info = "Autodesk's Arnold Production Renderer integration"
 
     bl_use_preview = True
@@ -13,28 +13,48 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
     bl_delegate_id = "HdArnoldRendererPlugin"
 
     @classmethod
-    def register(cls):
-        delegate_root = os.path.join(Path.home(), ".arnold", "install", "arnoldusd")
-        plugin_dir = os.path.join(delegate_root, "plugin")
-
+    def register(cls):        
         import pxr.Plug
-        pxr.Plug.Registry().RegisterPlugins(plugin_dir)
+        plugin_path = os.path.join(os.environ.get("BTOA_ROOT", ""), "plugin")
+        print(plugin_path)
+        pxr.Plug.Registry().RegisterPlugins(plugin_path)
 
     def update(self, data, depsgraph):
         super().update(data, depsgraph)
 
     def get_render_settings(self, engine_type):
-        if (engine_type == "VIEWPORT"):
-            pass
-        else:
-            pass
-        
         settings = {
             "disableDepthOfField": False,
             "includedPurposes": ["default"],
             "materialBindingPurposes":["full", "allPurpose"],
             "resolution":(1920, 1080),
-            "aovToken:Combined":"RGBA",
+            "productType":"raster",
+            "productName":"",
+            "instantaneousShutter":0,
+            "driver:parameters:artist":"",
+            "driver:parameters:comment":"",
+            "driver:parameters:hostname":"",
+            "driver:parameters:OpenEXR:compression":"zips",
+            "pixelAspectRatio":1,
+            "aspectRatioConfirmPolicy":"expandAperture",
+            "dataWindowNDC":(0, 0, 1, 1),
+            "orderedVars": [
+                "</Render/Products/Vars/Beauty>"
+            ],
+            "aovBindings": [
+                {
+                    "sourceName": "RGBA",
+                    "sourceType":"raw",
+                    "dataType":"color4f",
+                    "driver:parameters:aov:name": "Beauty",
+                    "driver:parameters:aov:multiSampled": False,
+                    "driver:parameters:aov:format":"float4",
+                    "driver:parameters:aov:clearValue": 0,
+                    "driver:parameters:aov:channel_prefix":"",
+                    "arnold:width":2,
+                    "arnold:filter":"gaussian_filter"
+                }
+            ]
         }
 
         return settings
