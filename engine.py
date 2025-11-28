@@ -7,7 +7,7 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
     bl_info = "Autodesk's Arnold Production Renderer integration"
 
     bl_use_preview = True
-    bl_use_gpu_context = True
+    bl_use_gpu_context = False
     bl_use_materialx = True
 
     bl_delegate_id = "HdArnoldRendererPlugin"
@@ -23,48 +23,17 @@ class ArnoldRenderEngine(bpy.types.HydraRenderEngine):
         super().update(data, depsgraph)
 
     def get_render_settings(self, engine_type):
-        # This is taken from a .usda file out of houdini.
         settings = {
-            "disableDepthOfField": False,
-            "includedPurposes": ["default"],
-            "materialBindingPurposes":["full", "allPurpose"],
-            "resolution":(1920, 1080),
-            "productType":"raster",
-            "productName":"",
-            "instantaneousShutter":0,
-            "driver:parameters:artist":"",
-            "driver:parameters:comment":"",
-            "driver:parameters:hostname":"",
-            "driver:parameters:OpenEXR:compression":"zips",
-            "pixelAspectRatio":1,
-            "aspectRatioConfirmPolicy":"expandAperture",
-            "dataWindowNDC":(0, 0, 1, 1),
-            "aovToken:RGBA": "color",
-            "orderedVars": [
-                "</Render/Products/Vars/Beauty>"
-            ],
+            "aovToken:RGBA":"color",
+            "aovToken:depth":"depth"
         }
-
-        # There are also render products. Not sure what to do with these.
-        x = {
-                    "sourceName": "RGBA",
-                    "sourceType":"raw",
-                    "dataType":"color4f",
-                    "driver:parameters:aov:name": "Beauty",
-                    "driver:parameters:aov:multiSampled": False,
-                    "driver:parameters:aov:format":"float4",
-                    "driver:parameters:aov:clearValue": 0,
-                    "driver:parameters:aov:channel_prefix":"",
-                    "arnold:width":2,
-                    "arnold:filter":"gaussian_filter"
-                }
-
+        
         return settings
 
     def update_render_passes(self, scene, render_layer):
-        self.register_pass(scene, render_layer, "RGBA", 4, "RGBA", "COLOR")
+        self.register_pass(scene, render_layer, 'RGBA', 4, 'RGBA', 'COLOR')
+        self.register_pass(scene, render_layer, 'depth', 1, 'Z', 'VALUE')
     
-
 register, unregister = bpy.utils.register_classes_factory((
     ArnoldRenderEngine,
 ))

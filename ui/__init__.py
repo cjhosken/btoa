@@ -7,12 +7,9 @@ from . import btoa_menus
 def get_panels():
     # Follow the Cycles model of excluding panels we don't want.
     exclude_panels = {
-        'DATA_PT_light',
         'DATA_PT_spot',
-        'NODE_DATA_PT_light',
         'DATA_PT_falloff_curve',
         'SCENE_PT_audio',
-
 
         'RENDER_PT_stamp',
         'RENDER_PT_post_processing',
