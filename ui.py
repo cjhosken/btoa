@@ -1,19 +1,31 @@
 import bpy
 
-from ..engine import ArnoldRenderEngine
+from .engine import ArnoldHydraRenderEngine
 
-class ARNOLD_PT_light(bpy.types.Panel):
-    bl_label = "Arnold Light"
-    bl_idname = "ARNOLD_PT_light"
+class Panel(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
-    bl_context = "data"
+    bl_context = 'render'
+    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
 
-    COMPAT_ENGINES = {ArnoldRenderEngine.bl_idname}
-    
     @classmethod
     def poll(cls, context):
         return context.engine in cls.COMPAT_ENGINES
+
+class ARNOLD_HYDRA_RENDER_PT_quality(Panel):
+    bl_label = "Quality"
+
+    def draw(self, layout):
+        pass
+
+class ARNOLD_HYDRA_LIGHT_PT_light(Panel):
+    """Physical light sources"""
+    bl_label = "Light"
+    bl_context = 'data'
+
+    @classmethod
+    def poll(cls, context):
+        return super().poll(context) and context.light
 
     def draw(self, context):
         layout = self.layout
@@ -70,7 +82,60 @@ class ARNOLD_PT_light(bpy.types.Panel):
 
             else:
                 main_col.prop(light, 'size')
-                
+
 register_classes, unregister_classes = bpy.utils.register_classes_factory((
-    ARNOLD_PT_light
+    ARNOLD_HYDRA_RENDER_PT_quality,
+    ARNOLD_HYDRA_LIGHT_PT_light,
+    
 ))
+
+def get_panels():
+    # Follow the Cycles model of excluding panels we don't want.
+    exclude_panels = {
+        'RENDER_PT_stamp',
+        'DATA_PT_light',
+        'DATA_PT_spot',
+        'NODE_DATA_PT_light',
+        'DATA_PT_falloff_curve',
+        'RENDER_PT_post_processing',
+        'RENDER_PT_simplify',
+        'SCENE_PT_audio',
+        'RENDER_PT_freestyle'
+    }
+    include_eevee_panels = {
+        'MATERIAL_PT_preview',
+        'EEVEE_MATERIAL_PT_context_material',
+        'EEVEE_MATERIAL_PT_surface',
+        'EEVEE_MATERIAL_PT_volume',
+        'EEVEE_MATERIAL_PT_settings',
+        'EEVEE_WORLD_PT_surface',
+    }
+
+    for panel_cls in bpy.types.Panel.__subclasses__():
+        if (compat_engines := getattr(panel_cls, 'COMPAT_ENGINES', None)) is None:
+            continue
+
+        if (
+            (
+                'BLENDER_RENDER' in compat_engines and
+                panel_cls.__name__ not in exclude_panels
+            ) or (
+                'BLENDER_EEVEE' in compat_engines and
+                panel_cls.__name__ in include_eevee_panels
+            )
+        ):
+            yield panel_cls
+
+def register():
+    register_classes()
+
+    for panel_cls in get_panels():
+        panel_cls.COMPAT_ENGINES.add(ArnoldHydraRenderEngine.bl_idname)
+
+
+def unregister():
+    unregister_classes()
+
+    for panel_cls in get_panels():
+        if ArnoldHydraRenderEngine.bl_idname in panel_cls.COMPAT_ENGINES:
+            panel_cls.COMPAT_ENGINES.remove(ArnoldHydraRenderEngine.bl_idname)

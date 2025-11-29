@@ -11,14 +11,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from . import auto_load
-
-auto_load.init()
+from . import engine, properties, ui
 
 
 def register():
-    auto_load.register()
+    engine.register()
+    properties.register()
+    ui.register()
 
 
 def unregister():
-    auto_load.unregister()
+    ui.unregister()
+    properties.unregister()
+    engine.unregister()

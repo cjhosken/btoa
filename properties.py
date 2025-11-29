@@ -1,25 +1,57 @@
-import bpy, os
-from bpy.props import *
+import bpy
 
-class ArnoldSceneProperties(bpy.types.PropertyGroup):
-    version: EnumProperty(
-        name="Arnold Version",
-        description="Select Arnold version",
-        items=[
-            ('7.4.4.0', "7.4.4.0", "Arnold 7.4.4.0"),
-        ]
+class Properties(bpy.types.PropertyGroup):
+    type = None
+
+    @classmethod
+    def register(cls):
+        cls.type.arnold = bpy.props.PointerProperty(
+            name="Arnold",
+            description="Arnold properties",
+            type=cls,
+        )
+
+    @classmethod
+    def unregister(cls):
+        del cls.type.arnold
+
+
+class RenderProperties(bpy.types.PropertyGroup):
+    max_lights: bpy.props.IntProperty(
+        name="Max Lights",
+        description="Limit maximum number of lights",
+        default=16, min=0, max=16,
+    )
+    use_tiny_prim_culling: bpy.props.BoolProperty(
+        name="Tiny Prim Culling",
+        description="Hide small geometry primitives to improve performance",
+        default=False,
+    )
+    volume_raymarching_step_size: bpy.props.FloatProperty(
+        name="Volume Raymarching Step Size",
+        description="Step size when raymarching volume",
+        default=1.0,
+    )
+    volume_raymarching_step_size_lighting: bpy.props.FloatProperty(
+        name="Volume Raymarching Step Size Lighting",
+        description="Step size when raymarching volume for lighting computation",
+        default=10.0,
+    )
+    volume_max_texture_memory_per_field: bpy.props.FloatProperty(
+        name="Max Texture Memory Per Field",
+        description="Maximum memory for a volume field texture in Mb (unless overridden by field prim)",
+        default=128.0,
     )
 
-classes = [ArnoldSceneProperties]
 
-def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
+class SceneProperties(Properties):
+    type = bpy.types.Scene
 
-    bpy.types.Scene.arnold = PointerProperty(type=ArnoldSceneProperties)
+    final: bpy.props.PointerProperty(type=RenderProperties)
+    viewport: bpy.props.PointerProperty(type=RenderProperties)
 
-def unregister():
-    del bpy.types.Scene.arnold
 
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+register, unregister = bpy.utils.register_classes_factory((
+    RenderProperties,
+    SceneProperties,
+))
