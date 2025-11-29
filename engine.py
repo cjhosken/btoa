@@ -18,9 +18,29 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
         pxr.Plug.Registry().RegisterPlugins(plugin_path)
 
     def get_render_settings(self, engine_type):
-        settings = {
-                "aovToken:Combined": "RGBA",
+        settings = {}
+
+        if engine_type != 'VIEWPORT':
+            settings |= {
+                # Beauty
+                "aovToken:Combined": "color",
+                "aovDescriptor:Combined": {
+                    "sourceName": "RGBA",
+                    
+                    "driver:parameters:aov:clearValue": 0,
+                    "driver:parameters:aov:format": "color4f",
+                    "driver:parameters:aov:name": "RGBA",
+                    "driver:parameters:aov:multiSampled": False,
+                    
+                    "arnold:filter": "box_filter",
+                    "arnold:global:AA_seed": 1129,
+                    
+                    
+                    "sourceType": "raw",
+                    "dataType": "color4f",
+                }
             }
+
         return settings
 
     def update_render_passes(self, scene, render_layer):
