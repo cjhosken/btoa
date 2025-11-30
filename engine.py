@@ -15,6 +15,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
     def register(cls):        
         import pxr.Plug
         plugin_path = os.path.join(os.environ.get("BTOA_ROOT", ""), "plugin")
+        print(plugin_path)
         pxr.Plug.Registry().RegisterPlugins(plugin_path)
 
     def get_render_settings(self, engine_type):
