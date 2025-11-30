@@ -15,9 +15,9 @@ echo "$SCRIPT_DIR"
 ARNOLD_ROOT="$SCRIPT_DIR"
 BLENDER_LIB_REPO="https://projects.blender.org/blender/lib-linux_x64.git"
 ARNOLD_USD_REPO="https://github.com/Autodesk/arnold-usd.git"
-ARNOLD_SDK_URL="https://github.com/cjhosken/btoa/releases/download/arnoldsdk/Arnold-${ARNOLD_VERSION}-linux.tgz"
+ARNOLD_SDK_URL="https://github.com/cjhosken/btoa/releases/tag/btoa-${ARNOLD_VERISON}/Arnold-${ARNOLD_VERSION}-linux.tgz"
 
-INSTALL_ROOT="$HOME/.btoa/btoa-$ARNOLD_VERSION"
+INSTALL_ROOT="$HOME/.btoa/btoa-$BLENDER_VERSION-$ARNOLD_VERSION"
 
 ############################
 # DIRECTORY SETUP
