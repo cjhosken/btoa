@@ -14,7 +14,7 @@ if "%ARNOLD_VERSION%"=="" set "ARNOLD_VERSION=7.4.4.0"
 
 :: Paths
 set "SCRIPT_DIR=%~dp0"
-echo %SCRIPT_DIR%
+
 
 set "ARNOLD_ROOT=%SCRIPT_DIR%"
 set "BLENDER_LIB_REPO=https://projects.blender.org/blender/lib-windows_x64.git"
@@ -68,7 +68,10 @@ del "%ARNOLD_ROOT%\source\arnoldsdk.zip"
 ::::::::::::::::::::::::::::::::::::::::
 
 echo ==^> Copying TBB quickfix…
-copy "%ARNOLD_ROOT%\source\blender\tbb\include\tbb\version.h" "%ARNOLD_ROOT%\source\blender\tbb\include\tbb\tbb_stddef.h" >nul
+copy "%ARNOLD_ROOT%\source\blender\tbb\include\oneapi\tbb\version.h" "%ARNOLD_ROOT%\source\blender\tbb\include\tbb\tbb_stddef.h" >nul
+
+if not exist "%ARNOLD_ROOT%\source\blender\MaterialX\resources" mkdir "%ARNOLD_ROOT%\source\blender\MaterialX\resources"
+
 
 ::::::::::::::::::::::::::::::::::::::::
 :: CONFIGURE & BUILD
@@ -79,20 +82,26 @@ echo ==^> Running CMake…
 cd /d "%ARNOLD_ROOT%\build"
 
 cmake "%ARNOLD_ROOT%\source\arnoldusd" ^
+    -G "Visual Studio 17 2022" ^
     -DCMAKE_INSTALL_PREFIX="%INSTALL_ROOT%" ^
     -DARNOLD_LOCATION="%ARNOLD_ROOT%\source\arnoldsdk" ^
     -DUSD_INCLUDE_DIR="%ARNOLD_ROOT%\source\blender\usd\include" ^
     -DUSD_LIBRARY_DIR="%ARNOLD_ROOT%\source\blender\usd\lib" ^
     -DUSD_BINARY_DIR="%ARNOLD_ROOT%\source\blender\usd\bin" ^
-    -DPython3_ROOT="%ARNOLD_ROOT%\source\blender\python" ^
-    -DTBB_ROOT_DIR="%ARNOLD_ROOT%\source\blender\tbb" ^
+    -DUSD_LIB_PREFIX="" ^
+    -DUSD_LIBRARIES="%ARNOLD_ROOT%\source\blender\usd\lib\usd_ms.lib" ^
+    -DPython3_ROOT="%ARNOLD_ROOT%\source\blender\python\311" ^
+    -DTBB_LIBRARIES_RELEASE="%ARNOLD_ROOT%\source\blender\tbb\lib" ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DUSD_MONOLITHIC_BUILD=True ^
+    -DBUILD_WITH_USD_STATIC=True ^
     -DBUILD_USDGENSCHEMA_ARNOLD=OFF ^
     -DBUILD_PROCEDURAL=OFF ^
     -DBUILD_DOCS=OFF ^
     -DBUILD_TESTSUITE=OFF ^
-    -DBUILD_SCHEMAS=OFF
+    -DBUILD_SCHEMAS=OFF ^
+    -DTBB_ROOT_DIR="%ARNOLD_ROOT%\source\blender\tbb"
+
 
 echo.
 echo ==^> Building Arnold USD…
