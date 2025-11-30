@@ -52,16 +52,19 @@ if not exist "%ARNOLD_ROOT%\source\blender" (
 )
 
 echo.
-echo ==^> Downloading Arnold SDK %ARNOLD_VERSION%…
-if exist "%ARNOLD_ROOT%\source\arnoldsdk.zip" del "%ARNOLD_ROOT%\source\arnoldsdk.zip"
-curl -L "%ARNOLD_SDK_URL%" -o "%ARNOLD_ROOT%\source\arnoldsdk.zip"
 
-echo ==^> Unpacking Arnold SDK…
-if not exist "%ARNOLD_ROOT%\source\arnoldsdk" mkdir "%ARNOLD_ROOT%\source\arnoldsdk"
+if not exist "%ARNOLD_ROOT%\source\arnoldsdk" (
+    echo ==^> Downloading Arnold SDK %ARNOLD_VERSION%…
+    if exist "%ARNOLD_ROOT%\source\arnoldsdk.zip" del "%ARNOLD_ROOT%\source\arnoldsdk.zip"
+    curl -L "%ARNOLD_SDK_URL%" -o "%ARNOLD_ROOT%\source\arnoldsdk.zip"
 
-:: Use tar from Windows 10+ or Git
-tar -xf "%ARNOLD_ROOT%\source\arnoldsdk.zip" -C "%ARNOLD_ROOT%\source\arnoldsdk"
-del "%ARNOLD_ROOT%\source\arnoldsdk.zip"
+    echo ==^> Unpacking Arnold SDK…
+    if not exist "%ARNOLD_ROOT%\source\arnoldsdk" mkdir "%ARNOLD_ROOT%\source\arnoldsdk"
+
+    :: Use tar from Windows 10+ or Git
+    tar -xf "%ARNOLD_ROOT%\source\arnoldsdk.zip" -C "%ARNOLD_ROOT%\source\arnoldsdk"
+    del "%ARNOLD_ROOT%\source\arnoldsdk.zip"
+)
 
 ::::::::::::::::::::::::::::::::::::::::
 :: QUICK FIXES
@@ -89,12 +92,11 @@ cmake "%ARNOLD_ROOT%\source\arnoldusd" ^
     -DUSD_LIBRARY_DIR="%ARNOLD_ROOT%\source\blender\usd\lib" ^
     -DUSD_BINARY_DIR="%ARNOLD_ROOT%\source\blender\usd\bin" ^
     -DUSD_LIB_PREFIX="" ^
-    -DUSD_LIBRARIES="%ARNOLD_ROOT%\source\blender\usd\lib\usd_ms.lib" ^
+    -DUSD_LIBRARIES="%ARNOLD_ROOT%\source\blender\usd\lib\usd_ms.dll" ^
     -DPython3_ROOT="%ARNOLD_ROOT%\source\blender\python\311" ^
     -DTBB_LIBRARIES_RELEASE="%ARNOLD_ROOT%\source\blender\tbb\lib" ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DUSD_MONOLITHIC_BUILD=True ^
-    -DBUILD_WITH_USD_STATIC=True ^
     -DBUILD_USDGENSCHEMA_ARNOLD=OFF ^
     -DBUILD_PROCEDURAL=OFF ^
     -DBUILD_DOCS=OFF ^
@@ -102,14 +104,13 @@ cmake "%ARNOLD_ROOT%\source\arnoldusd" ^
     -DBUILD_SCHEMAS=OFF ^
     -DTBB_ROOT_DIR="%ARNOLD_ROOT%\source\blender\tbb"
 
-
 echo.
 echo ==^> Building Arnold USD…
 cmake --build . --config Release --target install
 
 echo.
 echo ==^> Copying Arnold SDK into install root…
-robocopy "%ARNOLD_ROOT%\source\arnoldsdk" "%INSTALL_ROOT%" /E >nul
+REM robocopy "%ARNOLD_ROOT%\source\arnoldsdk" "%INSTALL_ROOT%" /E >nul
 
 echo.
 echo ==^> Build finished!
