@@ -94,7 +94,7 @@ cmake "%ARNOLD_ROOT%\source\arnoldusd" ^
     -DUSD_LIB_PREFIX="" ^
     -DUSD_LIBRARIES="%ARNOLD_ROOT%\source\blender\usd\lib\usd_ms.dll" ^
     -DPython3_ROOT="%ARNOLD_ROOT%\source\blender\python\311" ^
-    -DTBB_LIBRARIES_RELEASE="%ARNOLD_ROOT%\source\blender\tbb\lib" ^
+    -DTBB_LIBRARIES_RELEASE="%ARNOLD_ROOT%\source\blender\tbb\lib\tbb.lib" ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DUSD_MONOLITHIC_BUILD=True ^
     -DBUILD_USDGENSCHEMA_ARNOLD=OFF ^
