@@ -11,10 +11,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from . import engine, properties, ui
+from . import engine, properties, ui, operators, btoa_env
 
 
 def register():
+    btoa_env.register()
+    operators.register()
     engine.register()
     properties.register()
     ui.register()
@@ -24,3 +26,4 @@ def unregister():
     ui.unregister()
     properties.unregister()
     engine.unregister()
+    operators.unregister()

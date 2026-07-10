@@ -14,17 +14,25 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
     @classmethod
     def register(cls):        
         import pxr.Plug
-        plugin_path = os.path.join(os.environ.get("BTOA_ROOT", ""), "plugin")
-        print(plugin_path)
-        pxr.Plug.Registry().RegisterPlugins(plugin_path)
+        btoa_root = os.environ.get("BTOA_ROOT", "")
+        if btoa_root:
+            plugin_path = os.path.abspath(os.path.join(btoa_root, "plugin"))
+            print(f"[BtoA] Registering USD plugin path: {plugin_path}")
+            if os.path.exists(plugin_path):
+                pxr.Plug.Registry().RegisterPlugins(plugin_path)
+            else:
+                print(f"[BtoA] Warning: USD plugin path does not exist. Please build the delegate.")
+        else:
+            print("[BtoA] Warning: BTOA_ROOT is not set. Cannot register USD plugins.")
 
     def get_render_settings(self, engine_type):
-        settings = {}
+        settings = {
+            "aovToken:Combined": "color",
+        }
 
         if engine_type != 'VIEWPORT':
             settings |= {
                 # Beauty
-                "aovToken:Combined": "color",
                 "aovDescriptor:Combined": {
                     "sourceName": "RGBA",
                     
