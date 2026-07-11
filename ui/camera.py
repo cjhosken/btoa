@@ -31,6 +31,7 @@ class ARNOLD_HYDRA_CAMERA_PT_arnold(Panel):
         layout.separator()
         layout.label(text="Lens")
         layout.prop(arnold, "radial_distortion")
+        layout.prop(arnold, "radial_distortion_type")
         layout.prop(arnold, "lens_tilt")
         layout.prop(arnold, "lens_shift")
 

@@ -23,34 +23,44 @@ class ARNOLD_HYDRA_GEOM_PT_arnold(Panel):
         layout.use_property_split = True
 
         obj = context.object
-        mesh = obj.data
-        arnold = mesh.arnold
+        arnold = obj.arnold
 
+        # Settings Section
+        layout.label(text="Settings")
+        layout.prop(arnold, "opaque")
+        layout.prop(arnold, "matte")
+        layout.prop(arnold, "smoothing")
+        layout.prop(arnold, "invert_normals")
+        layout.prop(arnold, "receive_shadows")
+        layout.prop(arnold, "self_shadows")
+
+        layout.separator()
         layout.label(text="Subdivision")
         layout.prop(arnold, "subdiv_type")
         layout.prop(arnold, "subdiv_iterations")
-        layout.prop(arnold, "frustum_ignore")
+        layout.prop(arnold, "subdiv_frustum_ignore")
 
-        layout.prop(arnold, "uv_smoothing")
-        layout.prop(arnold, "smooth_derivatives")
+        layout.prop(arnold, "subdiv_uv_smoothing")
+        layout.prop(arnold, "subdiv_smooth_derivs")
 
         layout.separator()
         layout.label(text="Adaptive Subdivision")
-        layout.prop(arnold, "adaptive_metric")
-        layout.prop(arnold, "adaptive_error")
-        layout.prop(arnold, "adaptive_space")
+        layout.prop(arnold, "subdiv_adaptive_metric")
+        layout.prop(arnold, "subdiv_adaptive_error")
+        layout.prop(arnold, "subdiv_adaptive_space")
 
         layout.separator()
         layout.label(text="Height")
-        layout.prop(arnold, "height")
-        layout.prop(arnold, "zero_value")
-        layout.prop(arnold, "padding")
+        layout.prop(arnold, "disp_height")
+        layout.prop(arnold, "disp_zero_value")
+        layout.prop(arnold, "disp_padding")
 
         layout.separator()
         layout.label(text="Autobump Visibility")
-        layout.prop(arnold, "autobump")
+        layout.prop(arnold, "disp_autobump")
         col = layout.column(align=True)
-        col.active = arnold.autobump
+        col.active = arnold.disp_autobump
+        
         col.prop(arnold, "autobump_camera")
         col.prop(arnold, "autobump_shadow")
         col.prop(arnold, "autobump_diffuse_transmit")
@@ -95,6 +105,7 @@ class ARNOLD_HYDRA_GEOM_PT_arnold(Panel):
         layout.separator()
         layout.label(text="Curves / Points")
         layout.prop(arnold, "min_pixel_width")
+        layout.prop(arnold, "radius")
         layout.prop(arnold, "default_radius")
         layout.prop(arnold, "basis")
         layout.prop(arnold, "mode")
@@ -109,13 +120,12 @@ class ARNOLD_HYDRA_GEOM_PT_mesh_light(Panel):
         layout = self.layout
         layout.use_property_split = True
 
-        mesh = context.object.data
-        arnold = mesh.arnold
+        arnold = context.object.arnold
 
-        layout.prop(arnold, "geom_light")
+        layout.prop(arnold, "light")
 
         col = layout.column(align=True)
-        col.active = arnold.geom_light
+        col.active = arnold.light
         col.prop(arnold, "light_color")
         col.prop(arnold, "light_intensity")
         col.prop(arnold, "light_exposure")

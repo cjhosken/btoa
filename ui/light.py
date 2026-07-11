@@ -20,14 +20,9 @@ class ARNOLD_HYDRA_LIGHT_PT_light(Panel):
     def draw(self, context):
         layout = self.layout
         light = context.light
-        arnold = light.arnold
 
         layout.use_property_split = True
-
-        if not arnold.dome_light:
-            layout.prop(light, "type", expand=True)
-
-        layout.prop(arnold, "dome_light")
+        layout.prop(light, "type", expand=True)
         layout.prop(light, "color")
 
         row = layout.row(align=True)
@@ -40,9 +35,7 @@ class ARNOLD_HYDRA_LIGHT_PT_light(Panel):
         layout.prop(light, "exposure")
         layout.prop(light, "normalize")
 
-        if arnold.dome_light:
-            pass
-        elif light.type == 'POINT':
+        if light.type == 'POINT':
             layout.prop(light, "shadow_soft_size", text="Radius")
         elif light.type == 'SUN':
             layout.prop(light, "angle")
@@ -87,36 +80,42 @@ class ARNOLD_HYDRA_LIGHT_PT_arnold(bpy.types.Panel):
 
         layout.separator()
 
-        if arnold.dome_light:
-            layout.prop(arnold, "resolution")
-        elif light.type in {'POINT', 'SPOT', 'SUN'}:
+        layout.prop(arnold, "resolution")
+        layout.prop(arnold, "portal")
+        layout.prop(arnold, "portal_mode")
+
+        if light.type in {'POINT', 'SPOT', 'SUN'}:
             layout.prop(arnold, "spread")
+            if light.type == 'SUN':
+                layout.prop(arnold, "angle")
         elif light.type == 'AREA':
             layout.prop(arnold, "roundness")
             layout.prop(arnold, "spread")
             layout.prop(arnold, "soft_edge")
             layout.prop(arnold, "aspect_ratio")
             layout.prop(arnold, "lens_radius")
+            layout.prop(arnold, "portal")
+            layout.prop(arnold, "portal_mode")
 
         layout.separator()
 
+        layout.prop(arnold, "cast_shadows")
         layout.prop(arnold, "shadow_density")
         layout.prop(arnold, "cast_volumetric_shadows")
 
         layout.separator()
 
-        layout.prop(arnold, "camera_contribution")
-        layout.prop(arnold, "diffuse_contribution")
-        layout.prop(arnold, "specular_contribution")
-        layout.prop(arnold, "transmission_contribution")
-        layout.prop(arnold, "subsurface_contribution")
-        layout.prop(arnold, "volume_contribution")
-        layout.prop(arnold, "indirect_contribution")
+        layout.prop(arnold, "camera")
+        layout.prop(arnold, "diffuse")
+        layout.prop(arnold, "specular")
+        layout.prop(arnold, "transmission")
+        layout.prop(arnold, "subsurface")
+        layout.prop(arnold, "volume")
+        layout.prop(arnold, "indirect")
         layout.prop(arnold, "max_bounces")
 
         layout.separator()
-
-        layout.prop(arnold, "aov_light_group")
+        layout.prop(arnold, "aov_indirect")
 
 
 def register():

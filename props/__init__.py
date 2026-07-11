@@ -1,9 +1,9 @@
-from . import light, geom, camera, render
+from . import light, shape, camera, render
 
 
 def register():
     light.register()
-    geom.register()
+    shape.register()
     camera.register()
     render.register()
 
@@ -11,5 +11,5 @@ def register():
 def unregister():
     render.unregister()
     camera.unregister()
-    geom.unregister()
+    shape.unregister()
     light.unregister()
