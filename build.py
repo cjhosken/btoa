@@ -2,8 +2,6 @@
 import os
 import sys
 import shutil
-import urllib.request
-import tarfile
 import subprocess
 import argparse
 
@@ -44,10 +42,9 @@ def run_cmd(cmd, cwd=None):
 
 def main():
     parser = argparse.ArgumentParser(description="Build Arnold USD Render Delegate for btoa")
-    parser.add_argument("--blender-version", default="5.0", help="Blender version (default: 5.0)")
-    parser.add_argument("--arnold-version", default="7.4.4.0", help="Arnold version (default: 7.4.4.0)")
-    parser.add_argument("--arnold-sdk-url", help="Override Arnold SDK download URL")
-    parser.add_argument("--arnold-sdk-local", help="Path to local Arnold SDK directory or tarball (skips download)")
+    parser.add_argument("--blender-version", default="5.2", help="Blender version (default: 5.2)")
+    parser.add_argument("--arnold-version", default="7.4.5.2", help="Arnold version (default: 7.4.5.2)")
+    parser.add_argument("--arnold-sdk", required=True, help="Path to local Arnold SDK directory")
     parser.add_argument("--build-dir", help="Override build workspace directory")
     parser.add_argument("--install-dir", help="Override install destination directory")
     
@@ -98,42 +95,16 @@ def main():
     else:
         log("Blender libraries already exist, skipping clone.")
         
-    # 3. Fetch/Setup Arnold SDK
+    # 3. Setup Arnold SDK
     sdk_target_dir = os.path.join(source_dir, "arnoldsdk")
-    if args.arnold_sdk_local and os.path.isdir(args.arnold_sdk_local):
-        log(f"Using local Arnold SDK from {args.arnold_sdk_local}")
-        if os.path.exists(sdk_target_dir):
-            shutil.rmtree(sdk_target_dir)
-        shutil.copytree(args.arnold_sdk_local, sdk_target_dir)
-    else:
-        # Need to extract/download
-        archive_path = os.path.join(source_dir, "arnoldsdk.tgz")
-        
-        if args.arnold_sdk_local and os.path.isfile(args.arnold_sdk_local):
-            log(f"Using local Arnold SDK archive: {args.arnold_sdk_local}")
-            shutil.copy2(args.arnold_sdk_local, archive_path)
-        else:
-            url = args.arnold_sdk_url or f"https://github.com/cjhosken/btoa/releases/download/btoa-{arnold_version}/Arnold-{arnold_version}-linux.tgz"
-            log(f"Downloading Arnold SDK from {url}...")
-            try:
-                urllib.request.urlretrieve(url, archive_path)
-            except Exception as e:
-                # Try fallback url using tags directly (matching the original build.sh structure just in case)
-                fallback_url = f"https://github.com/cjhosken/btoa/releases/tag/btoa-{arnold_version}/Arnold-{arnold_version}-linux.tgz"
-                log(f"Failed to download from primary URL. Trying fallback: {fallback_url}...")
-                try:
-                    urllib.request.urlretrieve(fallback_url, archive_path)
-                except Exception as e_fallback:
-                    log(f"Error downloading Arnold SDK: {e_fallback}")
-                    sys.exit(1)
-                    
-        log("Extracting Arnold SDK...")
-        if os.path.exists(sdk_target_dir):
-            shutil.rmtree(sdk_target_dir)
-        os.makedirs(sdk_target_dir, exist_ok=True)
-        with tarfile.open(archive_path, "r:gz") as tar:
-            tar.extractall(path=sdk_target_dir)
-        os.remove(archive_path)
+    arnold_sdk_path = os.path.abspath(args.arnold_sdk)
+    if not os.path.isdir(arnold_sdk_path):
+        log(f"Error: Arnold SDK path does not exist: {arnold_sdk_path}")
+        sys.exit(1)
+    log(f"Using local Arnold SDK from {arnold_sdk_path}")
+    if os.path.exists(sdk_target_dir):
+        shutil.rmtree(sdk_target_dir)
+    shutil.copytree(arnold_sdk_path, sdk_target_dir)
         
     # 4. Quick fix for stddef.h in TBB
     oneapi_version_h = os.path.join(blender_libs_dir, "tbb", "include", "oneapi", "tbb", "version.h")
@@ -162,12 +133,13 @@ def main():
         f"-DTBB_tbbmalloc_LIBRARY={os.path.join(blender_libs_dir, 'tbb', 'lib', 'libtbbmalloc.so')}",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DCMAKE_TOOLCHAIN_FILE=",
-        "-DUSD_MONOLITHIC_BUILD=True",
+        "-DUSD_MONOLITHIC_BUILD=ON",
         "-DBUILD_USDGENSCHEMA_ARNOLD=OFF",
         "-DBUILD_PROCEDURAL=OFF",
         "-DBUILD_DOCS=OFF",
         "-DBUILD_TESTSUITE=OFF",
-        "-DBUILD_SCHEMAS=OFF"
+        "-DBUILD_SCHEMAS=OFF",
+        "-DBUILD_SCENE_INDEX_PLUGIN=ON"
     ]
     run_cmd(cmake_args, cwd=build_dir)
     
