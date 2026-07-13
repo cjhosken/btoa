@@ -19,8 +19,151 @@ def update_render_device(self, context):
 
 
 
-class ArnoldAovShader(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name="Name", default="")
+class ArnoldCustomRenderVar(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(name="Name", default="custom_pass")
+    format: bpy.props.EnumProperty(
+        name="Format",
+        items=[
+            ("float", "32-bit Float", ""),
+            ("half", "16-bit Float", ""),
+            ("int", "Int", ""),
+        ],
+        default="float"
+    )
+    data_type: bpy.props.EnumProperty(
+        name="Data Type",
+        items=[
+            ("color3f", "color3f", ""),
+            ("color4f", "color4f", ""),
+            ("float", "float", ""),
+            ("vector3f", "vector3f", ""),
+            ("point3f", "point3f", ""),
+            ("normal3f", "normal3f", ""),
+            ("int", "int", ""),
+        ],
+        default="color3f"
+    )
+    source_name: bpy.props.StringProperty(name="Source Name", default="RGBA")
+    source_type: bpy.props.EnumProperty(
+        name="Source Type",
+        items=[
+            ("raw", "raw", ""),
+            ("lpe", "lpe", ""),
+            ("primvar", "primvar", ""),
+        ],
+        default="raw"
+    )
+    filter: bpy.props.EnumProperty(
+        name="Filter",
+        items=[
+            ("box_filter", "Box", ""),
+            ("closest_filter", "Closest", ""),
+            ("gaussian_filter", "Gaussian", ""),
+        ],
+        default="box_filter"
+    )
+
+
+BUILTIN_AOVS = {
+    "STANDARD": [
+        ("RGBA", "RGBA", "box_filter", "float"),
+        ("A", "A", "box_filter", "float"),
+        ("P", "P", "box_filter", "float"),
+        ("Pref", "Pref", "box_filter", "float"),
+        ("N", "N", "box_filter", "float"),
+        ("N_Denoise", "N (Denoise)", "box_filter", "float"),
+        ("Opacity", "Opacity", "box_filter", "float"),
+        ("Z", "Z", "closest_filter", "float"),
+        ("Z_Back", "Z (Back)", "closest_filter", "float"),
+    ],
+    "LIGHTING": [
+        ("Direct", "Direct", "box_filter", "float"),
+        ("Indirect", "Indirect", "box_filter", "float"),
+        ("Emission", "Emission", "box_filter", "float"),
+        ("Background", "Background", "box_filter", "float"),
+        ("Albedo", "Albedo", "box_filter", "float"),
+        ("Denoise_Albedo", "Denoise Albedo", "box_filter", "float"),
+        ("Specular", "Specular", "box_filter", "float"),
+        ("Specular_Direct", "Specular Direct", "box_filter", "float"),
+        ("Specular_Indirect", "Specular Indirect", "box_filter", "float"),
+        ("Specular_Albedo", "Specular Albedo", "box_filter", "float"),
+        ("SSS", "SSS", "box_filter", "float"),
+        ("SSS_Albedo", "SSS Albedo", "box_filter", "float"),
+        ("SSS_Direct", "SSS Direct", "box_filter", "float"),
+        ("SSS_Indirect", "SSS Indirect", "box_filter", "float"),
+        ("Transmission", "Transmission", "box_filter", "float"),
+        ("Transmission_Direct", "Transmission Direct", "box_filter", "float"),
+        ("Transmission_Indirect", "Transmission Indirect", "box_filter", "float"),
+        ("Transmission_Albedo", "Transmission Albedo", "box_filter", "float"),
+        ("Shadow_Matte", "Shadow Matte", "box_filter", "float"),
+        ("Diffuse", "Diffuse", "box_filter", "float"),
+        ("Diffuse_Direct", "Diffuse Direct", "box_filter", "float"),
+        ("Diffuse_Indirect", "Diffuse Indirect", "box_filter", "float"),
+        ("Diffuse_Albedo", "Diffuse Albedo", "box_filter", "float"),
+        ("Coat", "Coat", "box_filter", "float"),
+        ("Coat_Direct", "Coat Direct", "box_filter", "float"),
+        ("Coat_Indirect", "Coat Indirect", "box_filter", "float"),
+        ("Coat_Albedo", "Coat Albedo", "box_filter", "float"),
+        ("Sheen", "Sheen", "box_filter", "float"),
+        ("Sheen_Direct", "Sheen Direct", "box_filter", "float"),
+        ("Sheen_Indirect", "Sheen Indirect", "box_filter", "float"),
+        ("Sheen_Albedo", "Sheen Albedo", "box_filter", "float"),
+    ],
+    "VOLUME": [
+        ("Volume", "Volume", "box_filter", "float"),
+        ("Volume_Z", "Volume Z", "box_filter", "float"),
+        ("Volume_Albedo", "Volume Albedo", "box_filter", "float"),
+        ("Volume_Direct", "Volume Direct", "box_filter", "float"),
+        ("Volume_Indirect", "Volume Indirect", "box_filter", "float"),
+        ("Volume_Opacity", "Volume Opacity", "box_filter", "float"),
+    ],
+    "UTILITY": [
+        ("ID", "ID", "box_filter", "half"),
+        ("Object", "Object", "box_filter", "half"),
+        ("Shader", "Shader", "box_filter", "half"),
+        ("Motion_Vector", "Motion Vector", "closest_filter", "float"),
+    ],
+    "DIAGNOSTIC": [
+        ("CPU_Time", "CPU Time", "box_filter", "float"),
+        ("Ray_Count", "Ray Count", "box_filter", "float"),
+        ("AA_Inv_Density", "AA Inv Density", "box_filter", "float"),
+    ],
+}
+
+
+def update_viewport_aov(self, context):
+    if context is None:
+        return
+    arnold = getattr(context.scene.arnold, "global", None)
+    if arnold:
+        arnold.viewport_update_trigger = not arnold.viewport_update_trigger
+    viewport = getattr(context.scene.arnold, "viewport", None)
+    if viewport:
+        viewport.viewport_update_trigger = not viewport.viewport_update_trigger
+    context.scene.update_tag()
+    if context.scene.world:
+        context.scene.world.update_tag()
+    for window in context.window_manager.windows:
+        for area in window.screen.areas:
+            if area.type == 'VIEW_3D':
+                area.tag_redraw()
+
+
+def get_viewport_aov_items(self, context):
+    items = [("RGBA", "Combined (RGBA)", "")]
+    if context and context.scene:
+        arnold = getattr(context.scene.arnold, "global", None)
+        if arnold:
+            for cat, aovs in BUILTIN_AOVS.items():
+                for name, label, def_filt, def_fmt in aovs:
+                    if name == "RGBA":
+                        continue
+                    if getattr(arnold, f"aov_{name}_enabled", False):
+                        items.append((name, label, ""))
+            for item in arnold.custom_render_vars:
+                if item.name:
+                    items.append((item.name, item.name, ""))
+    return items
 
 
 class ArnoldImager(bpy.types.PropertyGroup):
@@ -451,125 +594,46 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         default=1
     )
 
-    aov_shaders: bpy.props.CollectionProperty(
-        type=ArnoldAovShader
+    custom_render_vars: bpy.props.CollectionProperty(type=ArnoldCustomRenderVar)
+    custom_active_index: bpy.props.IntProperty(name="Active Custom Render Var Index", default=0)
+    aov_active_tab: bpy.props.EnumProperty(
+        name="AOV Tab",
+        items=[
+            ("STANDARD", "Standard", ""),
+            ("LIGHTING", "Lighting", ""),
+            ("VOLUME", "Volume", ""),
+            ("UTILITY", "Utility", ""),
+            ("DIAGNOSTIC", "Diagnostic", ""),
+            ("CUSTOM", "Custom", ""),
+        ],
+        default="STANDARD"
     )
-
-    aov_active_index: bpy.props.IntProperty(
-        name="Active AOV Index",
-        default=0
-    )
-
-    aov_combined: bpy.props.BoolProperty(
-        name="Combined",
-        description="Enable Combined (beauty RGBA) AOV pass",
-        default=True
-    )
-
-    aov_depth: bpy.props.BoolProperty(
-        name="Depth",
-        description="Enable Depth (Z) AOV pass",
-        default=True
-    )
-
-    aov_position: bpy.props.BoolProperty(
-        name="Position",
-        description="Enable Position (P) AOV pass",
-        default=False
-    )
-
-    aov_normal: bpy.props.BoolProperty(
-        name="Normal",
-        description="Enable Normal (N) AOV pass",
-        default=False
-    )
-
-    aov_diffuse: bpy.props.BoolProperty(name="Diffuse", default=False)
-    aov_specular: bpy.props.BoolProperty(name="Specular", default=False)
-    aov_transmission: bpy.props.BoolProperty(name="Transmission", default=False)
-    aov_sss: bpy.props.BoolProperty(name="Subsurface (SSS)", default=False)
-    aov_volume: bpy.props.BoolProperty(name="Volume", default=False)
-    aov_direct: bpy.props.BoolProperty(name="Direct", default=False)
-    aov_indirect: bpy.props.BoolProperty(name="Indirect", default=False)
-    aov_coat: bpy.props.BoolProperty(name="Coat", default=False)
-    aov_sheen: bpy.props.BoolProperty(name="Sheen", default=False)
-    aov_emission: bpy.props.BoolProperty(name="Emission", default=False)
-    aov_albedo: bpy.props.BoolProperty(name="Albedo", default=False)
-    aov_diffuse_direct: bpy.props.BoolProperty(name="Diffuse Direct", default=False)
-    aov_diffuse_indirect: bpy.props.BoolProperty(name="Diffuse Indirect", default=False)
-    aov_specular_direct: bpy.props.BoolProperty(name="Specular Direct", default=False)
-    aov_specular_indirect: bpy.props.BoolProperty(name="Specular Indirect", default=False)
-    aov_transmission_direct: bpy.props.BoolProperty(name="Transmission Direct", default=False)
-    aov_transmission_indirect: bpy.props.BoolProperty(name="Transmission Indirect", default=False)
-    aov_sss_direct: bpy.props.BoolProperty(name="SSS Direct", default=False)
-    aov_sss_indirect: bpy.props.BoolProperty(name="SSS Indirect", default=False)
-    aov_volume_direct: bpy.props.BoolProperty(name="Volume Direct", default=False)
-    aov_volume_indirect: bpy.props.BoolProperty(name="Volume Indirect", default=False)
-    aov_motionvector: bpy.props.BoolProperty(name="Motion Vector", default=False)
-    aov_alpha: bpy.props.BoolProperty(name="Alpha", default=False)
     viewport_update_trigger: bpy.props.BoolProperty(default=False)
 
-
-def get_viewport_aov_items(self, context):
-    items = [("RGBA", "Combined (RGBA)", "")]
-    if context and context.scene:
-        arnold = getattr(context.scene.arnold, "global", None)
-        if arnold:
-            if arnold.aov_depth:
-                items.append(("depth", "Depth (Z)", ""))
-            if arnold.aov_position:
-                items.append(("P", "Position (P)", ""))
-            if arnold.aov_normal:
-                items.append(("N", "Normal (N)", ""))
-            
-            for prop, label in [
-                ("diffuse", "Diffuse"),
-                ("specular", "Specular"),
-                ("transmission", "Transmission"),
-                ("sss", "Subsurface (SSS)"),
-                ("volume", "Volume"),
-                ("direct", "Direct"),
-                ("indirect", "Indirect"),
-                ("coat", "Coat"),
-                ("sheen", "Sheen"),
-                ("emission", "Emission"),
-                ("albedo", "Albedo"),
-                ("diffuse_direct", "Diffuse Direct"),
-                ("diffuse_indirect", "Diffuse Indirect"),
-                ("specular_direct", "Specular Direct"),
-                ("specular_indirect", "Specular Indirect"),
-                ("transmission_direct", "Transmission Direct"),
-                ("transmission_indirect", "Transmission Indirect"),
-                ("sss_direct", "SSS Direct"),
-                ("sss_indirect", "SSS Indirect"),
-                ("volume_direct", "Volume Direct"),
-                ("volume_indirect", "Volume Indirect"),
-                ("motionvector", "Motion Vector"),
-                ("alpha", "Alpha (A)")
-            ]:
-                if getattr(arnold, f"aov_{prop}", False):
-                    val = "A" if prop == "alpha" else prop
-                    items.append((val, label, ""))
-    return items
-
-
-def update_viewport_aov(self, context):
-    if context is None:
-        return
-    arnold = getattr(context.scene.arnold, "global", None)
-    if arnold:
-        arnold.viewport_update_trigger = not arnold.viewport_update_trigger
-    viewport = getattr(context.scene.arnold, "viewport", None)
-    if viewport:
-        viewport.viewport_update_trigger = not viewport.viewport_update_trigger
-    context.scene.update_tag()
-    if context.scene.world:
-        context.scene.world.update_tag()
-    for window in context.window_manager.windows:
-        for area in window.screen.areas:
-            if area.type == 'VIEW_3D':
-                area.tag_redraw()
-
+# Register built-in AOV properties dynamically on ArnoldGlobalRenderProperties
+for cat, aovs in BUILTIN_AOVS.items():
+    for name, label, def_filt, def_fmt in aovs:
+        ArnoldGlobalRenderProperties.__annotations__[f"aov_{name}_enabled"] = bpy.props.BoolProperty(
+            name=label,
+            default=(name == "RGBA" or name == "Z")
+        )
+        ArnoldGlobalRenderProperties.__annotations__[f"aov_{name}_filter"] = bpy.props.EnumProperty(
+            name="Filter",
+            items=[
+                ("box_filter", "Box", ""),
+                ("closest_filter", "Closest", ""),
+                ("gaussian_filter", "Gaussian", ""),
+            ],
+            default=def_filt
+        )
+        ArnoldGlobalRenderProperties.__annotations__[f"aov_{name}_format"] = bpy.props.EnumProperty(
+            name="Format",
+            items=[
+                ("float", "32-bit", ""),
+                ("half", "16-bit", ""),
+            ],
+            default=def_fmt
+        )
 
 class ArnoldViewportShadingProperties(bpy.types.PropertyGroup):
     viewport_aov: bpy.props.EnumProperty(
@@ -587,7 +651,7 @@ ArnoldRenderProperties.__annotations__['global'] = bpy.props.PointerProperty(typ
 
 
 def register():
-    bpy.utils.register_class(ArnoldAovShader)
+    bpy.utils.register_class(ArnoldCustomRenderVar)
     bpy.utils.register_class(ArnoldImager)
     bpy.utils.register_class(ArnoldGlobalRenderProperties)
     bpy.utils.register_class(ArnoldViewportShadingProperties)
@@ -615,4 +679,4 @@ def unregister():
     bpy.utils.unregister_class(ArnoldViewportShadingProperties)
     bpy.utils.unregister_class(ArnoldGlobalRenderProperties)
     bpy.utils.unregister_class(ArnoldImager)
-    bpy.utils.unregister_class(ArnoldAovShader)
+    bpy.utils.unregister_class(ArnoldCustomRenderVar)

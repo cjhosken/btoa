@@ -8,6 +8,84 @@ def _set_usd_export_method():
     return None  # Don't repeat
 
 
+def get_usd_aov_types(name, user_fmt):
+    is_half = (user_fmt == "half")
+    if name == "RGBA":
+        dataType = "color4f"
+    elif name in {"A", "Z", "Z_Back", "Volume_Z", "CPU_Time", "Ray_Count", "AA_Inv_Density"}:
+        dataType = "float"
+    elif name in {"P", "Pref", "N", "N_Denoise", "Motion_Vector"}:
+        dataType = "half3" if is_half else "float3"
+    elif name in {"ID", "Object", "Shader"}:
+        dataType = "int"
+    else:
+        dataType = "color3f"
+
+    is_int = (user_fmt == "int")
+
+    if dataType == "color4f":
+        fmt = "color4h" if is_half else "color4f"
+    elif dataType == "color3f":
+        fmt = "color3h" if is_half else "color3f"
+    elif dataType in {"vector3f", "point3f", "normal3f", "float3", "half3"}:
+        fmt = "half3" if is_half else "float3"
+    elif dataType == "float":
+        fmt = "float16" if is_half else "float"
+    elif dataType == "int":
+        fmt = "int"
+    else:
+        fmt = dataType
+
+    return dataType, fmt
+
+
+def get_arnold_source_name(name):
+    mapping = {
+        "RGBA": "RGBA",
+        "A": "A",
+        "P": "P",
+        "Pref": "Pref",
+        "N": "N",
+        "N_Denoise": "N",
+        "Opacity": "opacity",
+        "Z": "Z",
+        "Z_Back": "Z",
+        "Denoise_Albedo": "denoise_albedo",
+        "Specular_Direct": "specular_direct",
+        "Specular_Indirect": "specular_indirect",
+        "Specular_Albedo": "specular_albedo",
+        "SSS_Albedo": "sss_albedo",
+        "SSS_Direct": "sss_direct",
+        "SSS_Indirect": "sss_indirect",
+        "Transmission_Direct": "transmission_direct",
+        "Transmission_Indirect": "transmission_indirect",
+        "Transmission_Albedo": "transmission_albedo",
+        "Shadow_Matte": "shadow_matte",
+        "Diffuse_Direct": "diffuse_direct",
+        "Diffuse_Indirect": "diffuse_indirect",
+        "Diffuse_Albedo": "diffuse_albedo",
+        "Coat_Direct": "coat_direct",
+        "Coat_Indirect": "coat_indirect",
+        "Coat_Albedo": "coat_albedo",
+        "Sheen_Direct": "sheen_direct",
+        "Sheen_Indirect": "sheen_indirect",
+        "Sheen_Albedo": "sheen_albedo",
+        "Volume_Z": "volume_z",
+        "Volume_Albedo": "volume_albedo",
+        "Volume_Direct": "volume_direct",
+        "Volume_Indirect": "volume_indirect",
+        "Volume_Opacity": "volume_opacity",
+        "ID": "id",
+        "Object": "object",
+        "Shader": "shader",
+        "Motion_Vector": "motionvector",
+        "CPU_Time": "cpu_time",
+        "Ray_Count": "ray_count",
+        "AA_Inv_Density": "aa_inv_density",
+    }
+    return mapping.get(name, name.lower())
+
+
 class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
     bl_idname = "ARNOLD"
     bl_label = "HdArnold"
@@ -64,12 +142,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
         if is_viewport:
             print(f"[BtoA] Active Viewport AOV: {active_aov}")
 
-        # Viewport always needs the beauty/active pass; final renders respect the checkbox
-        if is_viewport or (final and final.aov_combined):
-            if is_viewport:
-                result["aovToken:Combined"] = "color" if active_aov == "RGBA" else active_aov
-            else:
-                result["aovToken:Combined"] = "color"
+
 
         if settings is not None:
             result |= {
@@ -130,158 +203,160 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
         # Only meaningful for final renders, not viewport.
 
 
-        if is_viewport or (final and final.aov_combined):
-            if active_aov == "depth":
+        # Combined pass (beauty RGBA)
+        if True:
+            filt = settings.aov_RGBA_filter if settings else "box_filter"
+            if is_viewport:
+                result["aovToken:Combined"] = "color" if active_aov == "RGBA" else active_aov
+                source_name = active_aov
+                if active_aov == "Z":
+                    source_name = "Z"
+                    filt = getattr(settings, "aov_Z_filter", "closest_filter") if settings else "closest_filter"
+                elif active_aov == "A":
+                    source_name = "A"
+                    filt = getattr(settings, "aov_A_filter", "box_filter") if settings else "box_filter"
+                else:
+                    filt = getattr(settings, f"aov_{active_aov}_filter", "box_filter") if settings else "box_filter"
+
                 result["aovDescriptor:Combined"] = {
-                    "sourceName": "Z",
+                    "sourceName": source_name,
                     "sourceType": "raw",
-                    "dataType": "color4f" if is_viewport else "float",
+                    "dataType": "color4f",
                     "driver:parameters:aov:name": "RGBA",
-                    "driver:parameters:aov:format": "color4f" if is_viewport else "float",
-                    "driver:parameters:aov:clearValue": 1e30,
-                    "driver:parameters:aov:multiSampled": False,
-                    "arnold:filter": "closest_filter",
-                }
-            elif active_aov == "A":
-                result["aovDescriptor:Combined"] = {
-                    "sourceName": "A",
-                    "sourceType": "raw",
-                    "dataType": "color4f" if is_viewport else "float",
-                    "driver:parameters:aov:name": "RGBA",
-                    "driver:parameters:aov:format": "color4f" if is_viewport else "float",
-                    "driver:parameters:aov:clearValue": 0.0,
-                    "driver:parameters:aov:multiSampled": False,
-                    "arnold:filter": "box_filter",
-                }
-            else:
-                filt = "closest_filter" if active_aov in {"P", "N", "motionvector"} else "box_filter"
-                result["aovDescriptor:Combined"] = {
-                    "sourceName": active_aov,
-                    "sourceType": "raw",
-                    "dataType": "color4f" if is_viewport else ("color3f" if active_aov != "RGBA" else "color4f"),
-                    "driver:parameters:aov:name": "RGBA",
-                    "driver:parameters:aov:format": "color4f" if is_viewport else ("color3f" if active_aov != "RGBA" else "color4f"),
-                    "driver:parameters:aov:clearValue": 0,
+                    "driver:parameters:aov:format": "color4f",
+                    "driver:parameters:aov:clearValue": 1e30 if active_aov == "Z" else 0.0,
                     "driver:parameters:aov:multiSampled": False,
                     "arnold:filter": filt,
                 }
-        if (is_viewport and active_aov != "depth") or (final and final.aov_depth):
+            else:
+                result["aovToken:Combined"] = "color"
+                result["aovDescriptor:Combined"] = {
+                    "sourceName": "RGBA",
+                    "sourceType": "raw",
+                    "dataType": "color4f",
+                    "driver:parameters:aov:name": "RGBA",
+                    "driver:parameters:aov:format": "color4f" if final.aov_RGBA_format == "float" else "color3f",
+                    "driver:parameters:aov:clearValue": 0.0,
+                    "driver:parameters:aov:multiSampled": False,
+                    "arnold:filter": final.aov_RGBA_filter,
+                }
+
+        # Depth pass
+        if (is_viewport and active_aov != "Z") or (final and final.aov_Z_enabled):
+            filt = "closest_filter"
+            fmt = "float"
+            if final:
+                filt = final.aov_Z_filter
+                dataType, fmt = get_usd_aov_types("Z", final.aov_Z_format)
+
             result["aovToken:Depth"] = "depth"
             result["aovDescriptor:Depth"] = {
                 "sourceName": "Z",
                 "sourceType": "raw",
                 "dataType": "float",
                 "driver:parameters:aov:name": "Z",
-                "driver:parameters:aov:format": "float",
+                "driver:parameters:aov:format": fmt,
                 "driver:parameters:aov:clearValue": 1e30,
                 "driver:parameters:aov:multiSampled": False,
-                "arnold:filter": "closest_filter",
+                "arnold:filter": filt,
             }
-        if (not is_viewport) and (final and final.aov_position):
-            result["aovToken:P"] = "P"
-            result["aovDescriptor:P"] = {
-                "sourceName": "P",
-                "sourceType": "raw",
-                "dataType": "color3f",
-                "driver:parameters:aov:name": "P",
-                "driver:parameters:aov:format": "color3f",
-                "driver:parameters:aov:clearValue": 0,
-                "driver:parameters:aov:multiSampled": False,
-                "arnold:filter": "closest_filter",
-            }
-        if (not is_viewport) and (final and final.aov_normal):
-            result["aovToken:N"] = "N"
-            result["aovDescriptor:N"] = {
-                "sourceName": "N",
-                "sourceType": "raw",
-                "dataType": "color3f",
-                "driver:parameters:aov:name": "N",
-                "driver:parameters:aov:format": "color3f",
-                "driver:parameters:aov:clearValue": 0,
-                "driver:parameters:aov:multiSampled": False,
-                "arnold:filter": "closest_filter",
-            }
-        for prop, arnold_name, pass_name, data_type, fmt, filt in [
-            ("diffuse", "diffuse", "Diffuse", "color3f", "color3f", "box_filter"),
-            ("specular", "specular", "Specular", "color3f", "color3f", "box_filter"),
-            ("transmission", "transmission", "Transmission", "color3f", "color3f", "box_filter"),
-            ("sss", "sss", "SSS", "color3f", "color3f", "box_filter"),
-            ("volume", "volume", "Volume", "color3f", "color3f", "box_filter"),
-            ("direct", "direct", "Direct", "color3f", "color3f", "box_filter"),
-            ("indirect", "indirect", "Indirect", "color3f", "color3f", "box_filter"),
-            ("coat", "coat", "Coat", "color3f", "color3f", "box_filter"),
-            ("sheen", "sheen", "Sheen", "color3f", "color3f", "box_filter"),
-            ("emission", "emission", "Emission", "color3f", "color3f", "box_filter"),
-            ("albedo", "albedo", "Albedo", "color3f", "color3f", "box_filter"),
-            ("diffuse_direct", "diffuse_direct", "Diffuse Direct", "color3f", "color3f", "box_filter"),
-            ("diffuse_indirect", "diffuse_indirect", "Diffuse Indirect", "color3f", "color3f", "box_filter"),
-            ("specular_direct", "specular_direct", "Specular Direct", "color3f", "color3f", "box_filter"),
-            ("specular_indirect", "specular_indirect", "Specular Indirect", "color3f", "color3f", "box_filter"),
-            ("transmission_direct", "transmission_direct", "Transmission Direct", "color3f", "color3f", "box_filter"),
-            ("transmission_indirect", "transmission_indirect", "Transmission Indirect", "color3f", "color3f", "box_filter"),
-            ("sss_direct", "sss_direct", "SSS Direct", "color3f", "color3f", "box_filter"),
-            ("sss_indirect", "sss_indirect", "SSS Indirect", "color3f", "color3f", "box_filter"),
-            ("volume_direct", "volume_direct", "Volume Direct", "color3f", "color3f", "box_filter"),
-            ("volume_indirect", "volume_indirect", "Volume Indirect", "color3f", "color3f", "box_filter"),
-            ("motionvector", "motionvector", "Motion Vector", "color3f", "color3f", "closest_filter"),
-            ("alpha", "A", "Alpha", "float", "float", "box_filter")
-        ]:
-            if (not is_viewport) and final and getattr(final, f"aov_{prop}", False):
-                result[f"aovToken:{pass_name}"] = arnold_name
-                result[f"aovDescriptor:{pass_name}"] = {
-                    "sourceName": arnold_name,
-                    "sourceType": "raw",
-                    "dataType": data_type,
-                    "driver:parameters:aov:name": arnold_name,
+
+        # Add all other enabled built-in AOVs
+        if not is_viewport:
+            from .props.render import BUILTIN_AOVS
+            for cat, aovs in BUILTIN_AOVS.items():
+                for name, label, def_filt, def_fmt in aovs:
+                    if name in {"RGBA", "Z"}:
+                        continue
+                    if getattr(final, f"aov_{name}_enabled", False):
+                        dataType, fmt = get_usd_aov_types(name, getattr(final, f"aov_{name}_format"))
+                        arnold_name = get_arnold_source_name(name)
+                        filt = getattr(final, f"aov_{name}_filter")
+                        
+                        result[f"aovToken:{label}"] = arnold_name
+                        result[f"aovDescriptor:{label}"] = {
+                            "sourceName": arnold_name,
+                            "sourceType": "raw",
+                            "dataType": dataType,
+                            "driver:parameters:aov:name": arnold_name,
+                            "driver:parameters:aov:format": fmt,
+                            "driver:parameters:aov:clearValue": 0.0,
+                            "driver:parameters:aov:multiSampled": False,
+                            "arnold:filter": filt,
+                        }
+
+            # Add custom render vars
+            for item in final.custom_render_vars:
+                if not item.name:
+                    continue
+                is_half = (item.format == "half")
+                dataType = item.data_type
+                
+                if dataType == "color4f":
+                    fmt = "color4h" if is_half else "color4f"
+                elif dataType == "color3f":
+                    fmt = "color3h" if is_half else "color3f"
+                elif dataType in {"vector3f", "point3f", "normal3f"}:
+                    fmt = "half3" if is_half else "float3"
+                elif dataType == "float":
+                    fmt = "float16" if is_half else "float"
+                elif dataType == "int":
+                    fmt = "int"
+                else:
+                    fmt = dataType
+
+                result[f"aovToken:{item.name}"] = item.name
+                result[f"aovDescriptor:{item.name}"] = {
+                    "sourceName": item.source_name,
+                    "sourceType": item.source_type,
+                    "dataType": dataType,
+                    "driver:parameters:aov:name": item.name,
                     "driver:parameters:aov:format": fmt,
                     "driver:parameters:aov:clearValue": 0.0,
                     "driver:parameters:aov:multiSampled": False,
-                    "arnold:filter": filt,
+                    "arnold:filter": item.filter,
                 }
 
         return result
 
 
-
     def update_render_passes(self, scene, render_layer):
         arnold = scene.arnold
         settings = getattr(arnold, "global")
-        if settings:
-            if settings.aov_combined:
-                self.register_pass(scene, render_layer, 'Combined', 4, 'RGBA', 'COLOR')
-            if settings.aov_depth:
-                self.register_pass(scene, render_layer, 'Depth', 1, 'Z', 'VALUE')
-            if settings.aov_position:
-                self.register_pass(scene, render_layer, 'P', 3, 'XYZ', 'VECTOR')
-            if settings.aov_normal:
-                self.register_pass(scene, render_layer, 'N', 3, 'XYZ', 'VECTOR')
-            for prop, arnold_name, pass_name, channels, channel_name, pass_type in [
-                ("diffuse", "diffuse", "Diffuse", 3, "RGB", "COLOR"),
-                ("specular", "specular", "Specular", 3, "RGB", "COLOR"),
-                ("transmission", "transmission", "Transmission", 3, "RGB", "COLOR"),
-                ("sss", "sss", "SSS", 3, "RGB", "COLOR"),
-                ("volume", "volume", "Volume", 3, "RGB", "COLOR"),
-                ("direct", "direct", "Direct", 3, "RGB", "COLOR"),
-                ("indirect", "indirect", "Indirect", 3, "RGB", "COLOR"),
-                ("coat", "coat", "Coat", 3, "RGB", "COLOR"),
-                ("sheen", "sheen", "Sheen", 3, "RGB", "COLOR"),
-                ("emission", "emission", "Emission", 3, "RGB", "COLOR"),
-                ("albedo", "albedo", "Albedo", 3, "RGB", "COLOR"),
-                ("diffuse_direct", "diffuse_direct", "Diffuse Direct", 3, "RGB", "COLOR"),
-                ("diffuse_indirect", "diffuse_indirect", "Diffuse Indirect", 3, "RGB", "COLOR"),
-                ("specular_direct", "specular_direct", "Specular Direct", 3, "RGB", "COLOR"),
-                ("specular_indirect", "specular_indirect", "Specular Indirect", 3, "RGB", "COLOR"),
-                ("transmission_direct", "transmission_direct", "Transmission Direct", 3, "RGB", "COLOR"),
-                ("transmission_indirect", "transmission_indirect", "Transmission Indirect", 3, "RGB", "COLOR"),
-                ("sss_direct", "sss_direct", "SSS Direct", 3, "RGB", "COLOR"),
-                ("sss_indirect", "sss_indirect", "SSS Indirect", 3, "RGB", "COLOR"),
-                ("volume_direct", "volume_direct", "Volume Direct", 3, "RGB", "COLOR"),
-                ("volume_indirect", "volume_indirect", "Volume Indirect", 3, "RGB", "COLOR"),
-                ("motionvector", "motionvector", "Motion Vector", 3, "XYZ", "VECTOR"),
-                ("alpha", "A", "Alpha", 1, "X", "VALUE")
-            ]:
-                if getattr(settings, f"aov_{prop}", False):
-                    self.register_pass(scene, render_layer, pass_name, channels, channel_name, pass_type)
+        if not settings:
+            return
+
+        from .props.render import BUILTIN_AOVS
+        
+        def get_register_params(name, dataType):
+            if dataType == "color4f":
+                return 4, "RGBA", "COLOR"
+            elif dataType == "color3f":
+                return 3, "RGB", "COLOR"
+            elif dataType in {"vector3f", "point3f", "normal3f"}:
+                return 3, "XYZ", "VECTOR"
+            elif dataType == "float":
+                chan = "Z" if name in {"Z", "Z_Back", "Volume_Z"} else "X"
+                return 1, chan, "VALUE"
+            elif dataType == "int":
+                return 1, "X", "VALUE"
+            return 3, "RGB", "COLOR"
+
+        # 1. Register built-in AOVs if enabled
+        for cat, aovs in BUILTIN_AOVS.items():
+            for name, label, def_filt, def_fmt in aovs:
+                if name == "RGBA" or getattr(settings, f"aov_{name}_enabled", False):
+                    bl_name = 'Combined' if name == 'RGBA' else ('Depth' if name == 'Z' else label)
+                    dataType, fmt = get_usd_aov_types(name, getattr(settings, f"aov_{name}_format"))
+                    channels, channel_name, pass_type = get_register_params(name, dataType)
+                    self.register_pass(scene, render_layer, bl_name, channels, channel_name, pass_type)
+
+        # 2. Register custom render vars
+        for item in settings.custom_render_vars:
+            if not item.name:
+                continue
+            channels, channel_name, pass_type = get_register_params(item.name, item.data_type)
+            self.register_pass(scene, render_layer, item.name, channels, channel_name, pass_type)
 
 register, unregister = bpy.utils.register_classes_factory((
    ArnoldHydraRenderEngine,
