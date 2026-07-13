@@ -309,7 +309,7 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
 
     autodetect_threads: bpy.props.BoolProperty(
         name="Autodetect Threads",
-        default=False
+        default=True
     )
 
     low_light_threshold: bpy.props.FloatProperty(
@@ -460,7 +460,7 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
     aov_depth: bpy.props.BoolProperty(
         name="Depth",
         description="Enable Depth (Z) AOV pass",
-        default=False
+        default=True
     )
 
     aov_position: bpy.props.BoolProperty(
@@ -475,6 +475,100 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         default=False
     )
 
+    aov_diffuse: bpy.props.BoolProperty(name="Diffuse", default=False)
+    aov_specular: bpy.props.BoolProperty(name="Specular", default=False)
+    aov_transmission: bpy.props.BoolProperty(name="Transmission", default=False)
+    aov_sss: bpy.props.BoolProperty(name="Subsurface (SSS)", default=False)
+    aov_volume: bpy.props.BoolProperty(name="Volume", default=False)
+    aov_direct: bpy.props.BoolProperty(name="Direct", default=False)
+    aov_indirect: bpy.props.BoolProperty(name="Indirect", default=False)
+    aov_coat: bpy.props.BoolProperty(name="Coat", default=False)
+    aov_sheen: bpy.props.BoolProperty(name="Sheen", default=False)
+    aov_emission: bpy.props.BoolProperty(name="Emission", default=False)
+    aov_albedo: bpy.props.BoolProperty(name="Albedo", default=False)
+    aov_diffuse_direct: bpy.props.BoolProperty(name="Diffuse Direct", default=False)
+    aov_diffuse_indirect: bpy.props.BoolProperty(name="Diffuse Indirect", default=False)
+    aov_specular_direct: bpy.props.BoolProperty(name="Specular Direct", default=False)
+    aov_specular_indirect: bpy.props.BoolProperty(name="Specular Indirect", default=False)
+    aov_transmission_direct: bpy.props.BoolProperty(name="Transmission Direct", default=False)
+    aov_transmission_indirect: bpy.props.BoolProperty(name="Transmission Indirect", default=False)
+    aov_sss_direct: bpy.props.BoolProperty(name="SSS Direct", default=False)
+    aov_sss_indirect: bpy.props.BoolProperty(name="SSS Indirect", default=False)
+    aov_volume_direct: bpy.props.BoolProperty(name="Volume Direct", default=False)
+    aov_volume_indirect: bpy.props.BoolProperty(name="Volume Indirect", default=False)
+    aov_motionvector: bpy.props.BoolProperty(name="Motion Vector", default=False)
+    aov_alpha: bpy.props.BoolProperty(name="Alpha", default=False)
+    viewport_update_trigger: bpy.props.BoolProperty(default=False)
+
+
+def get_viewport_aov_items(self, context):
+    items = [("RGBA", "Combined (RGBA)", "")]
+    if context and context.scene:
+        arnold = getattr(context.scene.arnold, "global", None)
+        if arnold:
+            if arnold.aov_depth:
+                items.append(("depth", "Depth (Z)", ""))
+            if arnold.aov_position:
+                items.append(("P", "Position (P)", ""))
+            if arnold.aov_normal:
+                items.append(("N", "Normal (N)", ""))
+            
+            for prop, label in [
+                ("diffuse", "Diffuse"),
+                ("specular", "Specular"),
+                ("transmission", "Transmission"),
+                ("sss", "Subsurface (SSS)"),
+                ("volume", "Volume"),
+                ("direct", "Direct"),
+                ("indirect", "Indirect"),
+                ("coat", "Coat"),
+                ("sheen", "Sheen"),
+                ("emission", "Emission"),
+                ("albedo", "Albedo"),
+                ("diffuse_direct", "Diffuse Direct"),
+                ("diffuse_indirect", "Diffuse Indirect"),
+                ("specular_direct", "Specular Direct"),
+                ("specular_indirect", "Specular Indirect"),
+                ("transmission_direct", "Transmission Direct"),
+                ("transmission_indirect", "Transmission Indirect"),
+                ("sss_direct", "SSS Direct"),
+                ("sss_indirect", "SSS Indirect"),
+                ("volume_direct", "Volume Direct"),
+                ("volume_indirect", "Volume Indirect"),
+                ("motionvector", "Motion Vector"),
+                ("alpha", "Alpha (A)")
+            ]:
+                if getattr(arnold, f"aov_{prop}", False):
+                    val = "A" if prop == "alpha" else prop
+                    items.append((val, label, ""))
+    return items
+
+
+def update_viewport_aov(self, context):
+    if context:
+        if context.scene:
+            # Force dependency graph update by modifying tracked Scene/Arnold property
+            arnold = getattr(context.scene.arnold, "global", None)
+            if arnold:
+                arnold.viewport_update_trigger = not arnold.viewport_update_trigger
+            context.scene.update_tag()
+            # Tag the active world to force viewport render engine settings reload
+            if context.scene.world:
+                context.scene.world.update_tag()
+        for window in context.window_manager.windows:
+            for area in window.screen.areas:
+                if area.type == 'VIEW_3D':
+                    area.tag_redraw()
+
+
+class ArnoldViewportShadingProperties(bpy.types.PropertyGroup):
+    viewport_aov: bpy.props.EnumProperty(
+        name="Render Pass",
+        items=get_viewport_aov_items,
+        default=0,
+        update=update_viewport_aov
+    )
+
 
 class ArnoldRenderProperties(bpy.types.PropertyGroup):
     viewport: bpy.props.PointerProperty(type=ArnoldGlobalRenderProperties)
@@ -486,6 +580,7 @@ def register():
     bpy.utils.register_class(ArnoldAovShader)
     bpy.utils.register_class(ArnoldImager)
     bpy.utils.register_class(ArnoldGlobalRenderProperties)
+    bpy.utils.register_class(ArnoldViewportShadingProperties)
     bpy.utils.register_class(ArnoldRenderProperties)
 
     if not hasattr(bpy.types.Scene, "arnold"):
@@ -493,12 +588,21 @@ def register():
             type=ArnoldRenderProperties
         )
 
+    if not hasattr(bpy.types.View3DShading, "arnold"):
+        bpy.types.View3DShading.arnold = bpy.props.PointerProperty(
+            type=ArnoldViewportShadingProperties
+        )
+
 
 def unregister():
+    if hasattr(bpy.types.View3DShading, "arnold"):
+        del bpy.types.View3DShading.arnold
+
     if hasattr(bpy.types.Scene, "arnold"):
         del bpy.types.Scene.arnold
 
     bpy.utils.unregister_class(ArnoldRenderProperties)
+    bpy.utils.unregister_class(ArnoldViewportShadingProperties)
     bpy.utils.unregister_class(ArnoldGlobalRenderProperties)
     bpy.utils.unregister_class(ArnoldImager)
     bpy.utils.unregister_class(ArnoldAovShader)

@@ -41,7 +41,6 @@ class ARNOLD_HYDRA_RENDER_PT_aovs(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = 'view_layer'
-    bl_options = {'DEFAULT_CLOSED'}
     COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
 
     @classmethod
@@ -57,21 +56,47 @@ class ARNOLD_HYDRA_RENDER_PT_aovs(bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        col = layout.column(heading="Passes")
-        col.prop(r, "aov_combined", text="Combined (RGBA)")
-        col.prop(r, "aov_depth", text="Depth (Z)")
-        col.prop(r, "aov_position", text="Position (P)")
-        col.prop(r, "aov_normal", text="Normal (N)")
+        # Section 1: Utility & Geometry
+        box1 = layout.box()
+        box1.label(text="Utility & Geometry")
+        col1 = box1.column(align=True)
+        col1.prop(r, "aov_combined", text="Combined (RGBA)")
+        col1.prop(r, "aov_depth", text="Depth (Z)")
+        col1.prop(r, "aov_position", text="Position (P)")
+        col1.prop(r, "aov_normal", text="Normal (N)")
+        col1.prop(r, "aov_motionvector", text="Motion Vector")
+        col1.prop(r, "aov_alpha", text="Alpha (A)")
 
-        layout.separator()
-        layout.label(text="Custom AOVs")
+        # Section 2: Shading Components
+        box2 = layout.box()
+        box2.label(text="Shading Components")
+        col2 = box2.column(align=True)
+        col2.prop(r, "aov_diffuse", text="Diffuse")
+        col2.prop(r, "aov_specular", text="Specular")
+        col2.prop(r, "aov_transmission", text="Transmission")
+        col2.prop(r, "aov_sss", text="Subsurface (SSS)")
+        col2.prop(r, "aov_volume", text="Volume")
+        col2.prop(r, "aov_coat", text="Coat")
+        col2.prop(r, "aov_sheen", text="Sheen")
+        col2.prop(r, "aov_emission", text="Emission")
+        col2.prop(r, "aov_albedo", text="Albedo")
 
-        row = layout.row()
-        row.template_list("ARNOLD_UL_aovs", "", r, "aov_shaders", r, "aov_active_index")
-
-        col = row.column(align=True)
-        col.operator("arnold.aov_add", icon='ADD', text="")
-        col.operator("arnold.aov_remove", icon='REMOVE', text="")
+        # Section 3: Light Component Splits
+        box3 = layout.box()
+        box3.label(text="Light Component Splits")
+        col3 = box3.column(align=True)
+        col3.prop(r, "aov_direct", text="Direct")
+        col3.prop(r, "aov_indirect", text="Indirect")
+        col3.prop(r, "aov_diffuse_direct", text="Diffuse Direct")
+        col3.prop(r, "aov_diffuse_indirect", text="Diffuse Indirect")
+        col3.prop(r, "aov_specular_direct", text="Specular Direct")
+        col3.prop(r, "aov_specular_indirect", text="Specular Indirect")
+        col3.prop(r, "aov_transmission_direct", text="Transmission Direct")
+        col3.prop(r, "aov_transmission_indirect", text="Transmission Indirect")
+        col3.prop(r, "aov_sss_direct", text="SSS Direct")
+        col3.prop(r, "aov_sss_indirect", text="SSS Indirect")
+        col3.prop(r, "aov_volume_direct", text="Volume Direct")
+        col3.prop(r, "aov_volume_indirect", text="Volume Indirect")
 
 
 class Panel(bpy.types.Panel):
@@ -221,6 +246,8 @@ class ARNOLD_HYDRA_RENDER_PT_environment(Panel):
         r = getattr(context.scene.arnold, "global")
 
         col = layout.column(align=True)
+        col.prop(context.scene.render, "film_transparent", text="Transparent Background")
+        col.separator()
         col.prop(r, "background")
         col.prop(r, "atmosphere")
 
@@ -471,6 +498,27 @@ class ARNOLD_HYDRA_RENDER_PT_imagers(Panel):
         row.operator("arnold.imager_export", icon='EXPORT', text="Export")
 
 
+class ARNOLD_VIEW3D_PT_shading_render_pass(bpy.types.Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'HEADER'
+    bl_label = "Render Pass"
+    bl_parent_id = "VIEW3D_PT_shading"
+    COMPAT_ENGINES = {'ARNOLD'}
+
+    @classmethod
+    def poll(cls, context):
+        return (
+            context.space_data.shading.type == 'RENDERED' and
+            context.engine == 'ARNOLD' and
+            hasattr(context.space_data.shading, 'arnold')
+        )
+
+    def draw(self, context):
+        shading = context.space_data.shading
+        layout = self.layout
+        layout.prop(shading.arnold, "viewport_aov", text="")
+
+
 register_classes, unregister_classes = bpy.utils.register_classes_factory((
     ARNOLD_UL_aovs,
     ARNOLD_OT_aov_add,
@@ -492,6 +540,7 @@ register_classes, unregister_classes = bpy.utils.register_classes_factory((
     ARNOLD_OT_imager_import,
     ARNOLD_OT_imager_export,
     ARNOLD_HYDRA_RENDER_PT_imagers,
+    ARNOLD_VIEW3D_PT_shading_render_pass,
 ))
 
 
