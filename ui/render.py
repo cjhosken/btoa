@@ -1,4 +1,6 @@
 import bpy
+import json
+from bpy_extras.io_utils import ImportHelper, ExportHelper
 
 from ..engine import ArnoldHydraRenderEngine
 
@@ -82,17 +84,16 @@ class Panel(bpy.types.Panel):
     def poll(cls, context):
         return context.engine in cls.COMPAT_ENGINES
 
+def draw_device(self, context):
+    scene = context.scene
+    layout = self.layout
+    layout.use_property_split = True
+    layout.use_property_decorate = False
 
-class ARNOLD_HYDRA_RENDER_PT_render(Panel):
-    bl_label = "Render"
-    bl_order = 0
-
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
-        layout.prop(r, "render_device", text="Device", expand=True)
-
+    if context.engine == ArnoldHydraRenderEngine.bl_idname:
+        r = getattr(scene.arnold, "global")
+        layout.prop(r, "render_device", text="Device")
+        
 
 class ARNOLD_HYDRA_RENDER_PT_sampling(Panel):
     bl_label = "Sampling"
@@ -104,11 +105,92 @@ class ARNOLD_HYDRA_RENDER_PT_sampling(Panel):
 
         col = layout.column(align=True)
         col.prop(r, "AA_samples")
-        col.prop(r, "AA_samples_max")
-        col.prop(r, "enable_adaptive_sampling")
-        col.prop(r, "AA_adaptive_threshold")
+        col.prop(r, "GI_diffuse_samples")
+        col.prop(r, "GI_specular_samples")
+        col.prop(r, "GI_transmission_samples")
+        col.prop(r, "GI_sss_samples")
+        col.prop(r, "GI_volume_samples")
+        col.separator()
         col.prop(r, "enable_progressive_render")
-        col.prop(r, "AA_seed")
+
+
+class ARNOLD_HYDRA_RENDER_PT_sampling_adaptive(bpy.types.Panel):
+    bl_label = "Adaptive Sampling"
+    bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_sampling"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'render'
+    bl_options = {'DEFAULT_CLOSED'}
+    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
+
+    @classmethod
+    def poll(cls, context):
+        return context.engine in cls.COMPAT_ENGINES
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        r = getattr(context.scene.arnold, "global")
+
+        layout.prop(r, "enable_adaptive_sampling")
+
+        col = layout.column(align=True)
+        col.enabled = r.enable_adaptive_sampling
+        col.prop(r, "AA_samples_max")
+        col.prop(r, "AA_adaptive_threshold")
+
+
+class ARNOLD_HYDRA_RENDER_PT_sampling_clamping(bpy.types.Panel):
+    bl_label = "Clamping"
+    bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_sampling"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'render'
+    bl_options = {'DEFAULT_CLOSED'}
+    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
+
+    @classmethod
+    def poll(cls, context):
+        return context.engine in cls.COMPAT_ENGINES
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        r = getattr(context.scene.arnold, "global")
+
+        layout.prop(r, "enable_aa_sample_clamp")
+        
+        col = layout.column(align=True)
+        col.enabled = r.enable_aa_sample_clamp
+        col.prop(r, "AA_sample_clamp_affects_aovs")
+        col.prop(r, "AA_sample_clamp")
+        
+        layout.separator()
+        layout.prop(r, "indirect_sample_clamp")
+
+
+class ARNOLD_HYDRA_RENDER_PT_sampling_advanced(bpy.types.Panel):
+    bl_label = "Advanced"
+    bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_sampling"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'render'
+    bl_options = {'DEFAULT_CLOSED'}
+    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
+
+    @classmethod
+    def poll(cls, context):
+        return context.engine in cls.COMPAT_ENGINES
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        r = getattr(context.scene.arnold, "global")
+
+        layout.prop(r, "dialectric_priorities", text="Nested Dialectrics")
+        layout.prop(r, "stochastic_volume_interpolation")
+        layout.prop(r, "indirect_specular_blur")
+
 
 
 class ARNOLD_HYDRA_RENDER_PT_ray_depth(Panel):
@@ -129,8 +211,8 @@ class ARNOLD_HYDRA_RENDER_PT_ray_depth(Panel):
         col.prop(r, "auto_transparency_depth")
 
 
-class ARNOLD_HYDRA_RENDER_PT_gi_samples(Panel):
-    bl_label = "GI Samples"
+class ARNOLD_HYDRA_RENDER_PT_environment(Panel):
+    bl_label = "Environment"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -139,15 +221,12 @@ class ARNOLD_HYDRA_RENDER_PT_gi_samples(Panel):
         r = getattr(context.scene.arnold, "global")
 
         col = layout.column(align=True)
-        col.prop(r, "GI_diffuse_samples")
-        col.prop(r, "GI_specular_samples")
-        col.prop(r, "GI_transmission_samples")
-        col.prop(r, "GI_sss_samples")
-        col.prop(r, "GI_volume_samples")
+        col.prop(r, "background")
+        col.prop(r, "atmosphere")
 
 
-class ARNOLD_HYDRA_RENDER_PT_device(Panel):
-    bl_label = "Device & Clamping"
+class ARNOLD_HYDRA_RENDER_PT_lights(Panel):
+    bl_label = "Lights"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -156,16 +235,13 @@ class ARNOLD_HYDRA_RENDER_PT_device(Panel):
         r = getattr(context.scene.arnold, "global")
 
         col = layout.column(align=True)
-        col.prop(r, "render_device_fallback")
-        col.prop(r, "manual_device_selection")
-        col.prop(r, "gpu_default_min_memory_MB")
-        col.prop(r, "gpu_default_names")
-
-        col.separator()
-        col.prop(r, "AA_sample_clamp")
-        col.prop(r, "AA_sample_clamp_affects_aovs")
-        col.prop(r, "indirect_sample_clamp")
-        col.prop(r, "indirect_specular_blur")
+        col.prop(r, "enable_light_samples")
+        
+        sub = col.column()
+        sub.enabled = r.enable_light_samples
+        sub.prop(r, "light_samples")
+        
+        col.prop(r, "low_light_threshold")
 
 
 class ARNOLD_HYDRA_RENDER_PT_textures(Panel):
@@ -178,19 +254,28 @@ class ARNOLD_HYDRA_RENDER_PT_textures(Panel):
         r = getattr(context.scene.arnold, "global")
 
         col = layout.column(align=True)
-        col.prop(r, "texture_searchpath")
-        col.prop(r, "texture_max_open_files")
         col.prop(r, "texture_auto_generate_tx")
+
+        col = layout.column(align=True)
+        col.enabled = r.texture_auto_generate_tx
         col.prop(r, "texture_auto_tx_path")
+
+        col = layout.column(align=True)
+        col.enabled = not r.texture_auto_generate_tx
         col.prop(r, "texture_use_existing_tx")
-        col.prop(r, "texture_automip")
-        col.prop(r, "texture_autotile")
+
+        col = layout.column(align=True)
         col.prop(r, "texture_accept_unmipped")
+        col.prop(r, "texture_autotile")
+
         col.prop(r, "texture_accept_untiled")
 
+        col.prop(r, "textre_max_memory_MB")
+        col.prop(r, "texture_max_open_files")
 
-class ARNOLD_HYDRA_RENDER_PT_ignores(Panel):
-    bl_label = "Ignore Flags"
+
+class ARNOLD_HYDRA_RENDER_PT_subdivision(Panel):
+    bl_label = "Subdivision"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -199,70 +284,191 @@ class ARNOLD_HYDRA_RENDER_PT_ignores(Panel):
         r = getattr(context.scene.arnold, "global")
 
         col = layout.column(align=True)
-        col.prop(r, "ignore_textures")
-        col.prop(r, "ignore_shaders")
-        col.prop(r, "ignore_lights")
-        col.prop(r, "ignore_shadows")
-        col.prop(r, "ignore_subdivision")
-        col.prop(r, "ignore_displacement")
-        col.prop(r, "ignore_bump")
-        col.prop(r, "ignore_motion_blur")
-        col.prop(r, "ignore_dof")
-        col.prop(r, "ignore_smoothing")
-        col.prop(r, "ignore_sss")
-        col.prop(r, "ignore_operators")
-        col.prop(r, "ignore_atmosphere")
-        col.prop(r, "ignore_imagers")
-
-
-class ARNOLD_HYDRA_RENDER_PT_diagnostics(Panel):
-    bl_label = "Diagnostics & Paths"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
-
-        box = layout.box()
-        box.label(text="Logging")
-        box.prop(r, "log_verbosity")
-        box.prop(r, "log_file")
-
-        box = layout.box()
-        box.label(text="Profiling & Reports")
-        box.prop(r, "profile_file", text="Profile File")
-        box.prop(r, "report_file", text="Report File")
-        box.prop(r, "stats_file", text="Stats File")
+        col.prop(r, "max_subdivisions")
+        col.prop(r, "subdiv_frustum_culling")
 
         col = layout.column(align=True)
-        col.prop(r, "asset_searchpath")
-        col.prop(r, "plugin_searchpath")
-        col.prop(r, "osl_includepath")
+        col.enabled = r.subdiv_frustum_culling
+        col.prop(r, "subdiv_frustum_padding")
+
+        col = layout.column(align=True)
         col.prop(r, "subdiv_dicing_camera")
 
 
-class ARNOLD_HYDRA_RENDER_PT_system(Panel):
-    bl_label = "System"
+class ARNOLD_UL_imagers(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        row = layout.row(align=True)
+        row.prop(item, "enabled", text="")
+        row.label(text=item.name)
+
+
+class ARNOLD_OT_imager_add(bpy.types.Operator):
+    bl_idname = "arnold.imager_add"
+    bl_label = "Add Imager"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    imager_type: bpy.props.EnumProperty(
+        name="Type",
+        items=[
+            ("defaultArnoldDenoiser", "Arnold Denoiser", ""),
+            ("aiImagerColorCorrect", "Color Correct", ""),
+            ("aiImagerColorCurves", "Color Curves", ""),
+            ("aiImagerDenoiserNoise", "Denoiser Noise", ""),
+            ("aiImagerDenoiserOidn", "Denoiser Oidn", ""),
+            ("aiImagerDenoiserOptix", "Denoiser Optix", ""),
+            ("aiImagerExposure", "Exposure", ""),
+            ("aiImagerLensEffects", "Lens Effects", ""),
+            ("aiImagerOverlay", "Overlay", ""),
+            ("aiImagerTonemap", "Tonemap", ""),
+            ("aiImagerWhiteBalance", "WhiteBalance", ""),
+        ],
+        default="defaultArnoldDenoiser"
+    )
+
+    def execute(self, context):
+        r = getattr(context.scene.arnold, "global")
+        item = r.imagers.add()
+        item.imager_type = self.imager_type
+
+        names_map = {
+            "defaultArnoldDenoiser": "Arnold Denoiser",
+            "aiImagerColorCorrect": "Color Correct",
+            "aiImagerColorCurves": "Color Curves",
+            "aiImagerDenoiserNoise": "Denoiser Noise",
+            "aiImagerDenoiserOidn": "Denoiser Oidn",
+            "aiImagerDenoiserOptix": "Denoiser Optix",
+            "aiImagerExposure": "Exposure",
+            "aiImagerLensEffects": "Lens Effects",
+            "aiImagerOverlay": "Overlay",
+            "aiImagerTonemap": "Tonemap",
+            "aiImagerWhiteBalance": "WhiteBalance",
+        }
+        item.name = names_map.get(self.imager_type, self.imager_type)
+
+        r.imager_active_index = len(r.imagers) - 1
+        context.scene.update_tag()
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+
+class ARNOLD_OT_imager_remove(bpy.types.Operator):
+    bl_idname = "arnold.imager_remove"
+    bl_label = "Remove Imager"
+
+    def execute(self, context):
+        r = getattr(context.scene.arnold, "global")
+        if len(r.imagers) > 0:
+            r.imagers.remove(r.imager_active_index)
+            r.imager_active_index = min(r.imager_active_index, len(r.imagers) - 1)
+            context.scene.update_tag()
+        return {'FINISHED'}
+
+
+class ARNOLD_OT_imager_move(bpy.types.Operator):
+    bl_idname = "arnold.imager_move"
+    bl_label = "Move Imager"
+
+    direction: bpy.props.EnumProperty(
+        items=[
+            ('UP', 'Up', ''),
+            ('DOWN', 'Down', '')
+        ]
+    )
+
+    def execute(self, context):
+        r = getattr(context.scene.arnold, "global")
+        index = r.imager_active_index
+        if self.direction == 'UP' and index > 0:
+            r.imagers.move(index, index - 1)
+            r.imager_active_index -= 1
+        elif self.direction == 'DOWN' and index < len(r.imagers) - 1:
+            r.imagers.move(index, index + 1)
+            r.imager_active_index += 1
+        context.scene.update_tag()
+        return {'FINISHED'}
+
+
+class ARNOLD_OT_imager_import(bpy.types.Operator, ImportHelper):
+    bl_idname = "arnold.imager_import"
+    bl_label = "Import Imagers"
+    filename_ext = ".json"
+    filter_glob: bpy.props.StringProperty(default="*.json", options={'HIDDEN'}, maxlen=255)
+
+    def execute(self, context):
+        r = getattr(context.scene.arnold, "global")
+        try:
+            with open(self.filepath, 'r') as f:
+                data = json.load(f)
+            
+            for item_data in data:
+                item = r.imagers.add()
+                item.name = item_data.get("name", "Imager")
+                item.enabled = item_data.get("enabled", True)
+                item.imager_type = item_data.get("imager_type", "defaultArnoldDenoiser")
+            
+            context.scene.update_tag()
+            self.report({'INFO'}, f"Imported {len(data)} imagers")
+        except Exception as e:
+            self.report({'ERROR'}, f"Failed to import: {str(e)}")
+            return {'CANCELLED'}
+        return {'FINISHED'}
+
+
+class ARNOLD_OT_imager_export(bpy.types.Operator, ExportHelper):
+    bl_idname = "arnold.imager_export"
+    bl_label = "Export Imagers"
+    filename_ext = ".json"
+    filter_glob: bpy.props.StringProperty(default="*.json", options={'HIDDEN'}, maxlen=255)
+
+    def execute(self, context):
+        r = getattr(context.scene.arnold, "global")
+        data = []
+        for imager in r.imagers:
+            data.append({
+                "name": imager.name,
+                "enabled": imager.enabled,
+                "imager_type": imager.imager_type
+            })
+        
+        try:
+            with open(self.filepath, 'w') as f:
+                json.dump(data, f, indent=4)
+            self.report({'INFO'}, f"Exported {len(data)} imagers")
+        except Exception as e:
+            self.report({'ERROR'}, f"Failed to export: {str(e)}")
+            return {'CANCELLED'}
+        return {'FINISHED'}
+
+
+class ARNOLD_HYDRA_RENDER_PT_imagers(Panel):
+    bl_label = "Imagers"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
-        layout.use_property_split = True
         r = getattr(context.scene.arnold, "global")
+        if not r:
+            return
 
-        col = layout.column(align=True)
-        col.prop(r, "threads")
-        col.prop(r, "bucket_size")
-        col.prop(r, "bucket_scanning")
-        col.prop(r, "parallel_node_init")
-        col.prop(r, "low_light_threshold")
-        col.prop(r, "nits_per_unit")
-        col.prop(r, "stochastic_volume_interpolation")
-        col.prop(r, "skip_license_check")
-        col.prop(r, "abort_on_error")
-        col.prop(r, "abort_on_license_fail")
+        layout.use_property_split = True
+        layout.use_property_decorate = False
 
+        row = layout.row()
+        row.template_list("ARNOLD_UL_imagers", "", r, "imagers", r, "imager_active_index")
+
+        col = row.column(align=True)
+        col.operator("arnold.imager_add", icon='ADD', text="")
+        col.operator("arnold.imager_remove", icon='REMOVE', text="")
+        col.separator()
+        col.operator("arnold.imager_move", icon='TRIA_UP', text="").direction = 'UP'
+        col.operator("arnold.imager_move", icon='TRIA_DOWN', text="").direction = 'DOWN'
+
+        layout.separator()
+        row = layout.row(align=True)
+        row.operator("arnold.imager_import", icon='IMPORT', text="Import")
+        row.operator("arnold.imager_export", icon='EXPORT', text="Export")
 
 
 register_classes, unregister_classes = bpy.utils.register_classes_factory((
@@ -270,15 +476,22 @@ register_classes, unregister_classes = bpy.utils.register_classes_factory((
     ARNOLD_OT_aov_add,
     ARNOLD_OT_aov_remove,
     ARNOLD_HYDRA_RENDER_PT_aovs,
-    ARNOLD_HYDRA_RENDER_PT_render,
     ARNOLD_HYDRA_RENDER_PT_sampling,
+    ARNOLD_HYDRA_RENDER_PT_sampling_adaptive,
+    ARNOLD_HYDRA_RENDER_PT_sampling_clamping,
+    ARNOLD_HYDRA_RENDER_PT_sampling_advanced,
     ARNOLD_HYDRA_RENDER_PT_ray_depth,
-    ARNOLD_HYDRA_RENDER_PT_gi_samples,
-    ARNOLD_HYDRA_RENDER_PT_device,
+    ARNOLD_HYDRA_RENDER_PT_environment,
+    ARNOLD_HYDRA_RENDER_PT_lights,
     ARNOLD_HYDRA_RENDER_PT_textures,
-    ARNOLD_HYDRA_RENDER_PT_ignores,
-    ARNOLD_HYDRA_RENDER_PT_diagnostics,
-    ARNOLD_HYDRA_RENDER_PT_system,
+    ARNOLD_HYDRA_RENDER_PT_subdivision,
+    ARNOLD_UL_imagers,
+    ARNOLD_OT_imager_add,
+    ARNOLD_OT_imager_remove,
+    ARNOLD_OT_imager_move,
+    ARNOLD_OT_imager_import,
+    ARNOLD_OT_imager_export,
+    ARNOLD_HYDRA_RENDER_PT_imagers,
 ))
 
 
@@ -319,13 +532,20 @@ def get_panels():
 
 
 def register():
-    register_classes()
+    bpy.types.RENDER_PT_context.append(draw_device)
+
     for panel_cls in get_panels():
         panel_cls.COMPAT_ENGINES.add(ArnoldHydraRenderEngine.bl_idname)
 
+    register_classes()
+
 
 def unregister():
+
+    bpy.types.RENDER_PT_context.remove(draw_device)
+
     for panel_cls in get_panels():
         if ArnoldHydraRenderEngine.bl_idname in panel_cls.COMPAT_ENGINES:
             panel_cls.COMPAT_ENGINES.remove(ArnoldHydraRenderEngine.bl_idname)
+
     unregister_classes()

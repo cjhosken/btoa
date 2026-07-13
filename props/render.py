@@ -14,45 +14,72 @@ class ArnoldAovShader(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Name", default="")
 
 
+class ArnoldImager(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(name="Name", default="Imager")
+    enabled: bpy.props.BoolProperty(name="Enabled", default=True)
+    imager_type: bpy.props.EnumProperty(
+        name="Type",
+        items=[
+            ("defaultArnoldDenoiser", "Arnold Denoiser", ""),
+            ("aiImagerColorCorrect", "Color Correct", ""),
+            ("aiImagerColorCurves", "Color Curves", ""),
+            ("aiImagerDenoiserNoise", "Denoiser Noise", ""),
+            ("aiImagerDenoiserOidn", "Denoiser Oidn", ""),
+            ("aiImagerDenoiserOptix", "Denoiser Optix", ""),
+            ("aiImagerExposure", "Exposure", ""),
+            ("aiImagerLensEffects", "Lens Effects", ""),
+            ("aiImagerOverlay", "Overlay", ""),
+            ("aiImagerTonemap", "Tonemap", ""),
+            ("aiImagerWhiteBalance", "WhiteBalance", ""),
+        ],
+        default="defaultArnoldDenoiser"
+    )
+
+
 class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
 
     AA_adaptive_threshold: bpy.props.FloatProperty(
-        name="AA Adaptive Threshold",
+        name="Adaptive Threshold",
         default=0.15
     )
 
+    enable_aa_sample_clamp: bpy.props.BoolProperty(
+        name="Clamp AA Samples",
+        default=False
+    )
+
     AA_sample_clamp: bpy.props.FloatProperty(
-        name="AA Sample Clamp",
-        default=10000000.0
+        name="AA Clamp Value",
+        default=10.0
     )
 
     AA_sample_clamp_affects_aovs: bpy.props.BoolProperty(
-        name="AA Sample Clamp Affects AOVs",
+        name="Affect AOVs",
         default=False
     )
 
     AA_samples: bpy.props.IntProperty(
-        name="AA Samples",
+        name="Camera (AA)",
         default=3, min=0
     )
 
     AA_samples_max: bpy.props.IntProperty(
-        name="AA Samples Max",
+        name="Max. Camera (AA)",
         default=20, min=0
     )
 
     AA_seed: bpy.props.IntProperty(
-        name="AA Seed",
+        name="Seed",
         default=1
     )
 
     abort_on_error: bpy.props.BoolProperty(
-        name="Abort on Error",
+        name="Abort On Error",
         default=False
     )
 
     abort_on_license_fail: bpy.props.BoolProperty(
-        name="Abort on License Fail",
+        name="Abort On License Fail",
         default=False
     )
 
@@ -61,27 +88,29 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         default=""
     )
 
-    atmosphere: bpy.props.StringProperty(
-        name="Atmosphere",
-        default=""
+    atmosphere: bpy.props.PointerProperty(
+        type=bpy.types.Material,
+        name="Atmosphere"
     )
 
     auto_transparency_depth: bpy.props.IntProperty(
-        name="Auto Transparency Depth",
+        name="Transparency Depth",
         default=10, min=0
     )
 
-    background: bpy.props.StringProperty(
-        name="Background",
-        default=""
+    background: bpy.props.PointerProperty(
+        type=bpy.types.Image,
+        name="Background"
     )
 
     bucket_scanning: bpy.props.EnumProperty(
         name="Bucket Scanning",
         items=[
+            ("top", "Top", ""),
+            ("left", "Left", ""),
+            ("random", "Random", ""),
             ("spiral", "Spiral", ""),
-            ("left_to_right", "Left to Right", ""),
-            ("random", "Random", "")
+            ("hilbert", "Hilbert", "")
         ],
         default="spiral"
     )
@@ -92,67 +121,67 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
     )
 
     dialectric_priorities: bpy.props.BoolProperty(
-        name="Dialectric Priorities",
+        name="Nested Dielectrics",
         default=True
     )
 
     enable_adaptive_sampling: bpy.props.BoolProperty(
-        name="Enable Adaptive Sampling",
+        name="Enable",
         default=False
     )
 
     enable_progressive_render: bpy.props.BoolProperty(
-        name="Enable Progressive Render",
-        default=True
+        name="Progressive Render",
+        default=False
     )
 
     GI_diffuse_depth: bpy.props.IntProperty(
-        name="Diffuse Depth",
+        name="Diffuse",
         default=1, min=0
     )
     GI_diffuse_samples: bpy.props.IntProperty(
-        name="Diffuse Samples",
+        name="Diffuse",
         default=2, min=0
     )
     GI_specular_depth: bpy.props.IntProperty(
-        name="Specular Depth",
+        name="Specular",
         default=1, min=0
     )
     GI_specular_samples: bpy.props.IntProperty(
-        name="Specular Samples",
+        name="Specular",
         default=2, min=0
     )
     GI_sss_samples: bpy.props.IntProperty(
-        name="SSS Samples",
+        name="SSS",
         default=2, min=0
     )
     GI_total_depth: bpy.props.IntProperty(
-        name="Total Depth",
+        name="Total",
         default=10, min=0
     )
     GI_transmission_depth: bpy.props.IntProperty(
-        name="Transmission Depth",
+        name="Transmission",
         default=8, min=0
     )
     GI_transmission_samples: bpy.props.IntProperty(
-        name="Transmission Samples",
+        name="Transmission",
         default=2, min=0
     )
     GI_volume_depth: bpy.props.IntProperty(
-        name="Volume Depth",
+        name="Volume",
         default=0, min=0
     )
     GI_volume_samples: bpy.props.IntProperty(
-        name="Volume Samples",
+        name="Volume Indirect",
         default=2, min=0
     )
 
     gpu_default_min_memory_MB: bpy.props.IntProperty(
-        name="GPU Default Min Memory MB",
+        name="Min. Memory (MB)",
         default=512, min=0
     )
     gpu_default_names: bpy.props.StringProperty(
-        name="GPU Default Names",
+        name="GPU Names",
         default="*"
     )
     
@@ -166,7 +195,7 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         name="Ignore Displacement", default=False
     )
     ignore_dof: bpy.props.BoolProperty(
-        name="Ignore DOF", default=False
+        name="Ignore Depth of Field", default=False
     )
     ignore_imagers: bpy.props.BoolProperty(
         name="Ignore Imagers", default=False
@@ -176,9 +205,6 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
     )
     ignore_motion_blur: bpy.props.BoolProperty(
         name="Ignore Motion Blur", default=False
-    )
-    ignore_operators: bpy.props.BoolProperty(
-        name="Ignore Operators", default=False
     )
     ignore_shaders: bpy.props.BoolProperty(
         name="Ignore Shaders", default=False
@@ -199,35 +225,105 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         name="Ignore Textures", default=False
     )
 
-    imager: bpy.props.StringProperty(
-        name="Imager", default=""
+    imagers: bpy.props.CollectionProperty(
+        type=ArnoldImager
     )
+
+    imager_active_index: bpy.props.IntProperty(
+        name="Active Imager Index",
+        default=0
+    )
+
     indirect_sample_clamp: bpy.props.FloatProperty(
-        name="Indirect Sample Clamp", default=10.0, min=0.0
+        name="Indirect Clamp Value", default=10.0, min=0.0
     )
+
     indirect_specular_blur: bpy.props.FloatProperty(
         name="Indirect Specular Blur", default=1.0, min=0.0
     )
+
+    enable_light_samples: bpy.props.BoolProperty(
+        name="Global Light Sampling",
+        default=False
+    )
+
     light_samples: bpy.props.IntProperty(
-        name="Light Samples", default=0, min=0
+        name="Light Samples", default=4, min=0
     )
 
     log_file: bpy.props.StringProperty(
-        name="Log File",
+        name="Filename",
         default=""
     )
     
-    log_verbosity: bpy.props.IntProperty(
-        name="Log Verbosity",
-        default=2, min=0, max=5
+    log_verbosity: bpy.props.EnumProperty(
+        name="Verbosity Level",
+        items=[
+            ("error", "Errors", ""),
+            ("warning", "Warnings", ""),
+            ("info", "Info", ""),
+            ("debug", "Debug", "")
+        ],
+        default="info"
+    )
+
+    log_to_console: bpy.props.BoolProperty(
+        name="Console",
+        default=True
+    )
+
+    log_to_file: bpy.props.BoolProperty(
+        name="File",
+        default=False
+    )
+
+    stats_to_file: bpy.props.BoolProperty(
+        name="Render Statistics",
+        default=False
+    )
+
+    profile_to_file: bpy.props.BoolProperty(
+        name="Profile",
+        default=False
+    )
+
+    absolute_texture_paths: bpy.props.BoolProperty(
+        name="Absolute Texture Paths",
+        default=False
+    )
+
+    absolute_procedural_paths: bpy.props.BoolProperty(
+        name="Absolute Procedural Paths",
+        default=False
+    )
+
+    procedural_searchpath: bpy.props.StringProperty(
+        name="Procedural Search Path",
+        default=""
+    )
+
+    gpu_max_texture_resolution: bpy.props.IntProperty(
+        name="Max Texture Resolution",
+        default=0, min=0
+    )
+
+    autodetect_threads: bpy.props.BoolProperty(
+        name="Autodetect Threads",
+        default=False
     )
 
     low_light_threshold: bpy.props.FloatProperty(
         name="Low Light Threshold", default=0.001, min=0.0
     )
+    
     manual_device_selection: bpy.props.BoolProperty(
         name="Manual Device Selection", default=False
     )
+
+    max_subdivisions: bpy.props.IntProperty(
+        name="Max. Subdivisions", default=255
+    )
+
     nits_per_unit: bpy.props.FloatProperty(
         name="Nits Per Unit", default=1000.0, min=0.0
     )
@@ -250,7 +346,7 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
     )
 
     profile_file: bpy.props.StringProperty(
-        name="Profile File",
+        name="Profile File Path",
         default="$HOME/arnold_profile.json"
     )
 
@@ -279,11 +375,11 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
     )
 
     skip_license_check: bpy.props.BoolProperty(
-        name="Skip License Check", default=False
+        name="Render with Watermarks (Skip License Check)", default=False
     )
 
     stats_file: bpy.props.StringProperty(
-        name="Stats File",
+        name="Stats File Path",
         default="$HOME/arnold_stats.json"
     )
 
@@ -291,44 +387,46 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         name="Stochastic Volume Interpolation", default=True
     )
 
-    subdiv_dicing_camera: bpy.props.StringProperty(
-        name="Subdiv Dicing Camera", default=""
+    subdiv_dicing_camera: bpy.props.PointerProperty(
+        type=bpy.types.Object,
+        name="Subdiv Dicing Camera",
+        poll=lambda self, object: object.type == 'CAMERA'
     )
 
     subdiv_frustum_culling: bpy.props.BoolProperty(
-        name="Subdiv Frustum Culling", default=False
+        name="Frustum Culling", default=False
+    )
+
+    subdiv_frustum_padding: bpy.props.FloatProperty(
+        name="Frustum Padding", default=0.0
     )
 
     texture_accept_unmipped: bpy.props.BoolProperty(
-        name="Texture Accept Unmipped", default=True
+        name="Accept Unmipped", default=True
     )
 
     texture_accept_untiled: bpy.props.BoolProperty(
-        name="Texture Accept Untiled", default=True
+        name="Accept Untiled", default=True
     )
 
     texture_auto_generate_tx: bpy.props.BoolProperty(
-        name="Texture Auto Generate TX", default=True
+        name="Auto-convert Textures to TX", default=False
     )
 
     texture_auto_tx_path: bpy.props.StringProperty(
-        name="Texture Auto TX Path", default=""
+        name="TX Path", default=""
     )
 
-    texture_automip: bpy.props.BoolProperty(
-        name="Texture Automip", default=True
-    )
-
-    texture_autotile: bpy.props.IntProperty(
-        name="Texture Autotile", default=0
+    texture_autotile: bpy.props.BoolProperty(
+        name="Auto-tile", default=True
     )
 
     textre_max_memory_MB: bpy.props.FloatProperty(
-        name="Texture Max Memory MB", default=4096.0, min=0.0
+        name="Max Cache Size (MB)", default=4096.0, min=0.0
     )
 
     texture_max_open_files: bpy.props.IntProperty(
-        name="Texture Max Open Files", default=0, min=0
+        name="Max Open Files", default=0, min=0
     )
 
     texture_searchpath: bpy.props.StringProperty(
@@ -336,12 +434,12 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
     )
 
     texture_use_existing_tx: bpy.props.BoolProperty(
-        name="Texture Use Existing TX", default=True
+        name="Use Existing TX Textures", default=True
     )
 
     threads: bpy.props.IntProperty(
         name="Threads",
-        default=-1
+        default=1
     )
 
     aov_shaders: bpy.props.CollectionProperty(
@@ -386,6 +484,7 @@ ArnoldRenderProperties.__annotations__['global'] = bpy.props.PointerProperty(typ
 
 def register():
     bpy.utils.register_class(ArnoldAovShader)
+    bpy.utils.register_class(ArnoldImager)
     bpy.utils.register_class(ArnoldGlobalRenderProperties)
     bpy.utils.register_class(ArnoldRenderProperties)
 
@@ -401,4 +500,5 @@ def unregister():
 
     bpy.utils.unregister_class(ArnoldRenderProperties)
     bpy.utils.unregister_class(ArnoldGlobalRenderProperties)
+    bpy.utils.unregister_class(ArnoldImager)
     bpy.utils.unregister_class(ArnoldAovShader)

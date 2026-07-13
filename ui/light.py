@@ -94,22 +94,58 @@ class ARNOLD_HYDRA_LIGHT_PT_arnold(bpy.types.Panel):
             layout.prop(arnold, "soft_edge")
             layout.prop(arnold, "aspect_ratio")
             layout.prop(arnold, "lens_radius")
-            layout.prop(arnold, "portal")
-            layout.prop(arnold, "portal_mode")
 
-        layout.separator()
+
+class ARNOLD_HYDRA_LIGHT_PT_shadows(bpy.types.Panel):
+    bl_label = "Shadows"
+    bl_parent_id = "ARNOLD_HYDRA_LIGHT_PT_arnold"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'data'
+    bl_options = {'DEFAULT_CLOSED'}
+    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
+
+    @classmethod
+    def poll(cls, context):
+        return (context.engine in cls.COMPAT_ENGINES and
+                context.light and
+                hasattr(context.light, 'arnold'))
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        arnold = context.light.arnold
 
         layout.prop(arnold, "cast_shadows")
         layout.prop(arnold, "shadow_density")
         layout.prop(arnold, "cast_volumetric_shadows")
 
-        layout.separator()
+
+class ARNOLD_HYDRA_LIGHT_PT_contribution(bpy.types.Panel):
+    bl_label = "Contribution"
+    bl_parent_id = "ARNOLD_HYDRA_LIGHT_PT_arnold"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'data'
+    bl_options = {'DEFAULT_CLOSED'}
+    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
+
+    @classmethod
+    def poll(cls, context):
+        return (context.engine in cls.COMPAT_ENGINES and
+                context.light and
+                hasattr(context.light, 'arnold'))
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        arnold = context.light.arnold
 
         layout.prop(arnold, "camera")
         layout.prop(arnold, "diffuse")
         layout.prop(arnold, "specular")
         layout.prop(arnold, "transmission")
-        layout.prop(arnold, "subsurface")
+        layout.prop(arnold, "sss")
         layout.prop(arnold, "volume")
         layout.prop(arnold, "indirect")
         layout.prop(arnold, "max_bounces")
@@ -118,11 +154,17 @@ class ARNOLD_HYDRA_LIGHT_PT_arnold(bpy.types.Panel):
         layout.prop(arnold, "aov_indirect")
 
 
+register_classes, unregister_classes = bpy.utils.register_classes_factory((
+    ARNOLD_HYDRA_LIGHT_PT_light,
+    ARNOLD_HYDRA_LIGHT_PT_arnold,
+    ARNOLD_HYDRA_LIGHT_PT_shadows,
+    ARNOLD_HYDRA_LIGHT_PT_contribution,
+))
+
+
 def register():
-    bpy.utils.register_class(ARNOLD_HYDRA_LIGHT_PT_light)
-    bpy.utils.register_class(ARNOLD_HYDRA_LIGHT_PT_arnold)
+    register_classes()
 
 
 def unregister():
-    bpy.utils.unregister_class(ARNOLD_HYDRA_LIGHT_PT_arnold)
-    bpy.utils.unregister_class(ARNOLD_HYDRA_LIGHT_PT_light)
+    unregister_classes()
