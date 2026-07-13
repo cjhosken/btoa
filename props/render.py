@@ -3,11 +3,20 @@ import bpy
 def update_render_device(self, context):
     if context is None:
         return
+    arnold = getattr(context.scene.arnold, "global", None)
+    if arnold:
+        arnold.viewport_update_trigger = not arnold.viewport_update_trigger
+    viewport = getattr(context.scene.arnold, "viewport", None)
+    if viewport:
+        viewport.viewport_update_trigger = not viewport.viewport_update_trigger
     context.scene.update_tag()
+    if context.scene.world:
+        context.scene.world.update_tag()
     for window in context.window_manager.windows:
         for area in window.screen.areas:
-            if area.type == 'VIEWPORT_3D':
+            if area.type == 'VIEW_3D':
                 area.tag_redraw()
+
 
 
 class ArnoldAovShader(bpy.types.PropertyGroup):
@@ -545,20 +554,21 @@ def get_viewport_aov_items(self, context):
 
 
 def update_viewport_aov(self, context):
-    if context:
-        if context.scene:
-            # Force dependency graph update by modifying tracked Scene/Arnold property
-            arnold = getattr(context.scene.arnold, "global", None)
-            if arnold:
-                arnold.viewport_update_trigger = not arnold.viewport_update_trigger
-            context.scene.update_tag()
-            # Tag the active world to force viewport render engine settings reload
-            if context.scene.world:
-                context.scene.world.update_tag()
-        for window in context.window_manager.windows:
-            for area in window.screen.areas:
-                if area.type == 'VIEW_3D':
-                    area.tag_redraw()
+    if context is None:
+        return
+    arnold = getattr(context.scene.arnold, "global", None)
+    if arnold:
+        arnold.viewport_update_trigger = not arnold.viewport_update_trigger
+    viewport = getattr(context.scene.arnold, "viewport", None)
+    if viewport:
+        viewport.viewport_update_trigger = not viewport.viewport_update_trigger
+    context.scene.update_tag()
+    if context.scene.world:
+        context.scene.world.update_tag()
+    for window in context.window_manager.windows:
+        for area in window.screen.areas:
+            if area.type == 'VIEW_3D':
+                area.tag_redraw()
 
 
 class ArnoldViewportShadingProperties(bpy.types.PropertyGroup):

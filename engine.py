@@ -46,16 +46,23 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
         active_aov = "RGBA"
         if is_viewport:
             try:
+                found = False
                 # Retrieve active shading properties by scanning view 3D spaces
                 for window in bpy.context.window_manager.windows:
                     for area in window.screen.areas:
                         if area.type == 'VIEW_3D':
                             space = area.spaces.active
-                            if space and space.type == 'VIEW_3D':
+                            if space and space.type == 'VIEW_3D' and space.shading.type == 'RENDERED':
                                 active_aov = space.shading.arnold.viewport_aov
+                                found = True
                                 break
+                    if found:
+                        break
             except Exception:
                 pass
+
+        if is_viewport:
+            print(f"[BtoA] Active Viewport AOV: {active_aov}")
 
         # Viewport always needs the beauty/active pass; final renders respect the checkbox
         if is_viewport or (final and final.aov_combined):
@@ -66,9 +73,10 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
 
         if settings is not None:
             result |= {
-                "arnold:global:enable_progressive_render": settings.enable_progressive_render,
+                "arnold:global:viewport_update_trigger": settings.viewport_update_trigger,
+                "arnold:global:enable_progressive_render": True if is_viewport else settings.enable_progressive_render,
                 "arnold:global:enable_adaptive_sampling": settings.enable_adaptive_sampling,
-                "arnold:global:threads": -1 if settings.autodetect_threads else settings.threads,
+                "arnold:global:threads": 0 if settings.autodetect_threads else settings.threads,
                 "arnold:global:dialectric_priorities": settings.dialectric_priorities,
                 "arnold:global:enable_aa_sample_clamp": settings.enable_aa_sample_clamp,
                 "arnold:global:AA_sample_clamp": settings.AA_sample_clamp,
@@ -106,9 +114,9 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 "arnold:global:osl_includepath": settings.osl_includepath,
                 "arnold:global:subdiv_dicing_camera": settings.subdiv_dicing_camera.name if settings.subdiv_dicing_camera else "",
                 "arnold:global:subdiv_frustum_culling": settings.subdiv_frustum_culling,
-                "arnold:global:enable_gpu_rendering": (settings.render_device == "GPU"),
-                "arnold:global:render_device": settings.render_device,
-                "arnold:global:render_device_fallback": settings.render_device_fallback,
+                "arnold:global:enable_gpu_rendering": (final.render_device == "GPU") if final else False,
+                "arnold:global:render_device": final.render_device if final else "CPU",
+                "arnold:global:render_device_fallback": final.render_device_fallback if final else "cpu",
                 "arnold:global:log_verbosity": {"error": 0, "warning": 1, "info": 2, "debug": 3}.get(settings.log_verbosity, 2),
                 "arnold:global:log_file": settings.log_file,
                 "arnold:global:profile_file": settings.profile_file,
@@ -127,9 +135,9 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 result["aovDescriptor:Combined"] = {
                     "sourceName": "Z",
                     "sourceType": "raw",
-                    "dataType": "float",
+                    "dataType": "color4f" if is_viewport else "float",
                     "driver:parameters:aov:name": "RGBA",
-                    "driver:parameters:aov:format": "float",
+                    "driver:parameters:aov:format": "color4f" if is_viewport else "float",
                     "driver:parameters:aov:clearValue": 1e30,
                     "driver:parameters:aov:multiSampled": False,
                     "arnold:filter": "closest_filter",
@@ -138,9 +146,9 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 result["aovDescriptor:Combined"] = {
                     "sourceName": "A",
                     "sourceType": "raw",
-                    "dataType": "float",
+                    "dataType": "color4f" if is_viewport else "float",
                     "driver:parameters:aov:name": "RGBA",
-                    "driver:parameters:aov:format": "float",
+                    "driver:parameters:aov:format": "color4f" if is_viewport else "float",
                     "driver:parameters:aov:clearValue": 0.0,
                     "driver:parameters:aov:multiSampled": False,
                     "arnold:filter": "box_filter",
@@ -150,14 +158,14 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 result["aovDescriptor:Combined"] = {
                     "sourceName": active_aov,
                     "sourceType": "raw",
-                    "dataType": "color3f" if active_aov != "RGBA" else "color4f",
+                    "dataType": "color4f" if is_viewport else ("color3f" if active_aov != "RGBA" else "color4f"),
                     "driver:parameters:aov:name": "RGBA",
-                    "driver:parameters:aov:format": "color3f" if active_aov != "RGBA" else "color4f",
+                    "driver:parameters:aov:format": "color4f" if is_viewport else ("color3f" if active_aov != "RGBA" else "color4f"),
                     "driver:parameters:aov:clearValue": 0,
                     "driver:parameters:aov:multiSampled": False,
                     "arnold:filter": filt,
                 }
-        if is_viewport or (final and final.aov_depth):
+        if (is_viewport and active_aov != "depth") or (final and final.aov_depth):
             result["aovToken:Depth"] = "depth"
             result["aovDescriptor:Depth"] = {
                 "sourceName": "Z",
@@ -169,7 +177,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 "driver:parameters:aov:multiSampled": False,
                 "arnold:filter": "closest_filter",
             }
-        if is_viewport or (final and final.aov_position):
+        if (not is_viewport) and (final and final.aov_position):
             result["aovToken:P"] = "P"
             result["aovDescriptor:P"] = {
                 "sourceName": "P",
@@ -181,7 +189,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 "driver:parameters:aov:multiSampled": False,
                 "arnold:filter": "closest_filter",
             }
-        if is_viewport or (final and final.aov_normal):
+        if (not is_viewport) and (final and final.aov_normal):
             result["aovToken:N"] = "N"
             result["aovDescriptor:N"] = {
                 "sourceName": "N",
@@ -218,7 +226,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
             ("motionvector", "motionvector", "Motion Vector", "color3f", "color3f", "closest_filter"),
             ("alpha", "A", "Alpha", "float", "float", "box_filter")
         ]:
-            if is_viewport or (final and getattr(final, f"aov_{prop}", False)):
+            if (not is_viewport) and final and getattr(final, f"aov_{prop}", False):
                 result[f"aovToken:{pass_name}"] = arnold_name
                 result[f"aovDescriptor:{pass_name}"] = {
                     "sourceName": arnold_name,
