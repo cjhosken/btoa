@@ -465,18 +465,11 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         description="Explicit GPU device to use for rendering when manual device selection is enabled",
         items=get_device_selection_items
     )
-
-    autodetect_threads: bpy.props.BoolProperty(
-        name="Auto-detect Threads",
-        description="Auto-detect thread count based on CPU cores",
-        default=True
-    )
-
     ### System
 
     threads: bpy.props.IntProperty(
         name="Threads",
-        description="Explicit number of threads to use for rendering (when auto-detect is disabled)",
+        description="Explicit number of threads to use for rendering",
         default=0, soft_min=0, soft_max=256
     )
 
