@@ -86,8 +86,16 @@ def build_global_settings(settings, is_viewport):
     for usd_name, prop_name in GLOBAL_SETTINGS.items():
         value = getattr(settings, prop_name)
 
-        result[f"arnold:global:{usd_name}"] = value
+        if prop_name == "subdiv_dicing_camera":
+            result[usd_name] = value.name if value else ""
+        elif prop_name == "enable_light_samples":
+            result[usd_name] = settings.light_samples if value else 0
+        elif prop_name == "threads":
+            result[usd_name] = 0 if settings.autodetect_threads else value
+        else:
+            result[usd_name] = value
 
+    result["arnold:global:enable_gpu_rendering"] = (settings.render_device == "GPU")
     result["arnold:global:enable_progressive_render"] = (
         True if is_viewport else settings.enable_progressive_render
     )

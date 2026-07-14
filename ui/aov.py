@@ -3,8 +3,7 @@ from ..engine import ArnoldHydraRenderEngine
 from ..props.aov import BUILTIN_AOVS
 
 
-class ARNOLD_HYDRA_RENDER_PT_aovs(bpy.types.Panel):
-    bl_label = "Render Vars"
+class ArnoldAOVPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "view_layer"
@@ -14,53 +13,80 @@ class ARNOLD_HYDRA_RENDER_PT_aovs(bpy.types.Panel):
     def poll(cls, context):
         return context.engine in cls.COMPAT_ENGINES
 
-    def draw(self, context):
+    def draw_aovs(self, context, category):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
 
         settings = getattr(context.scene.arnold, "global")
 
-        for aovs in BUILTIN_AOVS.values():
-            for name, label, *_ in aovs:
-                prefix = f"aov_{name}"
+        for name, label, *_ in BUILTIN_AOVS.get(category, []):
+            enabled = f"aov_{name}_enabled"
+            filter_type = f"aov_{name}_filter_type"
+            format_type = f"aov_{name}_format"
 
-                enabled_prop = f"{prefix}_enabled"
-                filter_prop = f"{prefix}_filter_type"
-                format_prop = f"{prefix}_format"
+            row = layout.row(align=True)
 
-                row = layout.row(align=True)
-                row.prop(settings, enabled_prop, text=label)
+            row.prop(settings, enabled, text=label)
 
-                sub = row.row(align=True)
-                sub.enabled = getattr(settings, enabled_prop)
-                sub.prop(settings, filter_prop, text="")
-                sub.prop(settings, format_prop, text="")
-
-
-class ARNOLD_VIEW3D_PT_shading_render_pass(bpy.types.Panel):
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "HEADER"
-    bl_label = "Render Pass"
-    bl_parent_id = "VIEW3D_PT_shading"
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        shading = context.space_data.shading
-        return (
-            context.engine in cls.COMPAT_ENGINES
-            and shading.type == "RENDERED"
-            and hasattr(shading, "arnold")
-        )
+            sub = row.row(align=True)
+            sub.enabled = getattr(settings, enabled)
+            sub.prop(settings, filter_type, text="")
+            sub.prop(settings, format_type, text="")
 
     def draw(self, context):
-        shading = context.space_data.shading
-        layout = self.layout
-        layout.prop(shading.arnold, "viewport_aov", text="")
+        pass
+
+
+class ARNOLD_HYDRA_RENDER_PT_aovs(ArnoldAOVPanel):
+    bl_label = "Render Vars"
+
+
+class ARNOLD_HYDRA_RENDER_PT_aovs_standard(ArnoldAOVPanel):
+    bl_label = "Standard"
+    bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_aovs"
+
+    def draw(self, context):
+        self.draw_aovs(context, "Standard")
+
+
+class ARNOLD_HYDRA_RENDER_PT_aovs_standard_lighting(ArnoldAOVPanel):
+    bl_label = "Lighting"
+    bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_aovs_standard"
+
+    def draw(self, context):
+        self.draw_aovs(context, "Lighting")
+
+
+class ARNOLD_HYDRA_RENDER_PT_aovs_volume(ArnoldAOVPanel):
+    bl_label = "Volume"
+    bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_aovs"
+
+    def draw(self, context):
+        self.draw_aovs(context, "Volume")
+
+
+class ARNOLD_HYDRA_RENDER_PT_aovs_utility(ArnoldAOVPanel):
+    bl_label = "Utility"
+    bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_aovs"
+
+    def draw(self, context):
+        self.draw_aovs(context, "Utility")
+
+
+class ARNOLD_HYDRA_RENDER_PT_aovs_diagnostic(ArnoldAOVPanel):
+    bl_label = "Diagnostic"
+    bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_aovs"
+
+    def draw(self, context):
+        self.draw_aovs(context, "Diagnostic")
 
 
 register, unregister = bpy.utils.register_classes_factory((
     ARNOLD_HYDRA_RENDER_PT_aovs,
-    ARNOLD_VIEW3D_PT_shading_render_pass
+    ARNOLD_HYDRA_RENDER_PT_aovs_standard,
+    ARNOLD_HYDRA_RENDER_PT_aovs_standard_lighting,
+    ARNOLD_HYDRA_RENDER_PT_aovs_volume,
+    ARNOLD_HYDRA_RENDER_PT_aovs_utility,
+    ARNOLD_HYDRA_RENDER_PT_aovs_diagnostic,
 ))

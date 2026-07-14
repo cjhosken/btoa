@@ -148,17 +148,28 @@ def main():
     nproc = str(os.cpu_count() or 2)
     run_cmd(["cmake", "--build", ".", "--target", "install", "--", f"-j{nproc}"], cwd=build_dir)
     
+    def robust_copy(src, dst):
+        if os.path.isdir(src):
+            os.makedirs(dst, exist_ok=True)
+            for item in os.listdir(src):
+                robust_copy(os.path.join(src, item), os.path.join(dst, item))
+        else:
+            if os.path.exists(dst):
+                try:
+                    os.unlink(dst)
+                except Exception:
+                    pass
+            try:
+                shutil.copy2(src, dst)
+            except Exception as e:
+                log(f"Warning: Failed to copy {src} to {dst}: {e}")
+
     log("Copying SDK libraries to install target...")
     # Emulate: cp -r $ARNOLD_ROOT/source/arnoldsdk/* $INSTALL_ROOT
     for item in os.listdir(sdk_target_dir):
         s = os.path.join(sdk_target_dir, item)
         d = os.path.join(install_root, item)
-        if os.path.isdir(s):
-            if os.path.exists(d):
-                shutil.rmtree(d)
-            shutil.copytree(s, d)
-        else:
-            shutil.copy2(s, d)
+        robust_copy(s, d)
             
     log("Build completed successfully!")
     log(f"Installed to: {install_root}")
