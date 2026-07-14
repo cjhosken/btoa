@@ -1,191 +1,197 @@
 import bpy
 
-from .utils import make_id_prop, make_vector_id_prop, make_enum_id_prop
-
+from ..usd import USDProperty
 
 class ArnoldLightProperties(bpy.types.PropertyGroup):
-    angle: bpy.props.FloatProperty(
-        name="Angle",
-        default=0.0, min=0.0, max=1.0,
-        get=make_id_prop("primvars:arnold:angle", 0.0)[0],
-        set=make_id_prop("primvars:arnold:angle", 0.0)[1]
-    )
+    ### Light
 
-    aov_indirect: bpy.props.BoolProperty(
-        name="AOV Indirect",
-        default=False,
-        get=make_id_prop("primvars:arnold:aov_indirect", False)[0],
-        set=make_id_prop("primvars:arnold:aov_indirect", False)[1]
-    )
-
-    aspect_ratio: bpy.props.FloatProperty(
-        name="Aspect Ratio",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:aspect_ratio", 1.0)[0],
-        set=make_id_prop("primvars:arnold:aspect_ratio", 1.0)[1]
-    )
-
-    camera: bpy.props.FloatProperty(
-        name="Camera",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:camera", 1.0)[0],
-        set=make_id_prop("primvars:arnold:camera", 1.0)[1]
-    )
-
-    cast_shadows: bpy.props.BoolProperty(
-        name="Cast Shadows",
-        default=True,
-        get=make_id_prop("primvars:arnold:cast_shadows", True)[0],
-        set=make_id_prop("primvars:arnold:cast_shadows", True)[1]
-    )
-
-    cast_volumetric_shadows: bpy.props.BoolProperty(
-        name="Cast Volumetric Shadows",
-        default=True,
-        get=make_id_prop("primvars:arnold:cast_volumetric_shadows", True)[0],
-        set=make_id_prop("primvars:arnold:cast_volumetric_shadows", True)[1]
-    )
-
-    diffuse: bpy.props.FloatProperty(
-        name="Diffuse",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:diffuse", 1.0)[0],
-        set=make_id_prop("primvars:arnold:diffuse", 1.0)[1]
-    )
-
-    indirect: bpy.props.FloatProperty(
-        name="Indirect",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:indirect", 1.0)[0],
-        set=make_id_prop("primvars:arnold:indirect", 1.0)[1]
-    )
-
-    lens_radius: bpy.props.FloatProperty(
-        name="Lens Radius",
-        default=0.0, min=0.0,
-        subtype='DISTANCE',
-        get=make_id_prop("primvars:arnold:lens_radius", 0.0)[0],
-        set=make_id_prop("primvars:arnold:lens_radius", 0.0)[1]
-    )
-
-    max_bounces: bpy.props.IntProperty(
-        name="Max Bounces",
-        default=999, min=0, soft_max=100,
-        get=make_id_prop("primvars:arnold:max_bounces", 999)[0],
-        set=make_id_prop("primvars:arnold:max_bounces", 999)[1]
-    )
-
-    portal: bpy.props.BoolProperty(
-        name="Potal",
-        default=False,
-        get=make_id_prop("primvars:arnold:portal", False)[0],
-        set=make_id_prop("primvars:arnold:portal", False)[1]
-    )
-
-    portal_mode: bpy.props.EnumProperty(
-        name="Portal Mode",
-        items=[
-            ("off", "Off", ""),
-            ("on", "On", ""),
-            ("interior_only", "Interior Only", "")
-        ],
-        default="off",
-        get=make_enum_id_prop("primvars:arnold:portal_mode", [("off", "Off", ""), ("on", "On", ""), ("interior_only", "Interior Only", "")], "off")[0],
-        set=make_enum_id_prop("primvars:arnold:portal_mode", [("off", "Off", ""), ("on", "On", ""), ("interior_only", "Interior Only", "")], "off")[1]
-    )
-
-    resolution: bpy.props.IntProperty(
-        name="Resolution",
-        default=512, min=0, soft_max=1024,
-        get=make_id_prop("primvars:arnold:resolution", 512)[0],
-        set=make_id_prop("primvars:arnold:resolution", 512)[1]
-    )
-
-    roundness: bpy.props.FloatProperty(
-        name="Roundness",
-        default=0.0, min=0.0, max=1.0,
-        get=make_id_prop("primvars:arnold:roundness", 0.0)[0],
-        set=make_id_prop("primvars:arnold:roundness", 0.0)[1]
-    )
-
-    samples: bpy.props.IntProperty(
+    samples: USDProperty(
         name="Samples",
-        default=1, min=0, soft_max=100,
-        get=make_id_prop("primvars:arnold:samples", 1)[0],
-        set=make_id_prop("primvars:arnold:samples", 1)[1]
+        usd="primvars:arnold:samples",
+        type=bpy.props.IntProperty,
+        default=1, min=0, soft_max=8,
     )
 
-    sampling_mode: bpy.props.EnumProperty(
+    sampling_mode: USDProperty(
         name="Sampling Mode",
+        usd="primvars:arnold:sampling_mode",
+        type=bpy.props.EnumProperty,
         items=[
             ("auto", "Auto", ""),
-            ("IMPORTANCE", "Importance", ""),
-            ("SHADE", "Shade All", ""),
+            ("local", "Local", ""),
         ],
-        get=make_enum_id_prop("primvars:arnold:sampling_mode", [("auto", "Auto", ""), ("IMPORTANCE", "Importance", ""), ("SHADE", "Shade All", "")], "IMPORTANCE")[0],
-        set=make_enum_id_prop("primvars:arnold:sampling_mode", [("auto", "Auto", ""), ("IMPORTANCE", "Importance", ""), ("SHADE", "Shade All", "")], "IMPORTANCE")[1]
+        default="auto",
     )
 
-    shadow_color: bpy.props.FloatVectorProperty(
-        name="Shadow Color", subtype='COLOR', default=(0.0, 0.0, 0.0), min=0.0, max=1.0,
-        get=make_vector_id_prop("primvars:arnold:shadow_color", (0.0, 0.0, 0.0))[0],
-        set=make_vector_id_prop("primvars:arnold:shadow_color", (0.0, 0.0, 0.0))[1]
-    )
-
-    shadow_density: bpy.props.FloatProperty(
-        name="Shadow Density",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:shadow_density", 1.0)[0],
-        set=make_id_prop("primvars:arnold:shadow_density", 1.0)[1]
-    )
-
-    soft_edge: bpy.props.FloatProperty(
-        name="Soft Edge",
-        default=0.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:soft_edge", 0.0)[0],
-        set=make_id_prop("primvars:arnold:soft_edge", 0.0)[1]
-    )
-
-    specular: bpy.props.FloatProperty(
-        name="Specular",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:specular", 1.0)[0],
-        set=make_id_prop("primvars:arnold:specular", 1.0)[1]
-    )
-
-    spread: bpy.props.FloatProperty(
-        name="Spread",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:spread", 1.0)[0],
-        set=make_id_prop("primvars:arnold:spread", 1.0)[1]
-    )
-
-    sss: bpy.props.FloatProperty(
-        name="Subsurface Scattering",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:sss", 1.0)[0],
-        set=make_id_prop("primvars:arnold:sss", 1.0)[1]
-    )
-
-    transmission: bpy.props.FloatProperty(
-        name="Transmission",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:transmission", 1.0)[0],
-        set=make_id_prop("primvars:arnold:transmission", 1.0)[1]
-    )
-
-    volume: bpy.props.FloatProperty(
-        name="Volume",
-        default=1.0, min=0.0, soft_max=10.0,
-        get=make_id_prop("primvars:arnold:volume", 1.0)[0],
-        set=make_id_prop("primvars:arnold:volume", 1.0)[1]
-    )
-
-    volume_samples: bpy.props.IntProperty(
+    volume_samples: USDProperty(
         name="Volume Samples",
-        default=2, min=0, soft_max=100,
-        get=make_id_prop("primvars:arnold:volume_samples", 2)[0],
-        set=make_id_prop("primvars:arnold:volume_samples", 2)[1]
+        usd="primvars:arnold:volume_samples",
+        type=bpy.props.IntProperty,
+        default=2, min=0, soft_max=8,
+    )
+
+    roundness: USDProperty(
+        name="Roundness",
+        usd="primvars:arnold:roundness",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, max=1.0,
+    )
+
+    angle: USDProperty(
+        name="Angle",
+        usd="primvars:arnold:angle",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, soft_max=90.0,
+    )
+
+    spread: USDProperty(
+        name="Spread",
+        usd="primvars:arnold:spread",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, max=1,
+    )
+
+    soft_edge: USDProperty(
+        name="Soft Edge",
+        usd="primvars:arnold:soft_edge",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, max=1.0,
+    )
+
+    portal: USDProperty(
+        name="Potal",
+        usd="primvars:arnold:portal",
+        type=bpy.props.BoolProperty,
+        default=False,
+    )
+
+    portal_mode: USDProperty(
+        name="Portal Mode",
+        usd="primvars:arnold:portal_mode",
+        type=bpy.props.EnumProperty,
+        items=[
+            ("off", "Off", ""),
+            ("interior_only", "Interior Only", ""),
+            ("interior_exterior", "Interior Exterior", "")
+        ],
+        default="off",
+    )
+
+    resolution: USDProperty(
+        name="Resolution",
+        usd="primvars:arnold:resolution",
+        type=bpy.props.IntProperty,
+        default=512, min=0, soft_max=1024,
+    )
+
+    aspect_ratio: USDProperty(
+        name="Aspect Ratio",
+        usd="primvars:arnold:aspect_ratio",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=20.0,
+    )
+
+    lens_radius: USDProperty(
+        name="Lens Radius",
+        usd="primvars:arnold:lens_radius",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, soft_max=10.0,
+        subtype='DISTANCE',
+    )
+
+    aov_indirect: USDProperty(
+        name="AOV Indirect",
+        usd="primvars:arnold:aov_indirect",
+        type=bpy.props.BoolProperty,
+        default=False,
+    )
+
+    ### Shadows
+
+    shadow_color: USDProperty(
+        name="Shadow Color",
+        usd="primvars:arnold:shadow_color",
+        type=bpy.props.FloatVectorProperty,
+        subtype='COLOR', default=(0.0, 0.0, 0.0), min=0.0, max=1.0,
+    )
+
+    shadow_density: USDProperty(
+        name="Shadow Density",
+        usd="primvars:arnold:shadow_density",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, max=1.0,
+    )
+
+    cast_shadows: USDProperty(
+        name="Cast Shadows",
+        usd="primvars:arnold:cast_shadows",
+        type=bpy.props.BoolProperty,
+        default=True,
+    )
+
+    cast_volumetric_shadows: USDProperty(
+        name="Cast Volumetric Shadows",
+        usd="primvars:arnold:cast_volumetric_shadows",
+        type=bpy.props.BoolProperty,
+        default=True,
+    )
+
+    ### Contribution
+
+    camera: USDProperty(
+        name="Camera",
+        usd="primvars:arnold:camera",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0,
+    )
+
+    diffuse: USDProperty(
+        name="Diffuse",
+        usd="primvars:arnold:diffuse",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0,
+    )
+
+    specular: USDProperty(
+        name="Specular",
+        usd="primvars:arnold:specular",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0,
+    )
+
+    transmission: USDProperty(
+        name="Transmission",
+        usd="primvars:arnold:transmission",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0,
+    )
+
+    sss: USDProperty(
+        name="Subsurface",
+        usd="primvars:arnold:sss",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0,
+    )
+
+    volume: USDProperty(
+        name="Volume",
+        usd="primvars:arnold:volume",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0,
+    )
+
+    indirect: USDProperty(
+        name="Indirect",
+        usd="primvars:arnold:indirect",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0,
+    )
+
+    max_bounces: USDProperty(
+        name="Max Bounces",
+        usd="primvars:arnold:max_bounces",
+        type=bpy.props.IntProperty,
+        default=999, min=0, soft_max=1000,
     )
 
 

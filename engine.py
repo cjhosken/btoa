@@ -86,6 +86,53 @@ def get_arnold_source_name(name):
     return mapping.get(name, name.lower())
 
 
+def filter_to_arnold_string(filt):
+    """Convert an ArnoldAovFilter PropertyGroup instance to the Arnold
+    filter node-type string expected by aovDescriptor's 'arnold:filter' key.
+    Also returns a dict of extra filter params to merge into the descriptor."""
+    if filt is None:
+        return "box_filter", {}
+
+    from .props.render import FILTERS_WITH_WIDTH, FILTERS_COMPOSITE
+
+    ftype = filt.type
+    extras = {}
+
+    if ftype in FILTERS_WITH_WIDTH:
+        extras["arnold:filter_param:width"] = filt.width
+
+    if ftype == "diff_filter":
+        extras["arnold:filter_param:filter_weights"] = filt.filter_weights
+    elif ftype == "variance_filter":
+        extras["arnold:filter_param:filter_weights"] = filt.filter_weights
+        extras["arnold:filter_param:scalar_mode"] = filt.scalar_mode
+    elif ftype == "cryptomatte_filter":
+        extras["arnold:filter_param:filter"] = filt.sub_filter
+        extras["arnold:filter_param:noop"] = filt.noop
+        if filt.source_filter:
+            extras["arnold:filter_param:source_filter"] = filt.source_filter
+
+    return ftype, extras
+
+
+class _BuiltinFilterProxy:
+    """Read flat per-AOV filter properties from ArnoldGlobalRenderProperties
+    and present the same interface as ArnoldAovFilter so filter_to_arnold_string
+    can process them without requiring a PointerProperty."""
+    __slots__ = ("type", "width", "filter_weights", "scalar_mode",
+                 "sub_filter", "noop", "source_filter")
+
+    def __init__(self, r, name):
+        p = f"aov_{name}_filter"
+        self.type          = getattr(r, f"{p}_type",          "box_filter")
+        self.width         = getattr(r, f"{p}_width",         2.0)
+        self.filter_weights= getattr(r, f"{p}_weights",       "gaussian_filter")
+        self.scalar_mode   = getattr(r, f"{p}_scalar_mode",   False)
+        self.sub_filter    = getattr(r, f"{p}_sub_filter",    "box_filter")
+        self.noop          = getattr(r, f"{p}_noop",          False)
+        self.source_filter = getattr(r, f"{p}_source_filter", "")
+
+
 class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
     bl_idname = "ARNOLD"
     bl_label = "HdArnold"
@@ -230,27 +277,33 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 }
             else:
                 result["aovToken:Combined"] = "color"
-                result["aovDescriptor:Combined"] = {
+                filt_str, filt_extras = filter_to_arnold_string(
+                    _BuiltinFilterProxy(final, "RGBA") if final else None
+                )
+                desc = {
                     "sourceName": "RGBA",
                     "sourceType": "raw",
                     "dataType": "color4f",
                     "driver:parameters:aov:name": "RGBA",
-                    "driver:parameters:aov:format": "color4f" if final.aov_RGBA_format == "float" else "color3f",
+                    "driver:parameters:aov:format": "color4f",
                     "driver:parameters:aov:clearValue": 0.0,
                     "driver:parameters:aov:multiSampled": False,
-                    "arnold:filter": final.aov_RGBA_filter,
+                    "arnold:filter": filt_str,
                 }
+                desc.update(filt_extras)
+                result["aovDescriptor:Combined"] = desc
 
         # Depth pass
         if (is_viewport and active_aov != "Z") or (final and final.aov_Z_enabled):
-            filt = "closest_filter"
+            filt_str = "closest_filter"
+            filt_extras = {}
             fmt = "float"
             if final:
-                filt = final.aov_Z_filter
+                filt_str, filt_extras = filter_to_arnold_string(_BuiltinFilterProxy(final, "Z"))
                 dataType, fmt = get_usd_aov_types("Z", final.aov_Z_format)
 
             result["aovToken:Depth"] = "depth"
-            result["aovDescriptor:Depth"] = {
+            desc = {
                 "sourceName": "Z",
                 "sourceType": "raw",
                 "dataType": "float",
@@ -258,8 +311,10 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 "driver:parameters:aov:format": fmt,
                 "driver:parameters:aov:clearValue": 1e30,
                 "driver:parameters:aov:multiSampled": False,
-                "arnold:filter": filt,
+                "arnold:filter": filt_str,
             }
+            desc.update(filt_extras)
+            result["aovDescriptor:Depth"] = desc
 
         # Add all other enabled built-in AOVs
         if not is_viewport:
@@ -271,10 +326,11 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                     if getattr(final, f"aov_{name}_enabled", False):
                         dataType, fmt = get_usd_aov_types(name, getattr(final, f"aov_{name}_format"))
                         arnold_name = get_arnold_source_name(name)
-                        filt = getattr(final, f"aov_{name}_filter")
-                        
+                        filt_str, filt_extras = filter_to_arnold_string(
+                            _BuiltinFilterProxy(final, name)
+                        )
                         result[f"aovToken:{label}"] = arnold_name
-                        result[f"aovDescriptor:{label}"] = {
+                        desc = {
                             "sourceName": arnold_name,
                             "sourceType": "raw",
                             "dataType": dataType,
@@ -282,8 +338,10 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                             "driver:parameters:aov:format": fmt,
                             "driver:parameters:aov:clearValue": 0.0,
                             "driver:parameters:aov:multiSampled": False,
-                            "arnold:filter": filt,
+                            "arnold:filter": filt_str,
                         }
+                        desc.update(filt_extras)
+                        result[f"aovDescriptor:{label}"] = desc
 
             # Add custom render vars
             for item in final.custom_render_vars:
@@ -306,7 +364,8 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                     fmt = dataType
 
                 result[f"aovToken:{item.name}"] = item.name
-                result[f"aovDescriptor:{item.name}"] = {
+                filt_str, filt_extras = filter_to_arnold_string(item.filter)
+                desc = {
                     "sourceName": item.source_name,
                     "sourceType": item.source_type,
                     "dataType": dataType,
@@ -314,8 +373,10 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                     "driver:parameters:aov:format": fmt,
                     "driver:parameters:aov:clearValue": 0.0,
                     "driver:parameters:aov:multiSampled": False,
-                    "arnold:filter": item.filter,
+                    "arnold:filter": filt_str,
                 }
+                desc.update(filt_extras)
+                result[f"aovDescriptor:{item.name}"] = desc
 
         return result
 

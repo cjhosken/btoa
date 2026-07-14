@@ -2,7 +2,6 @@ import bpy
 
 from ..engine import ArnoldHydraRenderEngine
 
-
 class Panel(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -12,7 +11,6 @@ class Panel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         return context.engine in cls.COMPAT_ENGINES and context.light
-
 
 class ARNOLD_HYDRA_LIGHT_PT_light(Panel):
     bl_label = "Light"
@@ -71,30 +69,39 @@ class ARNOLD_HYDRA_LIGHT_PT_arnold(bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
 
-        light = context.light
-        arnold = light.arnold
+class ARNOLD_HYDRA_LIGHT_PT_arnold_light(bpy.types.Panel):
+    bl_label = "Light"
+    bl_parent_id = "ARNOLD_HYDRA_LIGHT_PT_arnold"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'data'
+    bl_options = {'DEFAULT_CLOSED'}
+    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
+
+    @classmethod
+    def poll(cls, context):
+        return (context.engine in cls.COMPAT_ENGINES and
+                context.light and
+                hasattr(context.light, 'arnold'))
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        arnold = context.light.arnold
 
         layout.prop(arnold, "samples")
         layout.prop(arnold, "sampling_mode")
         layout.prop(arnold, "volume_samples")
-
-        layout.separator()
-
-        layout.prop(arnold, "resolution")
+        layout.prop(arnold, "roundness")
+        layout.prop(arnold, "angle")
+        layout.prop(arnold, "spread")
+        layout.prop(arnold, "soft_edge")
         layout.prop(arnold, "portal")
         layout.prop(arnold, "portal_mode")
-
-        if light.type in {'POINT', 'SPOT', 'SUN'}:
-            layout.prop(arnold, "spread")
-            if light.type == 'SUN':
-                layout.prop(arnold, "angle")
-        elif light.type == 'AREA':
-            layout.prop(arnold, "roundness")
-            layout.prop(arnold, "spread")
-            layout.prop(arnold, "soft_edge")
-            layout.prop(arnold, "aspect_ratio")
-            layout.prop(arnold, "lens_radius")
-
+        layout.prop(arnold, "resolution")
+        layout.prop(arnold, "aspect_ratio")
+        layout.prop(arnold, "lens_radius")
+        #layout.prop(arnold, "aov_indirect")
 
 class ARNOLD_HYDRA_LIGHT_PT_shadows(bpy.types.Panel):
     bl_label = "Shadows"
@@ -116,8 +123,9 @@ class ARNOLD_HYDRA_LIGHT_PT_shadows(bpy.types.Panel):
         layout.use_property_split = True
         arnold = context.light.arnold
 
-        layout.prop(arnold, "cast_shadows")
+        layout.prop(arnold, "shadow_color")
         layout.prop(arnold, "shadow_density")
+        layout.prop(arnold, "cast_shadows")
         layout.prop(arnold, "cast_volumetric_shadows")
 
 
@@ -149,22 +157,19 @@ class ARNOLD_HYDRA_LIGHT_PT_contribution(bpy.types.Panel):
         layout.prop(arnold, "volume")
         layout.prop(arnold, "indirect")
         layout.prop(arnold, "max_bounces")
-
-        layout.separator()
-        layout.prop(arnold, "aov_indirect")
-
+        #layout.prop(arnold, "aov_light_group")
+        #layout.prop(arnold, "shaders")
 
 register_classes, unregister_classes = bpy.utils.register_classes_factory((
     ARNOLD_HYDRA_LIGHT_PT_light,
     ARNOLD_HYDRA_LIGHT_PT_arnold,
+    ARNOLD_HYDRA_LIGHT_PT_arnold_light,
     ARNOLD_HYDRA_LIGHT_PT_shadows,
     ARNOLD_HYDRA_LIGHT_PT_contribution,
 ))
 
-
 def register():
     register_classes()
-
 
 def unregister():
     unregister_classes()

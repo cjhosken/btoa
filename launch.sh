@@ -21,4 +21,4 @@ export LD_LIBRARY_PATH="${BIN_DIR}:${LD_LIBRARY_PATH:-}"
 export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 export OCIO="${OCIO:-$BTOA_ROOT/ocio/configs/arnold/config.ocio}"
 
-exec /home/s5605094/Downloads/blender-5.2.0-candidate+v52.710df102694f-linux.x86_64-release/blender "$@"
+exec /public/software/blender_foundation/blender/blender-5.2-linux-x64/blender "$@"

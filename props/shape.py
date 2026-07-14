@@ -1,449 +1,525 @@
 import bpy
 
-from .utils import make_id_prop, make_vector_id_prop, make_enum_id_prop
-
-
-class SubdivType:
-    items = (
-        ("none", "None", "No subdivision"),
-        ("catclark", "Catmull-Clark", "Catmull-Clark subdivision"),
-    )
-
-
-class AdaptiveSpace:
-    items = (
-        ("raster", "Raster", "Measure error in raster space"),
-        ("world", "World", "Measure error in world space"),
-    )
-
-
-class UVSmoothing:
-    items = (
-        ("linear", "Linear", "Linear UV smoothing"),
-        ("smooth", "Smooth", "Smooth UV interpolation"),
-        ("pin_corners", "Pin Corners", "Pin UV corners"),
-        ("pin_seams", "Pin Seams", "Pin UV seams"),
-        ("pin_all", "Pin All", "Pin all UVs"),
-    )
-
-
-class BasisType:
-    items = (
-        ("linear", "Linear", "Linear basis"),
-        ("bezier", "Bezier", "Cubic Bezier"),
-        ("b-spline", "B-Spline", "Cubic B-Spline"),
-        ("catmull-rom", "Catmull-Rom", "Catmull-Rom spline"),
-    )
-
+from ..usd import USDProperty
 
 class ArnoldTraceSet(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Name", default="")
 
 
 class ArnoldShapeProperties(bpy.types.PropertyGroup):
-    # Visibility (flat properties)
-    vis_camera: bpy.props.BoolProperty(
-        name="Camera", default=True,
-        get=make_id_prop("primvars:arnold:visibility:camera", True)[0],
-        set=make_id_prop("primvars:arnold:visibility:camera", True)[1]
-    )
-    vis_shadow: bpy.props.BoolProperty(
-        name="Shadow", default=True,
-        get=make_id_prop("primvars:arnold:visibility:shadow", True)[0],
-        set=make_id_prop("primvars:arnold:visibility:shadow", True)[1]
-    )
-    vis_diffuse_transmit: bpy.props.BoolProperty(
-        name="Diffuse Transmit", default=True,
-        get=make_id_prop("primvars:arnold:visibility:diffuse_transmit", True)[0],
-        set=make_id_prop("primvars:arnold:visibility:diffuse_transmit", True)[1]
-    )
-    vis_specular_transmit: bpy.props.BoolProperty(
-        name="Specular Transmit", default=True,
-        get=make_id_prop("primvars:arnold:visibility:specular_transmit", True)[0],
-        set=make_id_prop("primvars:arnold:visibility:specular_transmit", True)[1]
-    )
-    vis_volume: bpy.props.BoolProperty(
-        name="Volume", default=True,
-        get=make_id_prop("primvars:arnold:visibility:volume", True)[0],
-        set=make_id_prop("primvars:arnold:visibility:volume", True)[1]
-    )
-    vis_diffuse_reflect: bpy.props.BoolProperty(
-        name="Diffuse Reflect", default=True,
-        get=make_id_prop("primvars:arnold:visibility:diffuse_reflect", True)[0],
-        set=make_id_prop("primvars:arnold:visibility:diffuse_reflect", True)[1]
-    )
-    vis_specular_reflect: bpy.props.BoolProperty(
-        name="Specular Reflect", default=True,
-        get=make_id_prop("primvars:arnold:visibility:specular_reflect", True)[0],
-        set=make_id_prop("primvars:arnold:visibility:specular_reflect", True)[1]
-    )
-    vis_subsurface: bpy.props.BoolProperty(
-        name="Subsurface", default=True,
-        get=make_id_prop("primvars:arnold:visibility:subsurface", True)[0],
-        set=make_id_prop("primvars:arnold:visibility:subsurface", True)[1]
-    )
 
-    # Autobump Visibility (flat properties)
-    autobump_camera: bpy.props.BoolProperty(
-        name="Camera", default=True,
-        get=make_id_prop("primvars:arnold:autobump_visibility:camera", True)[0],
-        set=make_id_prop("primvars:arnold:autobump_visibility:camera", True)[1]
-    )
-    autobump_shadow: bpy.props.BoolProperty(
-        name="Shadow", default=True,
-        get=make_id_prop("primvars:arnold:autobump_visibility:shadow", True)[0],
-        set=make_id_prop("primvars:arnold:autobump_visibility:shadow", True)[1]
-    )
-    autobump_diffuse_transmit: bpy.props.BoolProperty(
-        name="Diffuse Transmit", default=True,
-        get=make_id_prop("primvars:arnold:autobump_visibility:diffuse_transmit", True)[0],
-        set=make_id_prop("primvars:arnold:autobump_visibility:diffuse_transmit", True)[1]
-    )
-    autobump_specular_transmit: bpy.props.BoolProperty(
-        name="Specular Transmit", default=True,
-        get=make_id_prop("primvars:arnold:autobump_visibility:specular_transmit", True)[0],
-        set=make_id_prop("primvars:arnold:autobump_visibility:specular_transmit", True)[1]
-    )
-    autobump_volume: bpy.props.BoolProperty(
-        name="Volume", default=True,
-        get=make_id_prop("primvars:arnold:autobump_visibility:volume", True)[0],
-        set=make_id_prop("primvars:arnold:autobump_visibility:volume", True)[1]
-    )
-    autobump_diffuse_reflect: bpy.props.BoolProperty(
-        name="Diffuse Reflect", default=True,
-        get=make_id_prop("primvars:arnold:autobump_visibility:diffuse_reflect", True)[0],
-        set=make_id_prop("primvars:arnold:autobump_visibility:diffuse_reflect", True)[1]
-    )
-    autobump_specular_reflect: bpy.props.BoolProperty(
-        name="Specular Reflect", default=True,
-        get=make_id_prop("primvars:arnold:autobump_visibility:specular_reflect", True)[0],
-        set=make_id_prop("primvars:arnold:autobump_visibility:specular_reflect", True)[1]
-    )
-    autobump_subsurface: bpy.props.BoolProperty(
-        name="Subsurface", default=True,
-        get=make_id_prop("primvars:arnold:autobump_visibility:subsurface", True)[0],
-        set=make_id_prop("primvars:arnold:autobump_visibility:subsurface", True)[1]
-    )
-
-    # Double Sided / Sideness (flat properties)
-    double_sided_diffuse_reflect: bpy.props.BoolProperty(
-        name="Diffuse Reflect", default=True,
-        get=make_id_prop("primvars:arnold:sideness:diffuse_reflect", True)[0],
-        set=make_id_prop("primvars:arnold:sideness:diffuse_reflect", True)[1]
-    )
-    double_sided_specular_reflect: bpy.props.BoolProperty(
-        name="Specular Reflect", default=True,
-        get=make_id_prop("primvars:arnold:sideness:specular_reflect", True)[0],
-        set=make_id_prop("primvars:arnold:sideness:specular_reflect", True)[1]
-    )
-    double_sided_volume: bpy.props.BoolProperty(
-        name="Volume", default=True,
-        get=make_id_prop("primvars:arnold:sideness:volume", True)[0],
-        set=make_id_prop("primvars:arnold:sideness:volume", True)[1]
-    )
-
-    # Geometry Light / Mesh Light (flat properties)
-    light: bpy.props.BoolProperty(
-        name="Geometry Light",
-        get=make_id_prop("primvars:arnold:light", False)[0],
-        set=make_id_prop("primvars:arnold:light", False)[1]
-    )
-    light_color: bpy.props.FloatVectorProperty(
-        name="Color", subtype='COLOR', default=(1.0, 1.0, 1.0), min=0.0, max=1.0,
-        get=make_vector_id_prop("primvars:arnold:light:color", (1.0, 1.0, 1.0))[0],
-        set=make_vector_id_prop("primvars:arnold:light:color", (1.0, 1.0, 1.0))[1]
-    )
-    light_intensity: bpy.props.FloatProperty(
-        name="Intensity", default=1.0, min=0.0,
-        get=make_id_prop("primvars:arnold:light:intensity", 1.0)[0],
-        set=make_id_prop("primvars:arnold:light:intensity", 1.0)[1]
-    )
-    light_exposure: bpy.props.FloatProperty(
-        name="Exposure", default=0.0,
-        get=make_id_prop("primvars:arnold:light:exposure", 0.0)[0],
-        set=make_id_prop("primvars:arnold:light:exposure", 0.0)[1]
-    )
-    light_cast_shadows: bpy.props.BoolProperty(
-        name="Cast Shadows", default=True,
-        get=make_id_prop("primvars:arnold:light:cast_shadows", True)[0],
-        set=make_id_prop("primvars:arnold:light:cast_shadows", True)[1]
-    )
-    light_cast_volumetric_shadows: bpy.props.BoolProperty(
-        name="Cast Volumetric Shadows", default=True,
-        get=make_id_prop("primvars:arnold:light:cast_volumetric_shadows", True)[0],
-        set=make_id_prop("primvars:arnold:light:cast_volumetric_shadows", True)[1]
-    )
-    light_shadow_density: bpy.props.FloatProperty(
-        name="Shadow Density", default=1.0, min=0.0,
-        get=make_id_prop("primvars:arnold:light:shadow_density", 1.0)[0],
-        set=make_id_prop("primvars:arnold:light:shadow_density", 1.0)[1]
-    )
-    light_shadow_color: bpy.props.FloatVectorProperty(
-        name="Shadow Color", subtype='COLOR', default=(0.0, 0.0, 0.0), min=0.0, max=1.0,
-        get=make_vector_id_prop("primvars:arnold:light:shadow_color", (0.0, 0.0, 0.0))[0],
-        set=make_vector_id_prop("primvars:arnold:light:shadow_color", (0.0, 0.0, 0.0))[1]
-    )
-    light_samples: bpy.props.IntProperty(
-        name="Samples", default=1, min=0,
-        get=make_id_prop("primvars:arnold:light:samples", 1)[0],
-        set=make_id_prop("primvars:arnold:light:samples", 1)[1]
-    )
-    light_normalize: bpy.props.BoolProperty(
-        name="Normalize", default=True,
-        get=make_id_prop("primvars:arnold:light:normalize", True)[0],
-        set=make_id_prop("primvars:arnold:light:normalize", True)[1]
-    )
-    light_diffuse: bpy.props.FloatProperty(
-        name="Diffuse", default=1.0, min=0.0,
-        get=make_id_prop("primvars:arnold:light:diffuse", 1.0)[0],
-        set=make_id_prop("primvars:arnold:light:diffuse", 1.0)[1]
-    )
-    light_specular: bpy.props.FloatProperty(
-        name="Specular", default=1.0, min=0.0,
-        get=make_id_prop("primvars:arnold:light:specular", 1.0)[0],
-        set=make_id_prop("primvars:arnold:light:specular", 1.0)[1]
-    )
-    light_sss: bpy.props.FloatProperty(
-        name="SSS", default=1.0, min=0.0,
-        get=make_id_prop("primvars:arnold:light:sss", 1.0)[0],
-        set=make_id_prop("primvars:arnold:light:sss", 1.0)[1]
-    )
-    light_indirect: bpy.props.FloatProperty(
-        name="Indirect", default=1.0, min=0.0,
-        get=make_id_prop("primvars:arnold:light:indirect", 1.0)[0],
-        set=make_id_prop("primvars:arnold:light:indirect", 1.0)[1]
-    )
-    light_max_bounces: bpy.props.IntProperty(
-        name="Max Bounces", default=-1, min=-1,
-        get=make_id_prop("primvars:arnold:light:max_bounces", -1)[0],
-        set=make_id_prop("primvars:arnold:light:max_bounces", -1)[1]
-    )
-    light_volume_samples: bpy.props.IntProperty(
-        name="Volume Samples", default=1, min=0,
-        get=make_id_prop("primvars:arnold:light:volume_samples", 1)[0],
-        set=make_id_prop("primvars:arnold:light:volume_samples", 1)[1]
-    )
-    light_volume: bpy.props.FloatProperty(
-        name="Volume", default=1.0, min=0.0,
-        get=make_id_prop("primvars:arnold:light:volume", 1.0)[0],
-        set=make_id_prop("primvars:arnold:light:volume", 1.0)[1]
-    )
-    light_sampling_mode: bpy.props.EnumProperty(
-        name="Sampling Mode",
+    ### Subdivision
+    subdiv_type: USDProperty(
+        name="Subdivision Type",
+        usd="primvars:arnold:subdiv_type",
+        type=bpy.props.EnumProperty,
         items=[
-            ("IMPORTANCE", "Importance", ""),
-            ("SHADE", "Shade All", ""),
+            ("none", "None", "No subdivision"),
+            ("catclark", "Catmull-Clark", "Catmull-Clark subdivision"),
+            ("linear", "Linear", "linear")
         ],
-        get=make_enum_id_prop("primvars:arnold:light:sampling_mode", [("IMPORTANCE", "Importance", ""), ("SHADE", "Shade All", "")], "IMPORTANCE")[0],
-        set=make_enum_id_prop("primvars:arnold:light:sampling_mode", [("IMPORTANCE", "Importance", ""), ("SHADE", "Shade All", "")], "IMPORTANCE")[1]
-    )
-    light_aov: bpy.props.StringProperty(
-        name="AOV", default="",
-        get=make_id_prop("primvars:arnold:light:aov", "")[0],
-        set=make_id_prop("primvars:arnold:light:aov", "")[1]
+        default="none",
     )
 
-    # General properties
-    basis: bpy.props.EnumProperty(
-        name="Basis",
-        items=BasisType.items,
-        get=make_enum_id_prop("primvars:arnold:basis", BasisType.items, "bezier")[0],
-        set=make_enum_id_prop("primvars:arnold:basis", BasisType.items, "bezier")[1]
+    subdiv_iterations: USDProperty(
+        name="Subdivision Iterations",
+        usd="primvars:arnold:subdiv_iterations",
+        type=bpy.props.IntProperty,
+        default=1, min=0, max=100
     )
 
-    deform_keys: bpy.props.IntProperty(
-        name="Deform Keys",
-        get=make_id_prop("primvars:arnold:deform_keys", 3)[0],
-        set=make_id_prop("primvars:arnold:deform_keys", 3)[1]
-    )
-
-    disp_autobump: bpy.props.BoolProperty(
-        name="Displacement Autobump",
-        get=make_id_prop("primvars:arnold:disp_autobump", False)[0],
-        set=make_id_prop("primvars:arnold:disp_autobump", False)[1]
-    )
-    
-    disp_height: bpy.props.FloatProperty(
-        name="Displacement Height",
-        get=make_id_prop("primvars:arnold:disp_height", 1.0)[0],
-        set=make_id_prop("primvars:arnold:disp_height", 1.0)[1]
-    )
-
-    disp_padding: bpy.props.FloatProperty(
-        name="Displacement Padding",
-        get=make_id_prop("primvars:arnold:disp_padding", 0.0)[0],
-        set=make_id_prop("primvars:arnold:disp_padding", 0.0)[1]
-    )
-
-    disp_zero_value: bpy.props.FloatProperty(
-        name="Displacement Zero Value",
-        get=make_id_prop("primvars:arnold:disp_zero_value", 0.0)[0],
-        set=make_id_prop("primvars:arnold:disp_zero_value", 0.0)[1]
-    )
-
-    invert_normals: bpy.props.BoolProperty(
-        name="Invert Normals",
-        get=make_id_prop("primvars:arnold:invert_normals", False)[0],
-        set=make_id_prop("primvars:arnold:invert_normals", False)[1]
-    )
-
-    matte: bpy.props.BoolProperty(
-        name="Matte",
-        get=make_id_prop("primvars:arnold:matte", False)[0],
-        set=make_id_prop("primvars:arnold:matte", False)[1]
-    )
-
-    min_pixel_width: bpy.props.FloatProperty(
-        name="Min Pixel Width",
-        get=make_id_prop("primvars:arnold:min_pixel_width", 0.0)[0],
-        set=make_id_prop("primvars:arnold:min_pixel_width", 0.0)[1]
-    )
-
-    mipmap_bias: bpy.props.IntProperty(
-        name="MipMap Bias",
-        get=make_id_prop("primvars:arnold:mipmap_bias", 0)[0],
-        set=make_id_prop("primvars:arnold:mipmap_bias", 0)[1]
-    )
-
-    mode: bpy.props.EnumProperty(
-        name="Mode",
-        items=[
-            ("strip", "Strip", ""),
-            ("ribbon", "Ribbon", ""),
-            ("thick", "Thick", ""),
-        ],
-        get=make_enum_id_prop("primvars:arnold:mode", [("strip", "Strip", ""), ("ribbon", "Ribbon", ""), ("thick", "Thick", "")], "ribbon")[0],
-        set=make_enum_id_prop("primvars:arnold:mode", [("strip", "Strip", ""), ("ribbon", "Ribbon", ""), ("thick", "Thick", "")], "ribbon")[1]
-    )
-
-    opaque: bpy.props.BoolProperty(
-        name="Opaque",
-        get=make_id_prop("primvars:arnold:opaque", False)[0],
-        set=make_id_prop("primvars:arnold:opaque", False)[1]
-    )
-
-    radius: bpy.props.FloatProperty(
-        name="Radius",
-        get=make_id_prop("primvars:arnold:radius", 0.5)[0],
-        set=make_id_prop("primvars:arnold:radius", 0.5)[1]
-    )
-
-    receive_shadows: bpy.props.BoolProperty(
-        name="Receive Shadows",
-        get=make_id_prop("primvars:arnold:receive_shadows", True)[0],
-        set=make_id_prop("primvars:arnold:receive_shadows", True)[1]
-    )
-    
-    self_shadows: bpy.props.BoolProperty(
-        name="Self Shadows",
-        get=make_id_prop("primvars:arnold:self_shadows", True)[0],
-        set=make_id_prop("primvars:arnold:self_shadows", True)[1]
-    )
-
-    smoothing: bpy.props.BoolProperty(
-        name="Smoothing",
-        get=make_id_prop("primvars:arnold:smoothing", True)[0],
-        set=make_id_prop("primvars:arnold:smoothing", True)[1]
-    )
-
-    step_size: bpy.props.FloatProperty(
-        name="Step Size",
-        get=make_id_prop("primvars:arnold:step_size", 0.0)[0],
-        set=make_id_prop("primvars:arnold:step_size", 0.0)[1]
-    )
-
-    subdiv_adaptive_error: bpy.props.FloatProperty(
-        name="Adaptive Error",
-        get=make_id_prop("primvars:arnold:subdiv_adaptive_error", 0.0)[0],
-        set=make_id_prop("primvars:arnold:subdiv_adaptive_error", 0.0)[1]
-    )
-
-    subdiv_adaptive_metric: bpy.props.EnumProperty(
+    subdiv_adaptive_metric: USDProperty(
         name="Adaptive Metric",
+        usd="primvars:arnold:subdiv_adaptive_metric",
+        type=bpy.props.EnumProperty,
         items=[
+            ("auto", "Auto", ""),
             ("edge_length", "Edge Length", ""),
             ("flatness", "Flatness", ""),
-            ("both", "Both", ""),
         ],
-        get=make_enum_id_prop("primvars:arnold:subdiv_adaptive_metric", [("edge_length", "Edge Length", ""), ("flatness", "Flatness", ""), ("both", "Both", "")], "edge_length")[0],
-        set=make_enum_id_prop("primvars:arnold:subdiv_adaptive_metric", [("edge_length", "Edge Length", ""), ("flatness", "Flatness", ""), ("both", "Both", "")], "edge_length")[1]
+        default="auto",
     )
 
-    subdiv_adaptive_space: bpy.props.EnumProperty(
+    subdiv_adaptive_error: USDProperty(
+        name="Adaptive Error",
+        usd="primvars:arnold:subdiv_adaptive_error",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, soft_max=10.0
+    )
+
+    subdiv_adaptive_space: USDProperty(
         name="Adaptive Space",
-        items=AdaptiveSpace.items,
-        get=make_enum_id_prop("primvars:arnold:subdiv_adaptive_space", AdaptiveSpace.items, "raster")[0],
-        set=make_enum_id_prop("primvars:arnold:subdiv_adaptive_space", AdaptiveSpace.items, "raster")[1]
+        usd="primvars:arnold:subdiv_adaptive_space",
+        type=bpy.props.EnumProperty,
+        items=[
+            ("raster", "Raster", "Measure error in raster space"),
+            ("object", "Object", "Measure error in object space"),
+        ],
+        default="raster",
+    )
+
+    subdiv_uv_smoothing: USDProperty(
+        name="UV Smoothing",
+        usd="primvars:arnold:subdiv_uv_smoothing",
+        type=bpy.props.EnumProperty,
+        items=[
+            ("pin_corners", "Pin Corners", "Pin UV corners"),
+            ("pin_borders", "Pin Borders", "Pin UV seams"),
+            ("linear", "Linear", "Linear UV smoothing"),
+            ("smooth", "Smooth", "Smooth UV interpolation"),
+        ],
+        default="pin_corners",
     )
     
-    subdiv_frustum_ignore: bpy.props.BoolProperty(
-        name="Frustum Ignore",
-        get=make_id_prop("primvars:arnold:subdiv_frustum_ignore", False)[0],
-        set=make_id_prop("primvars:arnold:subdiv_frustum_ignore", False)[1]
-    )
-
-    subdiv_iterations: bpy.props.IntProperty(
-        name="Subdivision Iterations",
-        get=make_id_prop("primvars:arnold:subdiv_iterations", 0)[0],
-        set=make_id_prop("primvars:arnold:subdiv_iterations", 0)[1]
-    )
-
-    subdiv_smooth_derivs: bpy.props.BoolProperty(
+    subdiv_smooth_derivs: USDProperty(
         name="Smooth Derivatives",
-        get=make_id_prop("primvars:arnold:subdiv_smooth_derivs", False)[0],
-        set=make_id_prop("primvars:arnold:subdiv_smooth_derivs", False)[1]
+        usd="primvars:arnold:subdiv_smooth_derivs",
+        type=bpy.props.BoolProperty,
+        default=False,
     )
 
-    subdiv_type: bpy.props.EnumProperty(
-        name="Subdivision Type",
-        items=SubdivType.items,
-        get=make_enum_id_prop("primvars:arnold:subdiv_type", SubdivType.items, "none")[0],
-        set=make_enum_id_prop("primvars:arnold:subdiv_type", SubdivType.items, "none")[1]
+    subdiv_frustum_ignore: USDProperty(
+        name="Frustum Ignore",
+        usd="primvars:arnold:subdiv_frustum_ignore",
+        type=bpy.props.BoolProperty,
+        default=False,
     )
 
-    subdiv_uv_smoothing: bpy.props.EnumProperty(
-        name="UV Smoothing",
-        items=UVSmoothing.items,
-        get=make_enum_id_prop("primvars:arnold:subdiv_uv_smoothing", UVSmoothing.items, "linear")[0],
-        set=make_enum_id_prop("primvars:arnold:subdiv_uv_smoothing", UVSmoothing.items, "linear")[1]
+    ### Displacement
+
+    disp_height: USDProperty(
+        name="Height",
+        usd="primvars:arnold:disp_height",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=10.0
     )
 
-    trace_sets: bpy.props.CollectionProperty(
-        type=ArnoldTraceSet
+    disp_zero_value: USDProperty(
+        name="Zero Value",
+        usd="primvars:arnold:disp_zero_value",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, soft_max=10.0
     )
 
-    transform_keys: bpy.props.IntProperty(
-        name="Transform Keys",
-        get=make_id_prop("primvars:arnold:transform_keys", -1)[0],
-        set=make_id_prop("primvars:arnold:transform_keys", -1)[1]
-    )
-
-    transform_type: bpy.props.EnumProperty(
-        name="Transform Type",
-        items=[
-            ("linear", "Linear", "Linear interpolation"),
-            ("step", "Step", "Step interpolation"),
-            ("deform", "Deform", "Deformation blur"),
-        ],
-        get=make_enum_id_prop("primvars:arnold:transform_type", [("linear", "Linear", ""), ("step", "Step", ""), ("deform", "Deform", "")], "linear")[0],
-        set=make_enum_id_prop("primvars:arnold:transform_type", [("linear", "Linear", ""), ("step", "Step", ""), ("deform", "Deform", "")], "linear")[1]
-    )
-
-    volume_padding: bpy.props.FloatProperty(
+    disp_padding: USDProperty(
         name="Padding",
-        get=make_id_prop("primvars:arnold:volume_padding", 0.0)[0],
-        set=make_id_prop("primvars:arnold:volume_padding", 0.0)[1]
+        usd="primvars:arnold:disp_padding",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, soft_max=10.0
     )
 
-    step_scale: bpy.props.FloatProperty(
-        name="Step Scale",
-        get=make_id_prop("primvars:arnold:step_scale", 1.0)[0],
-        set=make_id_prop("primvars:arnold:step_scale", 1.0)[1]
+    disp_autobump: USDProperty(
+        name="Autobump",
+        usd="primvars:arnold:disp_autobump",
+        type=bpy.props.BoolProperty,
+        default=False,
     )
-    default_radius: bpy.props.FloatProperty(
+
+    autobump_camera: USDProperty(
+        name="Camera Ray Autobump Visibility", default=True,
+        usd="primvars:arnold:autobump_visibility:camera",
+        type=bpy.props.BoolProperty,
+    )
+
+    autobump_shadow: USDProperty(
+        name="Shadow Ray Autobump Visibility", default=True,
+        usd="primvars:arnold:autobump_visibility:shadow",
+        type=bpy.props.BoolProperty,
+    )
+
+    autobump_diffuse_transmit: USDProperty(
+        name="Diffuse Transmit Ray Autobump Visibility", default=True,
+        usd="primvars:arnold:autobump_visibility:diffuse_transmit",
+        type=bpy.props.BoolProperty,
+    )
+
+    autobump_specular_transmit: USDProperty(
+        name="Specular Transmit Ray Autobump Visibility", default=True,
+        usd="primvars:arnold:autobump_visibility:specular_transmit",
+        type=bpy.props.BoolProperty,
+    )
+
+    autobump_volume: USDProperty(
+        name="Volume Ray Autobump Visibility", default=True,
+        usd="primvars:arnold:autobump_visibility:volume",
+        type=bpy.props.BoolProperty,
+    )
+
+    autobump_diffuse_reflect: USDProperty(
+        name="Diffuse Reflect Ray Autobump Visibility", default=True,
+        usd="primvars:arnold:autobump_visibility:diffuse_reflect",
+        type=bpy.props.BoolProperty,
+    )
+
+    autobump_specular_reflect: USDProperty(
+        name="Specular Reflect Ray Autobump Visibility", default=True,
+        usd="primvars:arnold:autobump_visibility:specular_reflect",
+        type=bpy.props.BoolProperty,
+    )
+
+    autobump_subsurface: USDProperty(
+        name="Subsurface Ray Autobump Visibility", default=True,
+        usd="primvars:arnold:autobump_visibility:subsurface",
+        type=bpy.props.BoolProperty,
+    )
+
+    ### Volume
+
+    step_size: USDProperty(
+        name="Step Size",
+        usd="primvars:arnold:step_size",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, soft_max=10.0
+    )
+
+    step_scale: USDProperty(
+        name="Step Scale",
+        usd="primvars:arnold:step_scale",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=10.0
+    )
+
+    volume_padding: USDProperty(
+        name="Padding",
+        usd="primvars:arnold:volume_padding",
+        type=bpy.props.FloatProperty,
+        default=0.0, min=0.0, soft_max=10.0
+    )
+
+    mipmap_bias: USDProperty(
+        name="MipMap Bias",
+        usd="primvars:arnold:mipmap_bias",
+        type=bpy.props.IntProperty,
+        default=0, min=-31, max=31
+    )
+
+    ### Motion Blur
+
+    transform_type: USDProperty(
+        name="Transform Type",
+        usd="primvars:arnold:transform_type",
+        type=bpy.props.EnumProperty,
+        items=[
+            ("linear", "Linear", ""),
+            ("rotate_about_origin", "Rotate About Origin", ""),
+            ("rotate_about_center", "Rotate About Center", ""),
+        ],
+        default="rotate_about_center",
+    )
+
+    deform_keys: USDProperty(
+        name="Deform Keys",
+        usd="primvars:arnold:deform_keys",
+        type=bpy.props.IntProperty,
+        default=3, min=0, soft_max=10
+    )
+
+    transform_keys: USDProperty(
+        name="Transform Keys",
+        usd="primvars:arnold:transform_keys",
+        type=bpy.props.IntProperty,
+        default=3, min=0, soft_max=10 
+    )
+
+    ### Visibility
+    vis_camera: USDProperty(
+        name="Camera Ray Visibility",
+        usd="primvars:arnold:visibility:camera",
+        type=bpy.props.BoolProperty,
+        default=True
+    )
+
+    vis_shadow: USDProperty(
+        name="Shadow Ray Visibility",
+        usd="primvars:arnold:visibility:shadow",
+        type=bpy.props.BoolProperty,
+        default=True
+    )
+    vis_diffuse_transmit: USDProperty(
+        name="Diffuse Transmit Ray Visibility",
+        usd="primvars:arnold:visibility:diffuse_transmit",
+        type=bpy.props.BoolProperty,
+        default=True
+    )
+    vis_specular_transmit: USDProperty(
+        name="Specular Transmit Ray Visibility",
+        usd="primvars:arnold:visibility:specular_transmit",
+        type=bpy.props.BoolProperty,
+        default=True
+    )
+    vis_volume: USDProperty(
+        name="Volume Ray Visibility",
+        usd="primvars:arnold:visibility:volume",
+        type=bpy.props.BoolProperty,
+        default=True
+    )
+    vis_diffuse_reflect: USDProperty(
+        name="Diffuse Reflect Ray Visibility",
+        usd="primvars:arnold:visibility:diffuse_reflect",
+        type=bpy.props.BoolProperty,
+        default=True
+    )
+    vis_specular_reflect: USDProperty(
+        name="Specular Reflect Ray Visibility",
+        usd="primvars:arnold:visibility:specular_reflect",
+        type=bpy.props.BoolProperty,
+        default=True
+    )
+
+    receive_shadows: USDProperty(
+        name="Receive Shadows",
+        usd="primvars:arnold:receive_shadows",
+        type=bpy.props.BoolProperty,
+        default=True,
+    )
+    
+    self_shadows: USDProperty(
+        name="Self Shadows",
+        usd="primvars:arnold:self_shadows",
+        type=bpy.props.BoolProperty,
+        default=True,
+    )
+
+    opaque: USDProperty(
+        name="Opaque",
+        usd="primvars:arnold:opaque",
+        type=bpy.props.BoolProperty,
+        default=False,
+    )
+
+    matte: USDProperty(
+        name="Matte",
+        usd="primvars:arnold:matte",
+        type=bpy.props.BoolProperty,
+        default=False,
+    )
+
+    ### Normals
+
+    smoothing: USDProperty(
+        name="Smoothing",
+        usd="primvars:arnold:smoothing",
+        type=bpy.props.BoolProperty,
+        default=True,
+    )
+
+    invert_normals: USDProperty(
+        name="Invert Normals",
+        usd="primvars:arnold:invert_normals",
+        type=bpy.props.BoolProperty,
+        default=False,
+    )
+
+    double_sided_camera: USDProperty(
+        name="Camera Ray Double Sided", default=True,
+        usd="primvars:arnold:sidedness:camera",
+        type=bpy.props.BoolProperty,
+    )
+
+    double_sided_shadow: USDProperty(
+        name="Shadow Ray Double Sided", default=True,
+        usd="primvars:arnold:sidedness:shadow",
+        type=bpy.props.BoolProperty,
+    )
+
+    double_sided_diffuse_transmit: USDProperty(
+        name="Diffuse Transmit Ray Double Sided", default=True,
+        usd="primvars:arnold:sidedness:diffuse_transmit",
+        type=bpy.props.BoolProperty,
+    )
+
+    double_sided_specular_transmit: USDProperty(
+        name="Specular Transmit Ray Double Sided", default=True,
+        usd="primvars:arnold:sidedness:specular_transmit",
+        type=bpy.props.BoolProperty,
+    )
+
+    double_sided_volume: USDProperty(
+        name="Volume Ray Double Sided", default=True,
+        usd="primvars:arnold:sidedness:volume",
+        type=bpy.props.BoolProperty,
+    )
+
+    double_sided_diffuse_reflect: USDProperty(
+        name="Diffuse Reflect Ray Double Sided", default=True,
+        usd="primvars:arnold:sidedness:diffuse_reflect",
+        type=bpy.props.BoolProperty,
+    )
+
+    double_sided_specular_reflect: USDProperty(
+        name="Specular Reflect Ray Double Sided", default=True,
+        usd="primvars:arnold:sidedness:specular_reflect",
+        type=bpy.props.BoolProperty,
+    )
+
+    ### Shape
+
+    min_pixel_width: USDProperty(
+        name="Min. Pixel Width",
+        usd="primvars:arnold:min_pixel_width",
+        type=bpy.props.FloatProperty,
+        default=0.0,
+    )
+
+    default_radius: USDProperty(
         name="Default Radius",
-        get=make_id_prop("primvars:arnold:default_radius", 0.0)[0],
-        set=make_id_prop("primvars:arnold:default_radius", 0.0)[1]
+        usd="primvars:arnold:radius",
+        type=bpy.props.FloatProperty,
+        default=0.0,
+    )
+
+    basis: USDProperty(
+        name="Basis",
+        usd="primvars:arnold:basis",
+        type=bpy.props.EnumProperty,
+        items=[
+            ("bezier", "Bezier", "Cubic Bezier"),
+            ("b-spline", "B-Spline", "Cubic B-Spline"),
+            ("catmull-rom", "Catmull-Rom", "Catmull-Rom spline"),
+            ("linear", "Linear", "Linear basis"),
+        ],
+        default="bezier",
+    )
+
+    mode: USDProperty(
+        name="Mode",
+        usd="primvars:arnold:mode",
+        type=bpy.props.EnumProperty,
+        items=[
+            ("ribbon", "Ribbon", ""),
+            ("thick", "Thick", ""),
+            ("oriented", "Oriented", "")
+        ],
+        default="ribbon",
+    )
+
+    ### Light
+    light: USDProperty(
+        name="Geometry Light",
+        usd="primvars:arnold:light",
+        type=bpy.props.BoolProperty,
+        default=False,
+    )
+
+    light_color: USDProperty(
+        name="Color", subtype='COLOR',
+        usd="primvars:arnold:light:color",
+        type=bpy.props.FloatVectorProperty,
+        default=(1.0, 1.0, 1.0), min=0.0, max=1.0
+    )
+
+    light_intensity: USDProperty(
+        name="Intensity",
+        usd="primvars:arnold:light:intensity",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=10.0
+    )
+
+    light_exposure: USDProperty(
+        name="Exposure",
+        usd="primvars:arnold:light:exposure",
+        type=bpy.props.FloatProperty,
+        default=0.0, soft_min=-5.0, soft_max=5.0
+    )
+
+    light_cast_shadows: USDProperty(
+        name="Cast Shadows", default=True,
+        usd="primvars:arnold:light:cast_shadows",
+        type=bpy.props.BoolProperty,
+    )
+
+    light_cast_volumetric_shadows: USDProperty(
+        name="Cast Volumetric Shadows", default=True,
+        usd="primvars:arnold:light:cast_volumetric_shadows",
+        type=bpy.props.BoolProperty,
+    )
+
+    light_shadow_density: USDProperty(
+        name="Shadow Density", 
+        usd="primvars:arnold:light:shadow_density",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0
+    )
+
+    light_shadow_color: USDProperty(
+        name="Shadow Color", subtype='COLOR',
+        usd="primvars:arnold:light:shadow_color",
+        type=bpy.props.FloatVectorProperty,
+        default=(0.0, 0.0, 0.0), min=0.0, max=1.0
+    )
+
+    light_samples: USDProperty(
+        name="Samples",
+        usd="primvars:arnold:light:samples",
+        type=bpy.props.IntProperty,
+        default=1, min=0, soft_max=10
+    )
+
+    light_normalize: USDProperty(
+        name="Normalize",
+        usd="primvars:arnold:light:normalize",
+        type=bpy.props.BoolProperty,
+        default=True
+    )
+
+    light_diffuse: USDProperty(
+        name="Diffuse",
+        usd="primvars:arnold:light:diffuse",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0
+    )
+
+    light_specular: USDProperty(
+        name="Specular",
+        usd="primvars:arnold:light:specular",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0
+    )
+
+    light_sss: USDProperty(
+        name="SSS",
+        usd="primvars:arnold:light:sss",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0
+    )
+
+    light_indirect: USDProperty(
+        name="Indirect",
+        usd="primvars:arnold:light:indirect",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0
+    )
+    
+    light_max_bounces: USDProperty(
+        name="Max Bounces",
+        usd="primvars:arnold:light:max_bounces",
+        type=bpy.props.IntProperty,
+        default=999, min=0, soft_max=1000
+    )
+
+    light_volume_samples: USDProperty(
+        name="Volume Samples",
+        usd="primvars:arnold:light:volume_samples",
+        type=bpy.props.IntProperty,
+        default=2, min=0, soft_max=8
+    )
+
+    light_volume: USDProperty(
+        name="Volume",
+        usd="primvars:arnold:light:volume",
+        type=bpy.props.FloatProperty,
+        default=1.0, min=0.0, soft_max=1.0
+    )
+
+    light_sampling_mode: USDProperty(
+        name="Sampling Mode",
+        usd="primvars:arnold:light:sampling_mode",
+        type=bpy.props.EnumProperty,
+        items=[
+            ("auto", "Auto", ""),
+            ("local", "Local", ""),
+        ],
+        default="auto",
     )
 
 
