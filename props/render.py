@@ -492,7 +492,7 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
     abort_on_error: bpy.props.BoolProperty(
         name="Abort On Error",
         description="Abort rendering immediately if an error is encountered",
-        default=True
+        default=False
     )
 
     abort_on_license_fail: bpy.props.BoolProperty(

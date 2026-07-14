@@ -1,5 +1,5 @@
 import bpy
-from .props.aov import build_aov_settings
+from .props.aov import build_aov_settings, BUILTIN_AOVS, get_usd_aov_types
 from .props.render import build_global_settings
 from .usd import register_plugin, configure_hydra
 
@@ -118,18 +118,16 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
         if not settings:
             return
 
-        from .props.aov import BUILTIN_AOVS, get_usd_aov_types
-
-        def get_register_params(name, dataType):
+        def get_register_params(name, data_type):
             if name == "RGBA":
                 return 4, "RGBA", "COLOR"
-            elif name == "Z":
-                return 1, "Z", "VALUE"
 
-            if dataType in {"vector3f", "point3f", "normal3f", "float3", "half3", "float2"}:
-                return 3, "XYZ", "VECTOR"
-            if dataType in {"float", "half", "int", "uint", "int64"}:
-                return 1, "BW", "VALUE"
+            if name in {"Z"}:
+                return 1, "Z", "VALUE"
+            
+            #if data_type == "float":
+            #    return 1, "BW", "VALUE"
+
             return 3, "RGB", "COLOR"
 
         # Register built-in AOVs if enabled

@@ -1,51 +1,6 @@
 import bpy
 from .render import ArnoldGlobalRenderProperties
 
-ARNOLD_AOV_NAMES = {
-    "RGBA": "RGBA",
-    "A": "A",
-    "P": "P",
-    "Pref": "Pref",
-    "N": "N",
-    "N_Denoise": "N",
-    "Opacity": "opacity",
-    "Z": "Z",
-    "Z_Back": "Z",
-    "ZBack": "Z",
-    "Denoise_Albedo": "denoise_albedo",
-    "Specular_Direct": "specular_direct",
-    "Specular_Indirect": "specular_indirect",
-    "Specular_Albedo": "specular_albedo",
-    "SSS_Albedo": "sss_albedo",
-    "SSS_Direct": "sss_direct",
-    "SSS_Indirect": "sss_indirect",
-    "Transmission_Direct": "transmission_direct",
-    "Transmission_Indirect": "transmission_indirect",
-    "Transmission_Albedo": "transmission_albedo",
-    "Shadow_Matte": "shadow_matte",
-    "Diffuse_Direct": "diffuse_direct",
-    "Diffuse_Indirect": "diffuse_indirect",
-    "Diffuse_Albedo": "diffuse_albedo",
-    "Coat_Direct": "coat_direct",
-    "Coat_Indirect": "coat_indirect",
-    "Coat_Albedo": "coat_albedo",
-    "Sheen_Direct": "sheen_direct",
-    "Sheen_Indirect": "sheen_indirect",
-    "Sheen_Albedo": "sheen_albedo",
-    "Volume_Z": "volume_z",
-    "Volume_Albedo": "volume_albedo",
-    "Volume_Direct": "volume_direct",
-    "Volume_Indirect": "volume_indirect",
-    "Volume_Opacity": "volume_opacity",
-    "ID": "id",
-    "Object": "object",
-    "Shader": "shader",
-    "Motion_Vector": "motionvector",
-    "CPU_Time": "cpu_time",
-    "Ray_Count": "ray_count",
-    "AA_Inv_Density": "aa_inv_density",
-}
-
 AOV_TYPES = {
     "RGBA": "color4f",
 
@@ -55,7 +10,7 @@ AOV_TYPES = {
     "volume_Z": "float",
     "cputime": "float",
     "raycount": "float",
-    "aa_inv_density": "float",
+    "AA_inv_density": "float",  # uppercase: used as the BUILTIN_AOVS key / property name
 
     "P": "float3",
     "Pref": "float3",
@@ -184,25 +139,19 @@ annotations = ArnoldGlobalRenderProperties.__annotations__
 def get_usd_aov_types(name, user_fmt):
     datatype = AOV_TYPES.get(name, "color3f")
 
-    half = user_fmt == "half"
+    if datatype in {"float", "half", "int", "uint", "int64"}:
+        datatype = "float"
 
-    formats = {
-        "color4f": "color4h" if half else "color4f",
-        "color3f": "color3h" if half else "color3f",
-        "float3": "half3" if half else "float3",
-        "float2": "half2" if half else "float2",
-        "float": "half" if half else "float",
-        # HdArnold has no integer render buffer type; int/uint AOVs must be
-        # expressed as float so HdArnold does not fall back to RGB and cause
-        # Arnold to abort with "cannot convert AOV to type RGB".
-        "int": "half" if half else "float",
-        "uint": "half" if half else "float",
-        "int64": "half" if half else "float",
-    }
+    if user_fmt != "half":
+        return datatype, datatype
 
-    return datatype, formats[datatype]
-
-
+    return datatype, {
+        "color4f": "color4h",
+        "color3f": "color3h",
+        "float3": "half3",
+        "float2": "half2",
+        "float": "half",
+    }[datatype]
 
 def build_aov_settings(settings, engine_type):
     """
@@ -251,7 +200,7 @@ def build_aov_settings(settings, engine_type):
 
             user_format = getattr(settings, f"aov_{name}_format", default_format)
             filter_type = getattr(settings, f"aov_{name}_filter_type", default_filter)
-            arnold_name = get_arnold_source_name(name)
+            arnold_name = name
             datatype, fmt = get_usd_aov_types(name, user_format)
 
             bl_name = 'Combined' if name == 'RGBA' else ('Depth' if name == 'Z' else label)
@@ -264,18 +213,10 @@ def build_aov_settings(settings, engine_type):
                 datatype=datatype,
                 fmt=fmt,
                 clear=1e30 if name == "Z" else 0.0,
-                filt=filter_to_arnold_string(filter_type)
+                filt=filter_type
             )
 
     return result
-
-
-def get_arnold_source_name(name):
-    return ARNOLD_AOV_NAMES.get(name, name.lower())
-
-
-def filter_to_arnold_string(filter_type):
-    return filter_type or "box_filter"
 
 
 def create_aov_descriptor(
