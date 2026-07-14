@@ -137,7 +137,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 if "3" in data_type: 
                     return 3, "XYZ", "VECTOR"
                 
-                return 1, "X", "VALUE"
+                # return 1, "X", "VALUE"
 
             # General production safe-fallback
             return 3, "RGB", "COLOR"
