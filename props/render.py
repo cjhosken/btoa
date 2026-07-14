@@ -1,130 +1,4 @@
 import bpy
-
-# ---------------------------------------------------------------------------
-# Filter type constants
-# ---------------------------------------------------------------------------
-
-# Filters that only take a width param
-_FILTERS_WIDTH = [
-    ("blackman_harris_filter", "Blackman-Harris", ""),
-    ("gaussian_filter",        "Gaussian",        ""),
-    ("contour_filter",         "Contour",         ""),
-    ("sinc_filter",            "Sinc",            ""),
-    ("triangle_filter",        "Triangle",        ""),
-]
-
-# Filters with no extra params
-_FILTERS_SIMPLE = [
-    ("box_filter",      "Box",      ""),
-    ("catmullrom_filter", "Catrom", ""),
-    ("closest_filter",  "Closest",  ""),
-    ("farthest_filter", "Farthest", ""),
-    ("heatmap_filter",  "Heatmap",  ""),
-    ("mitchell_filter", "Mitnet",   ""),
-]
-
-# Composite filters
-_FILTERS_COMPOSITE = [
-    ("diff_filter",         "Diff",         ""),
-    ("cryptomatte_filter",  "Cryptomatte",  ""),
-    ("variance_filter",     "Variance",     ""),
-]
-
-FILTER_ITEMS = _FILTERS_WIDTH + _FILTERS_SIMPLE + _FILTERS_COMPOSITE
-
-# Items for the nested filter_weights sub-selector (diff / variance)
-FILTER_WEIGHT_ITEMS = [
-    ("blackman_harris_filter", "Blackman-Harris", ""),
-    ("box_filter",             "Box",             ""),
-    ("catmullrom_filter",      "Catrom",          ""),
-    ("gaussian_filter",        "Gaussian",        ""),
-    ("mitchell_filter",        "Mitnet",          ""),
-    ("sinc_filter",            "Sinc",            ""),
-    ("triangle_filter",        "Triangle",        ""),
-]
-
-# Items for the cryptomatte sub-filter selector
-CRYPTOMATTE_FILTER_ITEMS = [
-    ("box_filter",             "Box",            ""),
-    ("triangle_filter",        "Triangle",       ""),
-    ("catmullrom_filter",      "Catrom",         ""),
-    ("mitchell_filter",        "Mitnet",         ""),
-    ("gaussian_filter",        "Gaussian",       ""),
-    ("sinc_filter",            "Sinc",           ""),
-    ("blackman_harris_filter", "Blackman-Harris",""),
-    ("disk_filter",            "Disk",           ""),
-    ("cone_filter",            "Cone",           ""),
-]
-
-# Helpers
-FILTERS_WITH_WIDTH = {f[0] for f in _FILTERS_WIDTH} | {
-    "diff_filter", "cryptomatte_filter", "variance_filter"
-}
-FILTERS_COMPOSITE = {f[0] for f in _FILTERS_COMPOSITE}
-
-# ---------------------------------------------------------------------------
-# BUILTIN_AOVS — (internal_name, blender_label, default_filter, default_fmt)
-# ---------------------------------------------------------------------------
-
-BUILTIN_AOVS = {
-    "Beauty": [
-        ("RGBA",  "Combined",           "box_filter",     "float"),
-    ],
-    "Utility": [
-        ("A",            "Alpha",            "box_filter",     "float"),
-        ("Z",            "Depth",            "closest_filter", "float"),
-        ("Z_Back",       "Depth_Back",       "closest_filter", "float"),
-        ("P",            "Position",         "closest_filter", "float"),
-        ("Pref",         "Reference_Pos",    "closest_filter", "float"),
-        ("N",            "Normal",           "closest_filter", "float"),
-        ("N_Denoise",    "Normal_Denoise",   "closest_filter", "float"),
-        ("Opacity",      "Opacity",          "box_filter",     "float"),
-        ("Motion_Vector","Motion_Vector",    "box_filter",     "float"),
-    ],
-    "Lighting": [
-        ("Diffuse_Direct",       "Diffuse_Direct",       "box_filter", "float"),
-        ("Diffuse_Indirect",     "Diffuse_Indirect",     "box_filter", "float"),
-        ("Diffuse_Albedo",       "Diffuse_Albedo",       "box_filter", "float"),
-        ("Specular_Direct",      "Specular_Direct",      "box_filter", "float"),
-        ("Specular_Indirect",    "Specular_Indirect",    "box_filter", "float"),
-        ("Specular_Albedo",      "Specular_Albedo",      "box_filter", "float"),
-        ("Coat_Direct",          "Coat_Direct",          "box_filter", "float"),
-        ("Coat_Indirect",        "Coat_Indirect",        "box_filter", "float"),
-        ("Coat_Albedo",          "Coat_Albedo",          "box_filter", "float"),
-        ("Sheen_Direct",         "Sheen_Direct",         "box_filter", "float"),
-        ("Sheen_Indirect",       "Sheen_Indirect",       "box_filter", "float"),
-        ("Sheen_Albedo",         "Sheen_Albedo",         "box_filter", "float"),
-        ("SSS_Direct",           "SSS_Direct",           "box_filter", "float"),
-        ("SSS_Indirect",         "SSS_Indirect",         "box_filter", "float"),
-        ("SSS_Albedo",           "SSS_Albedo",           "box_filter", "float"),
-        ("Transmission_Direct",  "Transmission_Direct",  "box_filter", "float"),
-        ("Transmission_Indirect","Transmission_Indirect","box_filter", "float"),
-        ("Transmission_Albedo",  "Transmission_Albedo",  "box_filter", "float"),
-        ("Volume_Direct",        "Volume_Direct",        "box_filter", "float"),
-        ("Volume_Indirect",      "Volume_Indirect",      "box_filter", "float"),
-        ("Volume_Albedo",        "Volume_Albedo",        "box_filter", "float"),
-        ("Volume_Opacity",       "Volume_Opacity",       "box_filter", "float"),
-        ("Volume_Z",             "Volume_Depth",         "closest_filter", "float"),
-        ("Shadow_Matte",         "Shadow_Matte",         "box_filter", "float"),
-        ("Denoise_Albedo",       "Denoise_Albedo",       "box_filter", "float"),
-    ],
-    "Debug": [
-        ("ID",            "ID",            "closest_filter", "int"),
-        ("Object",        "Object",        "closest_filter", "int"),
-        ("Shader",        "Shader",        "closest_filter", "int"),
-        ("CPU_Time",      "CPU_Time",      "box_filter",     "float"),
-        ("Ray_Count",     "Ray_Count",     "box_filter",     "float"),
-        ("AA_Inv_Density","AA_Inv_Density","box_filter",     "float"),
-    ],
-}
-
-# Flat list for easy iteration
-_ALL_BUILTIN_AOVS = [entry for aovs in BUILTIN_AOVS.values() for entry in aovs]
-
-# ---------------------------------------------------------------------------
-# update callback for render device restart
-# ---------------------------------------------------------------------------
-
 def update_render_device(self, context):
     if context is None:
         return
@@ -141,102 +15,6 @@ def update_render_device(self, context):
         for area in window.screen.areas:
             if area.type == 'VIEW_3D':
                 area.tag_redraw()
-
-
-# ---------------------------------------------------------------------------
-# ArnoldAovFilter — reusable filter property group
-# ---------------------------------------------------------------------------
-
-class ArnoldAovFilter(bpy.types.PropertyGroup):
-    type: bpy.props.EnumProperty(
-        name="Filter",
-        items=FILTER_ITEMS,
-        default="box_filter",
-    )
-
-    width: bpy.props.FloatProperty(
-        name="Width",
-        description="Filter kernel width",
-        default=2.0, min=0.01, soft_max=10.0,
-    )
-
-    # --- diff / variance ---
-    filter_weights: bpy.props.EnumProperty(
-        name="Filter Weights",
-        items=FILTER_WEIGHT_ITEMS,
-        default="gaussian_filter",
-    )
-
-    # --- variance ---
-    scalar_mode: bpy.props.BoolProperty(
-        name="Scalar Mode",
-        default=False,
-    )
-
-    # --- cryptomatte ---
-    sub_filter: bpy.props.EnumProperty(
-        name="Sub-Filter",
-        items=CRYPTOMATTE_FILTER_ITEMS,
-        default="box_filter",
-    )
-
-    noop: bpy.props.BoolProperty(
-        name="No-op",
-        description="Do not filter — pass through samples unchanged",
-        default=False,
-    )
-
-    source_filter: bpy.props.StringProperty(
-        name="Source Filter",
-        default="",
-    )
-
-
-# ---------------------------------------------------------------------------
-# ArnoldCustomRenderVar — user-defined AOV
-# ---------------------------------------------------------------------------
-
-class ArnoldCustomRenderVar(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name="Name", default="")
-
-    source_name: bpy.props.StringProperty(
-        name="Source",
-        description="Arnold AOV source name",
-        default="",
-    )
-
-    source_type: bpy.props.EnumProperty(
-        name="Source Type",
-        items=[
-            ("raw",     "Raw",     ""),
-            ("lpe",     "LPE",     ""),
-            ("primvar", "Primvar", ""),
-        ],
-        default="raw",
-    )
-
-    data_type: bpy.props.EnumProperty(
-        name="Data Type",
-        items=[
-            ("color4f", "RGBA (color4f)", ""),
-            ("color3f", "RGB (color3f)",  ""),
-            ("float3",  "Vector (float3)",""),
-            ("float",   "Float",          ""),
-            ("int",     "Int",            ""),
-        ],
-        default="color3f",
-    )
-
-    format: bpy.props.EnumProperty(
-        name="Precision",
-        items=[
-            ("float", "Full (32-bit)",  ""),
-            ("half",  "Half (16-bit)",  ""),
-        ],
-        default="float",
-    )
-
-    filter: bpy.props.PointerProperty(type=ArnoldAovFilter)
 
 
 # ---------------------------------------------------------------------------
@@ -555,11 +333,7 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         name="Asset Search Path",
         default=""
     )
-
-    osl_includepath: bpy.props.StringProperty(
-        name="OSL Include Path", default=""
-    )
-
+    
     ### Diagnostics
 
     log_file: bpy.props.StringProperty(
@@ -656,10 +430,6 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         name="Ignore SSS", default=False
     )
 
-    ignore_smoothing: bpy.props.BoolProperty(
-        name="Ignore Smoothing", default=False
-    )
-
     ### Misc
 
     viewport_update_trigger: bpy.props.BoolProperty(
@@ -668,79 +438,7 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         options={'HIDDEN'},
     )
 
-    ### Custom render vars
 
-    custom_render_vars: bpy.props.CollectionProperty(
-        type=ArnoldCustomRenderVar,
-        name="Custom AOVs",
-    )
-
-    custom_render_vars_index: bpy.props.IntProperty(
-        name="Active Custom AOV",
-        default=0,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Inject per-built-in AOV properties after class definition
-# (avoids hundreds of manual annotations while keeping the class body clean)
-# ---------------------------------------------------------------------------
-
-_FORMAT_ITEMS = [
-    ("float", "Full (32-bit)", ""),
-    ("half",  "Half (16-bit)", ""),
-    ("int",   "Integer",       ""),
-]
-
-for _name, _label, _def_filt, _def_fmt in _ALL_BUILTIN_AOVS:
-    _default_enabled = (_name == "RGBA")
-
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_enabled"] = (
-        bpy.props.BoolProperty(
-            name=_label,
-            description=f"Enable {_label} AOV pass",
-            default=_default_enabled,
-        )
-    )
-
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_format"] = (
-        bpy.props.EnumProperty(
-            name="Format",
-            items=_FORMAT_ITEMS,
-            default=_def_fmt if _def_fmt in {"float", "half", "int"} else "float",
-        )
-    )
-
-    # --- flat filter properties (avoids PointerProperty resolution issues) ---
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_filter_type"] = (
-        bpy.props.EnumProperty(
-            name="Filter",
-            items=FILTER_ITEMS,
-            default=_def_filt,
-        )
-    )
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_filter_width"] = (
-        bpy.props.FloatProperty(name="Width", default=2.0, min=0.01, soft_max=10.0)
-    )
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_filter_weights"] = (
-        bpy.props.EnumProperty(
-            name="Filter Weights", items=FILTER_WEIGHT_ITEMS, default="gaussian_filter"
-        )
-    )
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_filter_scalar_mode"] = (
-        bpy.props.BoolProperty(name="Scalar Mode", default=False)
-    )
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_filter_sub_filter"] = (
-        bpy.props.EnumProperty(
-            name="Sub-Filter", items=CRYPTOMATTE_FILTER_ITEMS, default="box_filter"
-        )
-    )
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_filter_noop"] = (
-        bpy.props.BoolProperty(name="No-op", default=False)
-    )
-    ArnoldGlobalRenderProperties.__annotations__[f"aov_{_name}_filter_source_filter"] = (
-        bpy.props.StringProperty(name="Source Filter", default="")
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -771,8 +469,6 @@ def _add_seed_driver():
 
 
 def register():
-    bpy.utils.register_class(ArnoldAovFilter)
-    bpy.utils.register_class(ArnoldCustomRenderVar)
     bpy.utils.register_class(ArnoldGlobalRenderProperties)
     bpy.utils.register_class(ArnoldRenderProperties)
 
@@ -790,5 +486,3 @@ def unregister():
 
     bpy.utils.unregister_class(ArnoldRenderProperties)
     bpy.utils.unregister_class(ArnoldGlobalRenderProperties)
-    bpy.utils.unregister_class(ArnoldCustomRenderVar)
-    bpy.utils.unregister_class(ArnoldAovFilter)

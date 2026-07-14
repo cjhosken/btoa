@@ -93,24 +93,13 @@ def filter_to_arnold_string(filt):
     if filt is None:
         return "box_filter", {}
 
-    from .props.render import FILTERS_WITH_WIDTH, FILTERS_COMPOSITE
+    from .props.aov import FILTERS_WITH_WIDTH
 
     ftype = filt.type
     extras = {}
 
     if ftype in FILTERS_WITH_WIDTH:
         extras["arnold:filter_param:width"] = filt.width
-
-    if ftype == "diff_filter":
-        extras["arnold:filter_param:filter_weights"] = filt.filter_weights
-    elif ftype == "variance_filter":
-        extras["arnold:filter_param:filter_weights"] = filt.filter_weights
-        extras["arnold:filter_param:scalar_mode"] = filt.scalar_mode
-    elif ftype == "cryptomatte_filter":
-        extras["arnold:filter_param:filter"] = filt.sub_filter
-        extras["arnold:filter_param:noop"] = filt.noop
-        if filt.source_filter:
-            extras["arnold:filter_param:source_filter"] = filt.source_filter
 
     return ftype, extras
 
@@ -119,18 +108,12 @@ class _BuiltinFilterProxy:
     """Read flat per-AOV filter properties from ArnoldGlobalRenderProperties
     and present the same interface as ArnoldAovFilter so filter_to_arnold_string
     can process them without requiring a PointerProperty."""
-    __slots__ = ("type", "width", "filter_weights", "scalar_mode",
-                 "sub_filter", "noop", "source_filter")
+    __slots__ = ("type", "width")
 
     def __init__(self, r, name):
         p = f"aov_{name}_filter"
         self.type          = getattr(r, f"{p}_type",          "box_filter")
         self.width         = getattr(r, f"{p}_width",         2.0)
-        self.filter_weights= getattr(r, f"{p}_weights",       "gaussian_filter")
-        self.scalar_mode   = getattr(r, f"{p}_scalar_mode",   False)
-        self.sub_filter    = getattr(r, f"{p}_sub_filter",    "box_filter")
-        self.noop          = getattr(r, f"{p}_noop",          False)
-        self.source_filter = getattr(r, f"{p}_source_filter", "")
 
 
 class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
@@ -227,11 +210,9 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 "arnold:global:ignore_bump": settings.ignore_bump,
                 "arnold:global:ignore_motion_blur": settings.ignore_motion_blur,
                 "arnold:global:ignore_dof": settings.ignore_dof,
-                "arnold:global:ignore_smoothing": settings.ignore_smoothing,
                 "arnold:global:ignore_sss": settings.ignore_sss,
                 "arnold:global:plugin_searchpath": settings.plugin_searchpath,
                 "arnold:global:asset_searchpath": settings.asset_searchpath,
-                "arnold:global:osl_includepath": settings.osl_includepath,
                 "arnold:global:subdiv_dicing_camera": settings.subdiv_dicing_camera.name if settings.subdiv_dicing_camera else "",
                 "arnold:global:subdiv_frustum_culling": settings.subdiv_frustum_culling,
                 "arnold:global:enable_gpu_rendering": (final.render_device == "GPU") if final else False,
@@ -252,18 +233,16 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
 
         # Combined pass (beauty RGBA)
         if True:
-            filt = settings.aov_RGBA_filter if settings else "box_filter"
+            filt = settings.aov_RGBA_filter_type if settings else "box_filter"
             if is_viewport:
-                result["aovToken:Combined"] = "color" if active_aov == "RGBA" else active_aov
-                source_name = active_aov
+                result["aovToken:Combined"] = "color"
+                source_name = get_arnold_source_name(active_aov)
                 if active_aov == "Z":
-                    source_name = "Z"
-                    filt = getattr(settings, "aov_Z_filter", "closest_filter") if settings else "closest_filter"
+                    filt = getattr(settings, "aov_Z_filter_type", "closest_filter") if settings else "closest_filter"
                 elif active_aov == "A":
-                    source_name = "A"
-                    filt = getattr(settings, "aov_A_filter", "box_filter") if settings else "box_filter"
+                    filt = getattr(settings, "aov_A_filter_type", "box_filter") if settings else "box_filter"
                 else:
-                    filt = getattr(settings, f"aov_{active_aov}_filter", "box_filter") if settings else "box_filter"
+                    filt = getattr(settings, f"aov_{active_aov}_filter_type", "box_filter") if settings else "box_filter"
 
                 result["aovDescriptor:Combined"] = {
                     "sourceName": source_name,
@@ -318,7 +297,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
 
         # Add all other enabled built-in AOVs
         if not is_viewport:
-            from .props.render import BUILTIN_AOVS
+            from .props.aov import BUILTIN_AOVS
             for cat, aovs in BUILTIN_AOVS.items():
                 for name, label, def_filt, def_fmt in aovs:
                     if name in {"RGBA", "Z"}:
@@ -334,7 +313,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                             "sourceName": arnold_name,
                             "sourceType": "raw",
                             "dataType": dataType,
-                            "driver:parameters:aov:name": arnold_name,
+                            "driver:parameters:aov:name": label,
                             "driver:parameters:aov:format": fmt,
                             "driver:parameters:aov:clearValue": 0.0,
                             "driver:parameters:aov:multiSampled": False,
@@ -387,14 +366,14 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
         if not settings:
             return
 
-        from .props.render import BUILTIN_AOVS
+        from .props.aov import BUILTIN_AOVS
         
         def get_register_params(name, dataType):
             if dataType == "color4f":
                 return 4, "RGBA", "COLOR"
             elif dataType == "color3f":
                 return 3, "RGB", "COLOR"
-            elif dataType in {"vector3f", "point3f", "normal3f"}:
+            elif dataType in {"vector3f", "point3f", "normal3f", "float3", "half3"}:
                 return 3, "XYZ", "VECTOR"
             elif dataType == "float":
                 chan = "Z" if name in {"Z", "Z_Back", "Volume_Z"} else "X"
