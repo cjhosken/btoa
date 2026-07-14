@@ -93,13 +93,8 @@ def filter_to_arnold_string(filt):
     if filt is None:
         return "box_filter", {}
 
-    from .props.aov import FILTERS_WITH_WIDTH
-
     ftype = filt.type
     extras = {}
-
-    if ftype in FILTERS_WITH_WIDTH:
-        extras["arnold:filter_param:width"] = filt.width
 
     return ftype, extras
 
@@ -108,12 +103,11 @@ class _BuiltinFilterProxy:
     """Read flat per-AOV filter properties from ArnoldGlobalRenderProperties
     and present the same interface as ArnoldAovFilter so filter_to_arnold_string
     can process them without requiring a PointerProperty."""
-    __slots__ = ("type", "width")
+    __slots__ = ("type",)
 
     def __init__(self, r, name):
         p = f"aov_{name}_filter"
         self.type          = getattr(r, f"{p}_type",          "box_filter")
-        self.width         = getattr(r, f"{p}_width",         2.0)
 
 
 class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
@@ -273,13 +267,13 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 result["aovDescriptor:Combined"] = desc
 
         # Depth pass
-        if (is_viewport and active_aov != "Z") or (final and final.aov_Z_enabled):
+        if (is_viewport and active_aov != "Z") or (final and getattr(final, "aov_Z_enabled", False)):
             filt_str = "closest_filter"
             filt_extras = {}
             fmt = "float"
             if final:
                 filt_str, filt_extras = filter_to_arnold_string(_BuiltinFilterProxy(final, "Z"))
-                dataType, fmt = get_usd_aov_types("Z", final.aov_Z_format)
+                dataType, fmt = get_usd_aov_types("Z", getattr(final, "aov_Z_format", "float"))
 
             result["aovToken:Depth"] = "depth"
             desc = {
@@ -322,41 +316,6 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                         desc.update(filt_extras)
                         result[f"aovDescriptor:{label}"] = desc
 
-            # Add custom render vars
-            for item in final.custom_render_vars:
-                if not item.name:
-                    continue
-                is_half = (item.format == "half")
-                dataType = item.data_type
-                
-                if dataType == "color4f":
-                    fmt = "color4h" if is_half else "color4f"
-                elif dataType == "color3f":
-                    fmt = "color3h" if is_half else "color3f"
-                elif dataType in {"vector3f", "point3f", "normal3f"}:
-                    fmt = "half3" if is_half else "float3"
-                elif dataType == "float":
-                    fmt = "float16" if is_half else "float"
-                elif dataType == "int":
-                    fmt = "int"
-                else:
-                    fmt = dataType
-
-                result[f"aovToken:{item.name}"] = item.name
-                filt_str, filt_extras = filter_to_arnold_string(item.filter)
-                desc = {
-                    "sourceName": item.source_name,
-                    "sourceType": item.source_type,
-                    "dataType": dataType,
-                    "driver:parameters:aov:name": item.name,
-                    "driver:parameters:aov:format": fmt,
-                    "driver:parameters:aov:clearValue": 0.0,
-                    "driver:parameters:aov:multiSampled": False,
-                    "arnold:filter": filt_str,
-                }
-                desc.update(filt_extras)
-                result[f"aovDescriptor:{item.name}"] = desc
-
         return result
 
 
@@ -391,12 +350,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                     channels, channel_name, pass_type = get_register_params(name, dataType)
                     self.register_pass(scene, render_layer, bl_name, channels, channel_name, pass_type)
 
-        # 2. Register custom render vars
-        for item in settings.custom_render_vars:
-            if not item.name:
-                continue
-            channels, channel_name, pass_type = get_register_params(item.name, item.data_type)
-            self.register_pass(scene, render_layer, item.name, channels, channel_name, pass_type)
+
 
 register, unregister = bpy.utils.register_classes_factory((
    ArnoldHydraRenderEngine,
