@@ -37,6 +37,7 @@ BUILTIN_AOVS = {
 class ArnoldAovFilter(bpy.types.PropertyGroup):
     type: bpy.props.EnumProperty(
         name="Filter",
+        description="Reconstruction filter type used to combine samples into the final pixel color",
         items=FILTER_ITEMS,
         default="box_filter",
     )
@@ -96,6 +97,7 @@ def get_viewport_aov_items(self, context):
 
 # Dynamically add viewport_update_trigger for viewport updates
 ArnoldGlobalRenderProperties.__annotations__["viewport_update_trigger"] = bpy.props.BoolProperty(
+    description="Internal trigger property used to force viewport render session re-initialization on changes",
     default=False
 )
 
@@ -111,15 +113,18 @@ for cat, aovs in BUILTIN_AOVS.items():
         _default_enabled = (name == "RGBA")
         ArnoldGlobalRenderProperties.__annotations__[f"aov_{name}_enabled"] = bpy.props.BoolProperty(
             name=label,
+            description="Enable this built-in Arbitrary Output Variable (AOV) for output",
             default=_default_enabled
         )
         ArnoldGlobalRenderProperties.__annotations__[f"aov_{name}_format"] = bpy.props.EnumProperty(
             name="Format",
+            description="Precision format of the output AOV (e.g. 16-bit half-float or 32-bit full-float)",
             items=_FORMAT_ITEMS,
             default=def_fmt if def_fmt in {"float", "half", "int"} else "float"
         )
         ArnoldGlobalRenderProperties.__annotations__[f"aov_{name}_filter_type"] = bpy.props.EnumProperty(
             name="Filter",
+            description="Reconstruction filter type used to combine samples into the final pixel color",
             items=FILTER_ITEMS,
             default=def_filt
         )
@@ -130,6 +135,7 @@ for cat, aovs in BUILTIN_AOVS.items():
 class ArnoldViewportShadingProperties(bpy.types.PropertyGroup):
     viewport_aov: bpy.props.EnumProperty(
         name="Render Pass",
+        description="Active Render Pass / AOV to display in the viewport",
         items=get_viewport_aov_items,
         default=0,
         update=update_viewport_aov

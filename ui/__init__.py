@@ -1,4 +1,4 @@
-from . import light, shape, camera, render, aov
+from . import light, shape, camera, render, aov, menu
 
 
 def register():
@@ -7,9 +7,11 @@ def register():
     camera.register()
     render.register()
     aov.register()
+    menu.register()
 
 
 def unregister():
+    menu.unregister()
     aov.unregister()
     render.unregister()
     camera.unregister()

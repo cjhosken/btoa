@@ -163,8 +163,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
             except Exception:
                 pass
 
-        if is_viewport:
-            print(f"[BtoA] Active Viewport AOV: {active_aov}")
+
 
 
 
@@ -209,14 +208,44 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 "arnold:global:asset_searchpath": settings.asset_searchpath,
                 "arnold:global:subdiv_dicing_camera": settings.subdiv_dicing_camera.name if settings.subdiv_dicing_camera else "",
                 "arnold:global:subdiv_frustum_culling": settings.subdiv_frustum_culling,
-                "arnold:global:enable_gpu_rendering": (final.render_device == "GPU") if final else False,
-                "arnold:global:render_device": final.render_device if final else "CPU",
-                "arnold:global:render_device_fallback": final.render_device_fallback if final else "cpu",
-                "arnold:global:log_verbosity": {"error": 0, "warning": 1, "info": 2, "debug": 3}.get(settings.log_verbosity, 2),
+                "arnold:global:enable_gpu_rendering": (settings.render_device == "GPU"),
+                "arnold:global:render_device": settings.render_device,
+                "arnold:global:render_device_fallback": settings.render_device_fallback,
+                "arnold:global:log_verbosity": settings.log_verbosity,
                 "arnold:global:log_file": settings.log_file,
                 "arnold:global:profile_file": settings.profile_file,
                 "arnold:global:report_file": settings.report_file,
                 "arnold:global:stats_file": settings.stats_file,
+                # Newly added properties mapping:
+                "arnold:global:stochastic_volume_interpolation": settings.stochastic_volume_interpolation,
+                "arnold:global:procedural_instancing_optimization": settings.procedural_instancing_optimization,
+                "arnold:global:indirect_specular_blur": settings.indirect_specular_blur,
+                "arnold:global:low_light_threshold": settings.low_light_threshold,
+                "arnold:global:nits_per_unit": settings.nits_per_unit,
+                "arnold:global:subdiv_frustum_padding": settings.subdiv_frustum_padding,
+                "arnold:global:texture_max_memory_MB": settings.texture_max_memory_MB,
+                "arnold:global:texture_max_open_files": settings.texture_max_open_files,
+                "arnold:global:texture_automip": settings.texture_automip,
+                "arnold:global:texture_accept_untiled": settings.texture_accept_untiled,
+                "arnold:global:texture_autotile": settings.texture_autotile,
+                "arnold:global:texture_accept_unmipped": settings.texture_accept_unmipped,
+                "arnold:global:texture_auto_generate_tx": settings.texture_auto_generate_tx,
+                "arnold:global:texture_use_existing_tx": settings.texture_use_existing_tx,
+                "arnold:global:texture_auto_tx_path": settings.texture_auto_tx_path,
+                "arnold:global:gpu_default_names": settings.gpu_default_names,
+                "arnold:global:gpu_default_min_memory_MB": settings.gpu_default_min_memory_MB,
+                "arnold:global:manual_device_selection": settings.manual_device_selection,
+                "arnold:global:device_selection": settings.device_selection,
+                "arnold:global:bucket_size": settings.bucket_size,
+                "arnold:global:bucket_scanning": settings.bucket_scanning,
+                "arnold:global:parallel_node_init": settings.parallel_node_init,
+                "arnold:global:abort_on_license_fail": settings.abort_on_license_fail,
+                "arnold:global:skip_license_check": settings.skip_license_check,
+                "arnold:global:enable_report": settings.enable_report,
+                "arnold:global:enable_stats": settings.enable_stats,
+                "arnold:global:enable_profile": settings.enable_profile,
+                "arnold:global:ignore_operators": settings.ignore_operators,
+                "arnold:global:ignore_imagers": settings.ignore_imagers,
             }
 
         # AOV descriptors tell HdArnold which Arnold internal AOV name to bind
