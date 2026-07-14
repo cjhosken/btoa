@@ -321,25 +321,27 @@ class ARNOLD_HYDRA_RENDER_PT_diagnostics(Panel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def draw_filter_props(layout, filt):
-    """Draw the filter sub-properties that are relevant for the chosen type."""
+def draw_filter_props(layout, r, name):
+    """Draw the filter sub-properties that are relevant for the chosen type.
+    Reads flat properties from r using the aov_{name}_filter_* naming scheme."""
     from ..props.render import FILTERS_WITH_WIDTH
 
-    layout.prop(filt, "type", text="Filter")
+    p = f"aov_{name}_filter"
+    layout.prop(r, f"{p}_type", text="Filter")
 
-    ftype = filt.type
+    ftype = getattr(r, f"{p}_type", "box_filter")
     if ftype in FILTERS_WITH_WIDTH:
-        layout.prop(filt, "width")
+        layout.prop(r, f"{p}_width", text="Width")
 
     if ftype == "diff_filter":
-        layout.prop(filt, "filter_weights", text="Weights")
+        layout.prop(r, f"{p}_weights", text="Weights")
     elif ftype == "variance_filter":
-        layout.prop(filt, "filter_weights", text="Weights")
-        layout.prop(filt, "scalar_mode")
+        layout.prop(r, f"{p}_weights", text="Weights")
+        layout.prop(r, f"{p}_scalar_mode")
     elif ftype == "cryptomatte_filter":
-        layout.prop(filt, "sub_filter", text="Sub-Filter")
-        layout.prop(filt, "noop")
-        layout.prop(filt, "source_filter")
+        layout.prop(r, f"{p}_sub_filter", text="Sub-Filter")
+        layout.prop(r, f"{p}_noop")
+        layout.prop(r, f"{p}_source_filter")
 
 
 # ---------------------------------------------------------------------------
@@ -417,7 +419,7 @@ class ARNOLD_HYDRA_RENDER_PT_aovs_builtin(bpy.types.Panel):
         return context.engine in cls.COMPAT_ENGINES
 
     def draw(self, context):
-        from ..props.render import BUILTIN_AOVS
+        from ..props.render import BUILTIN_AOVS, FILTERS_WITH_WIDTH
 
         layout = self.layout
         layout.use_property_split = True
@@ -430,9 +432,10 @@ class ARNOLD_HYDRA_RENDER_PT_aovs_builtin(bpy.types.Panel):
             box = layout.box()
             box.label(text=cat)
             for name, label, def_filt, def_fmt in aovs:
-                enabled_prop = f"aov_{name}_enabled"
-                filter_prop  = f"aov_{name}_filter"
-                format_prop  = f"aov_{name}_format"
+                p           = f"aov_{name}"
+                enabled_prop = f"{p}_enabled"
+                ftype_prop   = f"{p}_filter_type"
+                format_prop  = f"{p}_format"
 
                 row = box.row(align=True)
                 row.prop(r, enabled_prop, text=label)
@@ -440,16 +443,16 @@ class ARNOLD_HYDRA_RENDER_PT_aovs_builtin(bpy.types.Panel):
                 enabled = getattr(r, enabled_prop, False)
                 sub = row.row(align=True)
                 sub.enabled = enabled
-                filt = getattr(r, filter_prop, None)
-                if filt:
-                    sub.prop(filt, "type", text="")
+                sub.prop(r, ftype_prop, text="")
                 sub.prop(r, format_prop, text="")
 
-                # Show filter sub-props if enabled
-                if enabled and filt and filt.type != "box_filter":
+                # Show filter sub-props only when enabled and filter has extras
+                ftype = getattr(r, ftype_prop, "box_filter")
+                has_extras = (ftype in FILTERS_WITH_WIDTH or
+                              ftype in {"diff_filter", "variance_filter", "cryptomatte_filter"})
+                if enabled and has_extras:
                     sub_box = box.box()
-                    sub_box.enabled = True
-                    draw_filter_props(sub_box, filt)
+                    draw_filter_props(sub_box, r, name)
 
 
 class ARNOLD_HYDRA_RENDER_PT_aovs_custom(bpy.types.Panel):
@@ -494,7 +497,20 @@ class ARNOLD_HYDRA_RENDER_PT_aovs_custom(bpy.types.Panel):
             box.prop(item, "format")
             box.separator()
             if item.filter:
-                draw_filter_props(box, item.filter)
+                filt = item.filter
+                box.prop(filt, "type", text="Filter")
+                from ..props.render import FILTERS_WITH_WIDTH
+                if filt.type in FILTERS_WITH_WIDTH:
+                    box.prop(filt, "width")
+                if filt.type == "diff_filter":
+                    box.prop(filt, "filter_weights", text="Weights")
+                elif filt.type == "variance_filter":
+                    box.prop(filt, "filter_weights", text="Weights")
+                    box.prop(filt, "scalar_mode")
+                elif filt.type == "cryptomatte_filter":
+                    box.prop(filt, "sub_filter", text="Sub-Filter")
+                    box.prop(filt, "noop")
+                    box.prop(filt, "source_filter")
 
 
 # ---------------------------------------------------------------------------
