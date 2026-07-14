@@ -131,7 +131,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 return 3, "RGB", "COLOR"
                 
             if "float" in data_type or "int" in data_type or "half" in data_type:
-                if "Z" in name:
+                if name=="Z":
                     return 1, "Z", "VALUE"
                 
                 if "3" in data_type: 
