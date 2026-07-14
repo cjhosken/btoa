@@ -2,7 +2,7 @@ import bpy
 
 from ..engine import ArnoldHydraRenderEngine
 
-class Panel(bpy.types.Panel):
+class ArnoldLightPanel(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = 'data'
@@ -11,12 +11,18 @@ class Panel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         return context.engine in cls.COMPAT_ENGINES and context.light
+    
+    def setup(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        settings = context.light.arnold
+        return layout, settings
 
-class ARNOLD_HYDRA_LIGHT_PT_light(Panel):
+class ARNOLD_HYDRA_LIGHT_PT_light(ArnoldLightPanel):
     bl_label = "Light"
 
     def draw(self, context):
-        layout = self.layout
+        layout, _ = self.setup(context)
         light = context.light
 
         layout.use_property_split = True
@@ -50,126 +56,75 @@ class ARNOLD_HYDRA_LIGHT_PT_light(Panel):
                 layout.prop(light, "size_y", text="Y")
 
 
-class ARNOLD_HYDRA_LIGHT_PT_arnold(bpy.types.Panel):
+class ARNOLD_HYDRA_LIGHT_PT_arnold(ArnoldLightPanel):
     bl_label = "Arnold"
     bl_parent_id = "ARNOLD_HYDRA_LIGHT_PT_light"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return (context.engine in cls.COMPAT_ENGINES and
-                context.light and
-                hasattr(context.light, 'arnold'))
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
+        pass
 
-class ARNOLD_HYDRA_LIGHT_PT_arnold_light(bpy.types.Panel):
+class ARNOLD_HYDRA_LIGHT_PT_arnold_light(ArnoldLightPanel):
     bl_label = "Light"
     bl_parent_id = "ARNOLD_HYDRA_LIGHT_PT_arnold"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return (context.engine in cls.COMPAT_ENGINES and
-                context.light and
-                hasattr(context.light, 'arnold'))
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        arnold = context.light.arnold
+        layout, settings = self.setup(context)
 
-        layout.prop(arnold, "samples")
-        layout.prop(arnold, "sampling_mode")
-        layout.prop(arnold, "volume_samples")
-        layout.prop(arnold, "roundness")
-        layout.prop(arnold, "angle")
-        layout.prop(arnold, "spread")
-        layout.prop(arnold, "soft_edge")
-        layout.prop(arnold, "portal")
-        layout.prop(arnold, "portal_mode")
-        layout.prop(arnold, "resolution")
-        layout.prop(arnold, "aspect_ratio")
-        layout.prop(arnold, "lens_radius")
+        layout.prop(settings, "samples")
+        layout.prop(settings, "sampling_mode")
+        layout.prop(settings, "volume_samples")
+        layout.prop(settings, "roundness")
+        layout.prop(settings, "angle")
+        layout.prop(settings, "spread")
+        layout.prop(settings, "soft_edge")
+        layout.prop(settings, "portal")
+        layout.prop(settings, "portal_mode")
+        layout.prop(settings, "resolution")
+        layout.prop(settings, "aspect_ratio")
+        layout.prop(settings, "lens_radius")
         #layout.prop(arnold, "aov_indirect")
 
-class ARNOLD_HYDRA_LIGHT_PT_shadows(bpy.types.Panel):
+
+class ARNOLD_HYDRA_LIGHT_PT_shadows(ArnoldLightPanel):
     bl_label = "Shadows"
     bl_parent_id = "ARNOLD_HYDRA_LIGHT_PT_arnold"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return (context.engine in cls.COMPAT_ENGINES and
-                context.light and
-                hasattr(context.light, 'arnold'))
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        arnold = context.light.arnold
+        layout, settings = self.setup(context)
 
-        layout.prop(arnold, "shadow_color")
-        layout.prop(arnold, "shadow_density")
-        layout.prop(arnold, "cast_shadows")
-        layout.prop(arnold, "cast_volumetric_shadows")
+        layout.prop(settings, "shadow_color")
+        layout.prop(settings, "shadow_density")
+        layout.prop(settings, "cast_shadows")
+        layout.prop(settings, "cast_volumetric_shadows")
 
 
-class ARNOLD_HYDRA_LIGHT_PT_contribution(bpy.types.Panel):
+class ARNOLD_HYDRA_LIGHT_PT_contribution(ArnoldLightPanel):
     bl_label = "Contribution"
     bl_parent_id = "ARNOLD_HYDRA_LIGHT_PT_arnold"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return (context.engine in cls.COMPAT_ENGINES and
-                context.light and
-                hasattr(context.light, 'arnold'))
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        arnold = context.light.arnold
+        layout, settings = self.setup(context)
 
-        layout.prop(arnold, "camera")
-        layout.prop(arnold, "diffuse")
-        layout.prop(arnold, "specular")
-        layout.prop(arnold, "transmission")
-        layout.prop(arnold, "sss")
-        layout.prop(arnold, "volume")
-        layout.prop(arnold, "indirect")
-        layout.prop(arnold, "max_bounces")
+        layout.prop(settings, "camera")
+        layout.prop(settings, "diffuse")
+        layout.prop(settings, "specular")
+        layout.prop(settings, "transmission")
+        layout.prop(settings, "sss")
+        layout.prop(settings, "volume")
+        layout.prop(settings, "indirect")
+        layout.prop(settings, "max_bounces")
         #layout.prop(arnold, "aov_light_group")
         #layout.prop(arnold, "shaders")
 
-register_classes, unregister_classes = bpy.utils.register_classes_factory((
+
+register, unregister = bpy.utils.register_classes_factory((
     ARNOLD_HYDRA_LIGHT_PT_light,
     ARNOLD_HYDRA_LIGHT_PT_arnold,
     ARNOLD_HYDRA_LIGHT_PT_arnold_light,
     ARNOLD_HYDRA_LIGHT_PT_shadows,
     ARNOLD_HYDRA_LIGHT_PT_contribution,
 ))
-
-def register():
-    register_classes()
-
-def unregister():
-    unregister_classes()

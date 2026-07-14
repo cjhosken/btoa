@@ -1,4 +1,100 @@
 import bpy
+
+
+GLOBAL_SETTINGS = {
+    "arnold:global:viewport_update_trigger": "viewport_update_trigger",
+    "arnold:global:enable_progressive_render": "enable_progressive_render",
+    "arnold:global:enable_adaptive_sampling": "enable_adaptive_sampling",
+    "arnold:global:threads": "threads",
+    "arnold:global:dialectric_priorities": "dialectric_priorities",
+    "arnold:global:enable_aa_sample_clamp": "enable_aa_sample_clamp",
+    "arnold:global:AA_sample_clamp": "AA_sample_clamp",
+    "arnold:global:AA_sample_clamp_affects_aovs": "AA_sample_clamp_affects_aovs",
+    "arnold:global:indirect_sample_clamp": "indirect_sample_clamp",
+    "arnold:global:light_samples": "enable_light_samples",
+    "arnold:global:AA_samples": "AA_samples",
+    "arnold:global:AA_samples_max": "AA_samples_max",
+    "arnold:global:GI_diffuse_samples": "GI_diffuse_samples",
+    "arnold:global:GI_specular_samples": "GI_specular_samples",
+    "arnold:global:GI_transmission_samples": "GI_transmission_samples",
+    "arnold:global:GI_sss_samples": "GI_sss_samples",
+    "arnold:global:GI_volume_samples": "GI_volume_samples",
+    "arnold:global:auto_transparency_depth": "auto_transparency_depth",
+    "arnold:global:GI_diffuse_depth": "GI_diffuse_depth",
+    "arnold:global:GI_specular_depth": "GI_specular_depth",
+    "arnold:global:GI_transmission_depth": "GI_transmission_depth",
+    "arnold:global:GI_volume_depth": "GI_volume_depth",
+    "arnold:global:GI_total_depth": "GI_total_depth",
+    "arnold:global:abort_on_error": "abort_on_error",
+    "arnold:global:ignore_textures": "ignore_textures",
+    "arnold:global:ignore_shaders": "ignore_shaders",
+    "arnold:global:ignore_atmosphere": "ignore_atmosphere",
+    "arnold:global:ignore_lights": "ignore_lights",
+    "arnold:global:ignore_shadows": "ignore_shadows",
+    "arnold:global:ignore_subdivision": "ignore_subdivision",
+    "arnold:global:ignore_displacement": "ignore_displacement",
+    "arnold:global:ignore_bump": "ignore_bump",
+    "arnold:global:ignore_motion_blur": "ignore_motion_blur",
+    "arnold:global:ignore_dof": "ignore_dof",
+    "arnold:global:ignore_sss": "ignore_sss",
+    "arnold:global:plugin_searchpath": "plugin_searchpath",
+    "arnold:global:asset_searchpath": "asset_searchpath",
+    "arnold:global:subdiv_dicing_camera": "subdiv_dicing_camera",
+    "arnold:global:subdiv_frustum_culling": "subdiv_frustum_culling",
+    "arnold:global:render_device": "render_device",
+    "arnold:global:render_device_fallback": "render_device_fallback",
+    "arnold:global:log_verbosity": "log_verbosity",
+    "arnold:global:log_file": "log_file",
+    "arnold:global:profile_file": "profile_file",
+    "arnold:global:report_file": "report_file",
+    "arnold:global:stats_file": "stats_file",
+    "arnold:global:stochastic_volume_interpolation": "stochastic_volume_interpolation",
+    "arnold:global:procedural_instancing_optimization": "procedural_instancing_optimization",
+    "arnold:global:indirect_specular_blur": "indirect_specular_blur",
+    "arnold:global:low_light_threshold": "low_light_threshold",
+    "arnold:global:nits_per_unit": "nits_per_unit",
+    "arnold:global:subdiv_frustum_padding": "subdiv_frustum_padding",
+    "arnold:global:texture_max_memory_MB": "texture_max_memory_MB",
+    "arnold:global:texture_max_open_files": "texture_max_open_files",
+    "arnold:global:texture_automip": "texture_automip",
+    "arnold:global:texture_accept_untiled": "texture_accept_untiled",
+    "arnold:global:texture_autotile": "texture_autotile",
+    "arnold:global:texture_accept_unmipped": "texture_accept_unmipped",
+    "arnold:global:texture_auto_generate_tx": "texture_auto_generate_tx",
+    "arnold:global:texture_use_existing_tx": "texture_use_existing_tx",
+    "arnold:global:texture_auto_tx_path": "texture_auto_tx_path",
+    "arnold:global:gpu_default_names": "gpu_default_names",
+    "arnold:global:gpu_default_min_memory_MB": "gpu_default_min_memory_MB",
+    "arnold:global:manual_device_selection": "manual_device_selection",
+    "arnold:global:device_selection": "device_selection",
+    "arnold:global:bucket_size": "bucket_size",
+    "arnold:global:bucket_scanning": "bucket_scanning",
+    "arnold:global:parallel_node_init": "parallel_node_init",
+    "arnold:global:abort_on_license_fail": "abort_on_license_fail",
+    "arnold:global:skip_license_check": "skip_license_check",
+    "arnold:global:enable_report": "enable_report",
+    "arnold:global:enable_stats": "enable_stats",
+    "arnold:global:enable_profile": "enable_profile",
+    "arnold:global:ignore_operators": "ignore_operators",
+    "arnold:global:ignore_imagers": "ignore_imagers",
+}
+
+
+def build_global_settings(settings, is_viewport):
+    result = {}
+
+    for usd_name, prop_name in GLOBAL_SETTINGS.items():
+        value = getattr(settings, prop_name)
+
+        result[f"arnold:global:{usd_name}"] = value
+
+    result["arnold:global:enable_progressive_render"] = (
+        True if is_viewport else settings.enable_progressive_render
+    )
+
+    return result
+
+
 def update_render_device(self, context):
     if context is None:
         return
@@ -42,10 +138,6 @@ def get_device_selection_items(self, context):
         items = [("gpu0", "GPU 0", "")]
     return items
 
-
-# ---------------------------------------------------------------------------
-# ArnoldGlobalRenderProperties
-# ---------------------------------------------------------------------------
 
 class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
 
@@ -576,38 +668,33 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
     )
 
 
-
-
-# ---------------------------------------------------------------------------
-# ArnoldRenderProperties (top-level scene pointer)
-# ---------------------------------------------------------------------------
-
 class ArnoldRenderProperties(bpy.types.PropertyGroup):
     viewport: bpy.props.PointerProperty(type=ArnoldGlobalRenderProperties)
+
 
 ArnoldRenderProperties.__annotations__['global'] = bpy.props.PointerProperty(
     type=ArnoldGlobalRenderProperties
 )
 
+register_classes, unregister_classes = bpy.utils.register_classes_factory([ArnoldGlobalRenderProperties, ArnoldRenderProperties])
 
-# ---------------------------------------------------------------------------
-# Registration helpers
-# ---------------------------------------------------------------------------
 
 def _add_seed_driver():
-    scene = getattr(bpy.context, "scene", None)
-    if scene:
-        try:
-            driver_fcurve = scene.driver_add('arnold.global.AA_seed')
-            driver_fcurve.driver.expression = "frame"
-        except Exception:
-            pass
-    return None
+    scene = bpy.context.scene
+
+    if not scene:
+        return
+    
+    try:
+        fcurve = scene.driver_add("arnold.global.AA_seed")
+    except (TypeError, ValueError):
+        return
+    
+    fcurve.driver.expression = "frame"
 
 
 def register():
-    bpy.utils.register_class(ArnoldGlobalRenderProperties)
-    bpy.utils.register_class(ArnoldRenderProperties)
+    register_classes()
 
     if not hasattr(bpy.types.Scene, "arnold"):
         bpy.types.Scene.arnold = bpy.props.PointerProperty(
@@ -621,5 +708,4 @@ def unregister():
     if hasattr(bpy.types.Scene, "arnold"):
         del bpy.types.Scene.arnold
 
-    bpy.utils.unregister_class(ArnoldRenderProperties)
-    bpy.utils.unregister_class(ArnoldGlobalRenderProperties)
+    unregister_classes()

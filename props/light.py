@@ -1,8 +1,9 @@
 import bpy
-
 from ..usd import USDProperty
 
+
 class ArnoldLightProperties(bpy.types.PropertyGroup):
+
     ### Light
 
     samples: USDProperty(

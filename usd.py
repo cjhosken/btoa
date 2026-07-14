@@ -1,75 +1,89 @@
-def make_id_prop(prop_name, default):
-    def getter(self):
-        return self.id_data.get(prop_name, default)
-    def setter(self, value):
-        self.id_data[prop_name] = value
-    return getter, setter
+# usd.py
+
+# Properties are registered into Blender like so:
+# bpy.data.objects["Cube"].arnold.subdiv_iterations
+#
+# However, Blender's USD/Hydra Implementation requires primvars and attributes to be like so:
+# bpy.data.objects["Cube"]["primvars:arnold:subdiv_iterations"]
+#
+# These set of functions help convert properties into a USD/Hydra compatible format.
+
+import bpy, os
 
 
-def make_vector_id_prop(prop_name, default):
+def make_id_prop(prop_name, default, convert=lambda x: x):
     def getter(self):
-        val = self.id_data.get(prop_name, default)
-        return list(val)
+        return convert(self.id_data.get(prop_name, default))
     def setter(self, value):
-        self.id_data[prop_name] = list(value)
+        self.id_data[prop_name] = convert(value)
     return getter, setter
 
 
 def make_enum_id_prop(prop_name, items, default_id):
     item_keys = [item[0] for item in items]
-    default_idx = item_keys.index(default_id) if default_id in item_keys else 0
+    indices = {key: i for i, key in enumerate(item_keys)}
+    default_idx = indices.get(default_id, 0)
 
     def getter(self):
-        val = self.id_data.get(prop_name, default_id)
-        if val in item_keys:
-            return item_keys.index(val)
-        return default_idx
+        return indices.get(
+            self.id_data.get(prop_name, default_id),
+            default_idx
+        )
 
     def setter(self, value):
         self.id_data[prop_name] = item_keys[value]
 
     return getter, setter
 
+
+PROPERTY_HANDLERS = {
+    bpy.props.FloatProperty:        (0.0, lambda p, d: make_id_prop(p, d)),
+    bpy.props.IntProperty:          (0,   lambda p, d: make_id_prop(p, d)),
+    bpy.props.BoolProperty:         (False, lambda p, d: make_id_prop(p, d)),
+    bpy.props.StringProperty:       ("", lambda p, d: make_id_prop(p, d)),
+    bpy.props.FloatVectorProperty:  ((0.0, 0.0, 0.0),
+                                     lambda p, d: make_id_prop(p, d, list)),
+}
+
+
 def USDProperty(*args, usd=None, type=None, **kwargs):
-    # Handle positional arguments for usd and type if they are not keyword arguments
-    if usd is None and len(args) > 0:
-        usd = args[0]
-        args = args[1:]
-    if type is None and len(args) > 0:
-        type = args[0]
-        args = args[1:]
-
     if usd is None:
-        raise TypeError("USDProperty is missing required argument 'usd'")
+        usd, *args = args
     if type is None:
-        raise TypeError("USDProperty is missing required argument 'type'")
+        type, *args = args
 
-    type_name = type.__name__ if hasattr(type, '__name__') else str(type)
-    default = kwargs.get('default')
-
-    # Assign appropriate getters/setters based on property type
-    if type_name == 'EnumProperty' or 'items' in kwargs:
-        items = kwargs.get('items', [])
-        if default is None:
-            default = items[0][0] if items else ""
-        get_func, set_func = make_enum_id_prop(usd, items, default)
-    elif 'VectorProperty' in type_name:
-        if default is None:
-            default = (0.0, 0.0, 0.0)
-        get_func, set_func = make_vector_id_prop(usd, default)
+    if "items" in kwargs:
+        default = kwargs.get("default", kwargs["items"][0][0])
+        get_, set_ = make_enum_id_prop(usd, kwargs["items"], default)
     else:
-        if default is None:
-            if type_name == 'FloatProperty':
-                default = 0.0
-            elif type_name == 'IntProperty':
-                default = 0
-            elif type_name == 'BoolProperty':
-                default = False
-            elif type_name == 'StringProperty':
-                default = ""
-        get_func, set_func = make_id_prop(usd, default)
+        try:
+            default, factory = PROPERTY_HANDLERS[type]
+        except KeyError:
+            raise TypeError(f"Unsupported property type: {type}")
 
-    kwargs['get'] = get_func
-    kwargs['set'] = set_func
+        default = kwargs.get("default", default)
+        get_, set_ = factory(usd, default)
 
+    kwargs["get"] = get_
+    kwargs["set"] = set_
     return type(*args, **kwargs)
+
+
+def register_plugin():
+    bpy.utils.expose_bundled_modules()
+
+    import pxr.Plug
+
+    path = os.path.join(
+        os.environ.get("BTOA_ROOT", ""),
+        "plugin"
+    )
+
+    if os.path.exists(path):
+        pxr.Plug.Registry().RegisterPlugins([path])
+
+def configure_hydra():
+    scene = bpy.context.scene
+    if scene is not None:
+        scene.hydra.export_method = 'USD'
+    return None

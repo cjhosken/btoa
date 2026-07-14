@@ -1,14 +1,16 @@
 bl_info = {
     "name": "Hydra Arnold Render Engine",
-    "author": "Blender Foundation",
+    "author": "Christopher Hosken",
     "version": (7, 5, 4, 1),
     "blender": (5, 2, 0),
     "description": "Arnold path tracing renderer using the Hydra render delegate",
-    "support": 'OFFICIAL',
     "category": "Render",
+    "support": "OFFICIAL",
 }
 
+
 from . import engine, ui, operators, props, preferences
+
 
 def register():
     operators.register()
@@ -16,6 +18,7 @@ def register():
     props.register()
     preferences.register()
     ui.register()
+
 
 def unregister():
     ui.unregister()

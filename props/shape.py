@@ -1,18 +1,11 @@
 import bpy
-
 from ..usd import USDProperty
-
-class ArnoldTraceSet(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(
-        name="Name",
-        description="Unique name identifying the trace set",
-        default=""
-    )
 
 
 class ArnoldShapeProperties(bpy.types.PropertyGroup):
 
     ### Subdivision
+
     subdiv_type: USDProperty(
         name="Subdivision Type",
         description="Subdivision algorithm (None, Catmull-Clark, Linear)",
@@ -614,7 +607,6 @@ class ArnoldShapeProperties(bpy.types.PropertyGroup):
 
 
 def register():
-    bpy.utils.register_class(ArnoldTraceSet)
     bpy.utils.register_class(ArnoldShapeProperties)
 
     if not hasattr(bpy.types.Object, "arnold"):
@@ -630,4 +622,3 @@ def unregister():
         del bpy.types.Object.arnold
 
     bpy.utils.unregister_class(ArnoldShapeProperties)
-    bpy.utils.unregister_class(ArnoldTraceSet)

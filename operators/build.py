@@ -4,9 +4,11 @@ import subprocess
 import os
 import sys
 
+
 _build_thread = None
 _build_log = []
 _build_status = "Idle"
+
 
 class BTOA_OT_build_delegate(bpy.types.Operator):
     bl_idname = "btoa.build_delegate"
@@ -56,7 +58,7 @@ class BTOA_OT_build_delegate(bpy.types.Operator):
         sdk_local = prefs.arnold_sdk_local
         install_dir = prefs.install_dir
         
-        script_path = os.path.join(os.path.dirname(__file__), "build.py")
+        script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "build.py")
         cmd = [sys.executable, script_path, "--blender-version", blender_ver, "--arnold-version", arnold_ver]
         
         if sdk_url:
@@ -98,8 +100,7 @@ class BTOA_OT_build_delegate(bpy.types.Operator):
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
-def register():
-    bpy.utils.register_class(BTOA_OT_build_delegate)
 
-def unregister():
-    bpy.utils.unregister_class(BTOA_OT_build_delegate)
+register, unregister = bpy.utils.register_classes_factory((
+    BTOA_OT_build_delegate,
+))

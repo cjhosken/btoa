@@ -1,10 +1,11 @@
 import bpy
-
 from ..usd import USDProperty
+
 
 class ArnoldCameraProperties(bpy.types.PropertyGroup):
 
     ### Camera
+
     exposure: USDProperty(
         name="Exposure",
         description="Exposure value for the camera. Increase to make the image brighter",
@@ -71,7 +72,6 @@ class ArnoldCameraProperties(bpy.types.PropertyGroup):
         default=0.0, soft_min=0.0, soft_max=1.0,
         subtype='FACTOR',
     )
-
 
     ### Depth of Field
 

@@ -1,7 +1,7 @@
 import bpy
 from ..engine import ArnoldHydraRenderEngine
 
-class Panel(bpy.types.Panel):
+class ArnoldRenderPanel(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = 'render'
@@ -10,6 +10,12 @@ class Panel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         return context.engine in cls.COMPAT_ENGINES
+    
+    def setup(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        settings = getattr(context.scene.arnold, "global")
+        return layout, settings
 
 def draw_device(self, context):
     scene = context.scene
@@ -18,121 +24,85 @@ def draw_device(self, context):
     layout.use_property_decorate = False
 
     if context.engine == ArnoldHydraRenderEngine.bl_idname:
-        r = getattr(scene.arnold, "global")
-        layout.prop(r, "render_device", text="Device")
+        settings = getattr(scene.arnold, "global")
+        layout.prop(settings, "render_device")
         
 
-class ARNOLD_HYDRA_RENDER_PT_sampling(Panel):
+class ARNOLD_HYDRA_RENDER_PT_sampling(ArnoldRenderPanel):
     bl_label = "Sampling"
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        col = layout.column(align=True)
-        col.prop(r, "AA_samples")
-        col.prop(r, "GI_diffuse_samples")
-        col.prop(r, "GI_specular_samples")
-        col.prop(r, "GI_transmission_samples")
-        col.prop(r, "GI_sss_samples")
-        col.prop(r, "GI_volume_samples")
-        col.separator()
-        col.prop(r, "enable_progressive_render")
+        layout.prop(settings, "AA_samples")
+        layout.prop(settings, "GI_diffuse_samples")
+        layout.prop(settings, "GI_specular_samples")
+        layout.prop(settings, "GI_transmission_samples")
+        layout.prop(settings, "GI_sss_samples")
+        layout.prop(settings, "GI_volume_samples")
+
+        layout.separator()
+
+        layout.prop(settings, "enable_progressive_render")
 
 
-class ARNOLD_HYDRA_RENDER_PT_sampling_adaptive(bpy.types.Panel):
+class ARNOLD_HYDRA_RENDER_PT_sampling_adaptive(ArnoldRenderPanel):
     bl_label = "Adaptive Sampling"
     bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_sampling"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'render'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return context.engine in cls.COMPAT_ENGINES
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        layout.prop(r, "enable_adaptive_sampling")
+        layout.prop(settings, "enable_adaptive_sampling")
 
         col = layout.column(align=True)
-        col.enabled = r.enable_adaptive_sampling
-        col.prop(r, "AA_samples_max")
-        col.prop(r, "AA_adaptive_threshold")
+        col.enabled = settings.enable_adaptive_sampling
+        col.prop(settings, "AA_samples_max")
+        col.prop(settings, "AA_adaptive_threshold")
 
 
-class ARNOLD_HYDRA_RENDER_PT_sampling_clamping(bpy.types.Panel):
+class ARNOLD_HYDRA_RENDER_PT_sampling_clamping(ArnoldRenderPanel):
     bl_label = "Clamping"
     bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_sampling"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'render'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return context.engine in cls.COMPAT_ENGINES
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        col = layout.column(align=True)
-        col.prop(r, "AA_sample_clamp_affects_aovs")
-        col.prop(r, "AA_sample_clamp")
-        layout.prop(r, "indirect_sample_clamp")
+        layout.prop(settings, "AA_sample_clamp_affects_aovs")
+        layout.prop(settings, "AA_sample_clamp")
+        layout.prop(settings, "indirect_sample_clamp")
 
 
-class ARNOLD_HYDRA_RENDER_PT_sampling_advanced(bpy.types.Panel):
+class ARNOLD_HYDRA_RENDER_PT_sampling_advanced(ArnoldRenderPanel):
     bl_label = "Advanced"
     bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_sampling"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'render'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return context.engine in cls.COMPAT_ENGINES
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        layout.prop(r, "AA_seed")
-        layout.prop(r, "stochastic_volume_interpolation")
-        layout.prop(r, "procedural_instancing_optimization")
-        layout.prop(r, "dialectric_priorities")
-        layout.prop(r, "indirect_specular_blur")
+        layout.prop(settings, "AA_seed")
+        layout.prop(settings, "stochastic_volume_interpolation")
+        layout.prop(settings, "procedural_instancing_optimization")
+        layout.prop(settings, "dialectric_priorities")
+        layout.prop(settings, "indirect_specular_blur")
 
-class ARNOLD_HYDRA_RENDER_PT_ray_depth(Panel):
+
+class ARNOLD_HYDRA_RENDER_PT_ray_depth(ArnoldRenderPanel):
     bl_label = "Ray Depth"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        col = layout.column(align=True)
-        col.prop(r, "GI_total_depth")
-        col.prop(r, "GI_diffuse_depth")
-        col.prop(r, "GI_specular_depth")
-        col.prop(r, "GI_transmission_depth")
-        col.prop(r, "GI_volume_depth")
-        col.prop(r, "auto_transparency_depth")
-
-
+        layout.prop(settings, "GI_total_depth")
+        layout.prop(settings, "GI_diffuse_depth")
+        layout.prop(settings, "GI_specular_depth")
+        layout.prop(settings, "GI_transmission_depth")
+        layout.prop(settings, "GI_volume_depth")
+        layout.prop(settings, "auto_transparency_depth")
 
         # FOR SHADERS
         # col.prop(r, "background")
@@ -140,78 +110,72 @@ class ARNOLD_HYDRA_RENDER_PT_ray_depth(Panel):
         # col.prop(r, "aov_shaders")
         # col.prop(r, "imager")
 
-class ARNOLD_HYDRA_RENDER_PT_subdivision(Panel):
+
+class ARNOLD_HYDRA_RENDER_PT_subdivision(ArnoldRenderPanel):
     bl_label = "Subdivision"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
+
+        layout.prop(settings, "subdiv_dicing_camera")
+        layout.prop(settings, "subdiv_frustum_culling")
 
         col = layout.column(align=True)
-        col.prop(r, "subdiv_dicing_camera")
-        col.prop(r, "subdiv_frustum_culling")
+        col.enabled = settings.subdiv_frustum_culling
+        col.prop(settings, "subdiv_frustum_padding")
 
-        col = layout.column(align=True)
-        col.enabled = r.subdiv_frustum_culling
-        col.prop(r, "subdiv_frustum_padding")
 
-class ARNOLD_HYDRA_RENDER_PT_lights(Panel):
+class ARNOLD_HYDRA_RENDER_PT_lights(ArnoldRenderPanel):
     bl_label = "Lights"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        layout.prop(r, "light_samples")
-        layout.prop(r, "low_light_threshold")
-        layout.prop(r, "nits_per_unit")
+        layout.prop(settings, "light_samples")
+        layout.prop(settings, "low_light_threshold")
+        layout.prop(settings, "nits_per_unit")
 
-class ARNOLD_HYDRA_RENDER_PT_textures(Panel):
+
+class ARNOLD_HYDRA_RENDER_PT_textures(ArnoldRenderPanel):
     bl_label = "Textures"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
+
+        layout.prop(settings, "texture_max_memory_MB")
+        layout.prop(settings, "texture_max_open_files")
+
+        layout.prop(settings, "texture_automip")
+        layout.prop(settings, "texture_accept_untiled")
+        layout.prop(settings, "texture_autotile")
+
+        layout.prop(settings, "texture_accept_unmipped")
+        layout.prop(settings, "texture_auto_generate_tx")
 
         col = layout.column(align=True)
-        col.prop(r, "texture_max_memory_MB")
-        col.prop(r, "texture_max_open_files")
-
-        col.prop(r, "texture_automip")
-        col.prop(r, "texture_accept_untiled")
-        col.prop(r, "texture_autotile")
-
-        col.prop(r, "texture_accept_unmipped")
-        col.prop(r, "texture_auto_generate_tx")
+        col.enabled = not settings.texture_auto_generate_tx
+        col.prop(settings, "texture_use_existing_tx")
 
         col = layout.column(align=True)
-        col.enabled = not r.texture_auto_generate_tx
-        col.prop(r, "texture_use_existing_tx")
+        col.enabled = settings.texture_auto_generate_tx
+        col.prop(settings, "texture_auto_tx_path")
 
-        col = layout.column(align=True)
-        col.enabled = r.texture_auto_generate_tx
-        col.prop(r, "texture_auto_tx_path")
 
-class ARNOLD_HYDRA_RENDER_PT_device(Panel):
+class ARNOLD_HYDRA_RENDER_PT_device(ArnoldRenderPanel):
     bl_label = "Device"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        col = layout.column(align=True)
-        col.prop(r, "render_device")
-        col.prop(r, "render_device_fallback")
+        layout.prop(settings, "render_device")
+        layout.prop(settings, "render_device_fallback")
 
-class ARNOLD_HYDRA_RENDER_PT_device_automatic(Panel):
+
+class ARNOLD_HYDRA_RENDER_PT_device_automatic(ArnoldRenderPanel):
     bl_label = "Automatic Device Selection"
     bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_device"
     bl_space_type = 'PROPERTIES'
@@ -220,109 +184,91 @@ class ARNOLD_HYDRA_RENDER_PT_device_automatic(Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        col = layout.column(align=True)
-        col.prop(r, "gpu_default_names")
-        col.prop(r, "gpu_default_min_memory_MB")
+        layout.prop(settings, "gpu_default_names")
+        layout.prop(settings, "gpu_default_min_memory_MB")
 
-class ARNOLD_HYDRA_RENDER_PT_device_manual(Panel):
+
+class ARNOLD_HYDRA_RENDER_PT_device_manual(ArnoldRenderPanel):
     bl_label = "Manual Device Selection"
     bl_parent_id = "ARNOLD_HYDRA_RENDER_PT_device"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'render'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
+
+        layout.prop(settings, "manual_device_selection")
 
         col = layout.column(align=True)
-        col.prop(r, "manual_device_selection")
+        col.enabled = settings.manual_device_selection
+        col.prop(settings, "device_selection")
 
-        col = layout.column(align=True)
-        col.enabled = r.manual_device_selection
-        col.prop(r, "device_selection")
 
-class ARNOLD_HYDRA_RENDER_PT_system(Panel):
+class ARNOLD_HYDRA_RENDER_PT_system(ArnoldRenderPanel):
     bl_label = "System"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        col = layout.column(align=True)
-        col.prop(r, "threads")
-        col.prop(r, "bucket_size")
-        col.prop(r, "bucket_scanning")
-        col.prop(r, "parallel_node_init")
-        col.prop(r, "abort_on_error")
-        col.prop(r, "abort_on_license_fail")
-        col.prop(r, "skip_license_check")
-        col.prop(r, "plugin_searchpath")
-        col.prop(r, "asset_searchpath")
+        layout.prop(settings, "threads")
+        layout.prop(settings, "bucket_size")
+        layout.prop(settings, "bucket_scanning")
+        layout.prop(settings, "parallel_node_init")
+        layout.prop(settings, "abort_on_error")
+        layout.prop(settings, "abort_on_license_fail")
+        layout.prop(settings, "skip_license_check")
+        layout.prop(settings, "plugin_searchpath")
+        layout.prop(settings, "asset_searchpath")
 
-class ARNOLD_HYDRA_RENDER_PT_diagnostics(Panel):
+
+class ARNOLD_HYDRA_RENDER_PT_diagnostics(ArnoldRenderPanel):
     bl_label = "Diagnostics"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        r = getattr(context.scene.arnold, "global")
+        layout, settings = self.setup(context)
 
-        col = layout.column(align=True)
-        col.prop(r, "log_file")
-        col.prop(r, "log_verbosity")
+        layout.prop(settings, "log_file")
+        layout.prop(settings, "log_verbosity")
         
-        col.separator()
+        layout.separator()
 
-        row = col.row()
-        row.prop(r, "enable_report", text="Report File")
+        row = layout.row()
+        row.prop(settings, "enable_report", text="Report File")
         col_rep = row.column(align=True)
-        col_rep.enabled = r.enable_report
-        col_rep.prop(r, "report_file", text="")
+        col_rep.enabled = settings.enable_report
+        col_rep.prop(settings, "report_file", text="")
 
-        row = col.row()
-        row.prop(r, "enable_stats", text="Stats File")
+        row = layout.row()
+        row.prop(settings, "enable_stats", text="Stats File")
         col_stat = row.column(align=True)
-        col_stat.enabled = r.enable_stats
-        col_stat.prop(r, "stats_file", text="")
+        col_stat.enabled = settings.enable_stats
+        col_stat.prop(settings, "stats_file", text="")
 
-        row = col.row()
-        row.prop(r, "enable_profile", text="Profile File")
+        row = layout.row()
+        row.prop(settings, "enable_profile", text="Profile File")
         col_prof = row.column(align=True)
-        col_prof.enabled = r.enable_profile
-        col_prof.prop(r, "profile_file", text="")
+        col_prof.enabled = settings.enable_profile
+        col_prof.prop(settings, "profile_file", text="")
 
-        col.separator()
+        layout.separator()
 
-        col.prop(r, "ignore_operators")
-        col.prop(r, "ignore_imagers")
-        col.prop(r, "ignore_textures")
-        col.prop(r, "ignore_shaders")
-        col.prop(r, "ignore_atmosphere")
-        col.prop(r, "ignore_lights")
-        col.prop(r, "ignore_shadows")
-        col.prop(r, "ignore_subdivision")
-        col.prop(r, "ignore_displacement")
-        col.prop(r, "ignore_bump")
-        col.prop(r, "ignore_motion_blur")
-        col.prop(r, "ignore_dof")
-        col.prop(r, "ignore_sss")
+        layout.prop(settings, "ignore_operators")
+        layout.prop(settings, "ignore_imagers")
+        layout.prop(settings, "ignore_textures")
+        layout.prop(settings, "ignore_shaders")
+        layout.prop(settings, "ignore_atmosphere")
+        layout.prop(settings, "ignore_lights")
+        layout.prop(settings, "ignore_shadows")
+        layout.prop(settings, "ignore_subdivision")
+        layout.prop(settings, "ignore_displacement")
+        layout.prop(settings, "ignore_bump")
+        layout.prop(settings, "ignore_motion_blur")
+        layout.prop(settings, "ignore_dof")
+        layout.prop(settings, "ignore_sss")
 
-
-
-
-# ---------------------------------------------------------------------------
-# Class registration
-# ---------------------------------------------------------------------------
 
 register_classes, unregister_classes = bpy.utils.register_classes_factory((
     ARNOLD_HYDRA_RENDER_PT_sampling,

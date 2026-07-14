@@ -3,7 +3,7 @@ import bpy
 from ..engine import ArnoldHydraRenderEngine
 
 
-class Panel(bpy.types.Panel):
+class ArnoldCameraPanel(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = 'data'
@@ -12,151 +12,108 @@ class Panel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         return context.engine in cls.COMPAT_ENGINES and context.camera
+    
+    def setup(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        settings = context.camera.arnold
+        return layout, settings
 
 
-class ARNOLD_HYDRA_CAMERA_PT_arnold(Panel):
+class ARNOLD_HYDRA_CAMERA_PT_arnold(ArnoldCameraPanel):
     bl_label = "Arnold"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        cam = context.camera
-        arnold = cam.arnold
+        pass
 
-class ARNOLD_HYDRA_CAMERA_PT_camera(bpy.types.Panel):
+
+class ARNOLD_HYDRA_CAMERA_PT_camera(ArnoldCameraPanel):
     bl_label = "Camera"
     bl_parent_id = "ARNOLD_HYDRA_CAMERA_PT_arnold"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return context.engine in cls.COMPAT_ENGINES and context.camera
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        arnold = context.camera.arnold
+        layout, settings = self.setup(context)
 
-        layout.prop(arnold, "exposure")
-        layout.prop(arnold, "radial_distortion")
-        layout.prop(arnold, "radial_distortion_type")
-        layout.prop(arnold, "lens_tilt")
-        layout.prop(arnold, "lens_shift")
+        layout.prop(settings, "exposure")
+        layout.prop(settings, "radial_distortion")
+        layout.prop(settings, "radial_distortion_type")
+        layout.prop(settings, "lens_tilt")
+        layout.prop(settings, "lens_shift")
         #layout.prop(arnold, "filtermap")
         #layout.prop(arnold, "uv_remap")
 
 
-class ARNOLD_HYDRA_CAMERA_PT_motionblur(bpy.types.Panel):
+class ARNOLD_HYDRA_CAMERA_PT_motion_blur(ArnoldCameraPanel):
     bl_label = "Motion Blur"
     bl_parent_id = "ARNOLD_HYDRA_CAMERA_PT_arnold"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return context.engine in cls.COMPAT_ENGINES and context.camera
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        arnold = context.camera.arnold
+        layout, settings = self.setup(context)
 
-        layout.prop(arnold, "shutter_filter")
-        layout.prop(arnold, "rolling_shutter")
-        layout.prop(arnold, "rolling_shutter_duration")
+        layout.prop(settings, "shutter_filter")
+        layout.prop(settings, "rolling_shutter")
+        layout.prop(settings, "rolling_shutter_duration")
 
 
-class ARNOLD_HYDRA_CAMERA_PT_dof(bpy.types.Panel):
+class ARNOLD_HYDRA_CAMERA_PT_depth_of_field(ArnoldCameraPanel):
     bl_label = "Depth of Field"
     bl_parent_id = "ARNOLD_HYDRA_CAMERA_PT_arnold"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return context.engine in cls.COMPAT_ENGINES and context.camera
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        arnold = context.camera.arnold
+        layout, settings = self.setup(context)
 
-        layout.prop(arnold, "aperture_blades")
-        layout.prop(arnold, "aperture_rotation")
-        layout.prop(arnold, "aperture_blade_curvature")
-        layout.prop(arnold, "aperture_aspect_ratio")
-        layout.prop(arnold, "flat_field_focus")
+        layout.prop(settings, "aperture_blades")
+        layout.prop(settings, "aperture_rotation")
+        layout.prop(settings, "aperture_blade_curvature")
+        layout.prop(settings, "aperture_aspect_ratio")
+        layout.prop(settings, "flat_field_focus")
 
-class ARNOLD_HYDRA_CAMERA_PT_override(bpy.types.Panel):
+
+class ARNOLD_HYDRA_CAMERA_PT_override(ArnoldCameraPanel):
     bl_label = "Override Camera"
     bl_parent_id = "ARNOLD_HYDRA_CAMERA_PT_arnold"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {ArnoldHydraRenderEngine.bl_idname}
-
-    @classmethod
-    def poll(cls, context):
-        return context.engine in cls.COMPAT_ENGINES and context.camera
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        arnold = context.camera.arnold
+        layout, settings = self.setup(context)
 
-        layout.prop(arnold, "camera")
+        layout.prop(settings, "camera")
 
-        if arnold.camera == "cyl_camera":
-            layout.prop(arnold, "cyl_camera_horizontal_fov")
-            layout.prop(arnold, "cyl_camera_vertical_fov")
-            layout.prop(arnold, "cyl_camera_projective")
+        if settings.camera == "cyl_camera":
+            layout.prop(settings, "cyl_camera_horizontal_fov")
+            layout.prop(settings, "cyl_camera_vertical_fov")
+            layout.prop(settings, "cyl_camera_projective")
 
-        if arnold.camera == "vr_camera":
-            layout.prop(arnold, "vr_camera_mode")
-            layout.prop(arnold, "vr_camera_projection")
-            layout.prop(arnold, "vr_camera_eye_separation")
-            layout.prop(arnold, "vr_camera_eye_to_neck")
-            layout.prop(arnold, "vr_camera_top_merge_mode")
-            layout.prop(arnold, "vr_camera_top_merge_angle")
-            layout.prop(arnold, "vr_camera_bottom_merge_mode")
-            layout.prop(arnold, "vr_camera_bottom_merge_angle")
-            layout.prop(arnold, "vr_camera_merge_shader")
+        elif settings.camera == "vr_camera":
+            layout.prop(settings, "vr_camera_mode")
+            layout.prop(settings, "vr_camera_projection")
+            layout.prop(settings, "vr_camera_eye_separation")
+            layout.prop(settings, "vr_camera_eye_to_neck")
+            layout.prop(settings, "vr_camera_top_merge_mode")
+            layout.prop(settings, "vr_camera_top_merge_angle")
+            layout.prop(settings, "vr_camera_bottom_merge_mode")
+            layout.prop(settings, "vr_camera_bottom_merge_angle")
+            layout.prop(settings, "vr_camera_merge_shader")
 
-        if arnold.camera == "uv_camera":
+        elif settings.camera == "uv_camera":
             #layout.prop(arnold, "uv_camera_mesh")
-            layout.prop(arnold, "uv_camera_offset")
-            layout.prop(arnold, "uv_camera_u_offset")
-            layout.prop(arnold, "uv_camera_v_offset")
+            layout.prop(settings, "uv_camera_offset")
+            layout.prop(settings, "uv_camera_u_offset")
+            layout.prop(settings, "uv_camera_v_offset")
             #layout.prop(arnold, "uv_camera_uv_set")
-            layout.prop(arnold, "uv_camera_u_scale")
-            layout.prop(arnold, "uv_camera_v_scale")
-            layout.prop(arnold, "uv_camera_extend_edges")
+            layout.prop(settings, "uv_camera_u_scale")
+            layout.prop(settings, "uv_camera_v_scale")
+            layout.prop(settings, "uv_camera_extend_edges")
 
 
-register_classes, unregister_classes = bpy.utils.register_classes_factory((
+register, unregister = bpy.utils.register_classes_factory((
     ARNOLD_HYDRA_CAMERA_PT_arnold,
     ARNOLD_HYDRA_CAMERA_PT_camera,
-    ARNOLD_HYDRA_CAMERA_PT_motionblur,
-    ARNOLD_HYDRA_CAMERA_PT_dof,
+    ARNOLD_HYDRA_CAMERA_PT_motion_blur,
+    ARNOLD_HYDRA_CAMERA_PT_depth_of_field,
     ARNOLD_HYDRA_CAMERA_PT_override,
 ))
-
-
-def register():
-    register_classes()
-
-
-def unregister():
-    unregister_classes()
