@@ -119,15 +119,27 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
             return
 
         def get_register_params(name, data_type):
-            if name == "RGBA":
-                return 4, "RGBA", "COLOR"
+            """
+            Maps Hydra buffer typings to Blender's API specifications.
+            """
 
-            if name in {"Z"}:
-                return 1, "Z", "VALUE"
-            
-            #if data_type == "float":
-            #    return 1, "BW", "VALUE"
 
+            if "color" in data_type:
+                # Check if Hydra specified an alpha channel (color4f)
+                if "4" in data_type:
+                    return 4, "RGBA", "COLOR"
+                return 3, "RGB", "COLOR"
+                
+            if "float" in data_type or "int" in data_type or "half" in data_type:
+                if "Z" in name:
+                    return 1, "Z", "VALUE"
+                
+                if "3" in data_type: 
+                    return 3, "XYZ", "VECTOR"
+                
+                return 1, "X", "VALUE"
+
+            # General production safe-fallback
             return 3, "RGB", "COLOR"
 
         # Register built-in AOVs if enabled
