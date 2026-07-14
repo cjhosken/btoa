@@ -11,7 +11,7 @@ GLOBAL_SETTINGS = {
     "arnold:global:AA_sample_clamp": "AA_sample_clamp",
     "arnold:global:AA_sample_clamp_affects_aovs": "AA_sample_clamp_affects_aovs",
     "arnold:global:indirect_sample_clamp": "indirect_sample_clamp",
-    "arnold:global:light_samples": "enable_light_samples",
+    "arnold:global:light_samples": "light_samples",
     "arnold:global:AA_samples": "AA_samples",
     "arnold:global:AA_samples_max": "AA_samples_max",
     "arnold:global:GI_diffuse_samples": "GI_diffuse_samples",
@@ -88,10 +88,6 @@ def build_global_settings(settings, is_viewport):
 
         if prop_name == "subdiv_dicing_camera":
             result[usd_name] = value.name if value else ""
-        elif prop_name == "enable_light_samples":
-            result[usd_name] = settings.light_samples if value else 0
-        elif prop_name == "threads":
-            result[usd_name] = 0 if settings.autodetect_threads else value
         else:
             result[usd_name] = value
 
@@ -322,12 +318,6 @@ class ArnoldGlobalRenderProperties(bpy.types.PropertyGroup):
         name="Light Samples",
         description="Overrides the samples parameter for all lights in the scene",
         default=4, soft_min=0, soft_max=1024
-    )
-
-    enable_light_samples: bpy.props.BoolProperty(
-        name="Enable Light Samples",
-        description="Enable global light samples override",
-        default=False
     )
 
     low_light_threshold: bpy.props.FloatProperty(

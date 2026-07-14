@@ -164,8 +164,9 @@ BUILTIN_AOVS = {
 PASS_TYPES = {
     "color4f": (4, "RGBA", "COLOR"),
     "color3f": (3, "RGB", "COLOR"),
-    "float2": (2, "XY", "VECTOR"),
     "float3": (3, "XYZ", "VECTOR"),
+    "float": (1, "X", "VALUE"),
+    "half": (1, "X", "VALUE"),
     "int": (1, "X", "VALUE"),
     "uint": (1, "X", "VALUE"),
     "int64": (1, "X", "VALUE"),
@@ -191,9 +192,12 @@ def get_usd_aov_types(name, user_fmt):
         "float3": "half3" if half else "float3",
         "float2": "half2" if half else "float2",
         "float": "half" if half else "float",
-        "int": "int",
-        "uint": "uint",
-        "int64": "int",
+        # HdArnold has no integer render buffer type; int/uint AOVs must be
+        # expressed as float so HdArnold does not fall back to RGB and cause
+        # Arnold to abort with "cannot convert AOV to type RGB".
+        "int": "half" if half else "float",
+        "uint": "half" if half else "float",
+        "int64": "half" if half else "float",
     }
 
     return datatype, formats[datatype]

@@ -125,11 +125,11 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
                 return 4, "RGBA", "COLOR"
             elif name == "Z":
                 return 1, "Z", "VALUE"
-            
-            # All other custom passes must be registered as 3-channel to avoid
-            # Blender memory copier out-of-bounds crashes on 1 or 2 channel custom passes.
+
             if dataType in {"vector3f", "point3f", "normal3f", "float3", "half3", "float2"}:
                 return 3, "XYZ", "VECTOR"
+            if dataType in {"float", "half", "int", "uint", "int64"}:
+                return 1, "BW", "VALUE"
             return 3, "RGB", "COLOR"
 
         # Register built-in AOVs if enabled
