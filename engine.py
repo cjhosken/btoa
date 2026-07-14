@@ -1,12 +1,10 @@
 import bpy, os
 
-
 def _set_usd_export_method():
     scene = bpy.context.scene
     if scene is not None:
         scene.hydra.export_method = 'USD'
-    return None  # Don't repeat
-
+    return None
 
 def get_usd_aov_types(name, user_fmt):
     is_half = (user_fmt == "half")
