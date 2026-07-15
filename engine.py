@@ -64,6 +64,7 @@ class ArnoldHydraRenderEngine(bpy.types.HydraRenderEngine):
     bl_use_preview = True
     bl_use_gpu_context = False
     bl_use_materialx = False
+    bl_use_postprocess = True
 
     bl_delegate_id = "HdArnoldRendererPlugin"
 
