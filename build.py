@@ -48,7 +48,7 @@ def run_cmd(cmd, cwd=None):
 def main():
     parser = argparse.ArgumentParser(description="Build Arnold USD Render Delegate for btoa")
     parser.add_argument("--blender-version", default="5.2", help="Blender version (default: 5.2)")
-    parser.add_argument("--arnoldusd-version", default="7.4.5.2", help="Arnold USD version (default: 7.4.5.2)")
+    parser.add_argument("--arnoldusd-version", default="7.4.5.1", help="Arnold USD version (default: 7.4.5.1)")
     parser.add_argument("--arnoldsdk", required=True, help="Path to local Arnold SDK directory")
     parser.add_argument("--build-dir", help="Override build workspace directory")
     parser.add_argument("--install-dir", help="Override install destination directory")
@@ -151,26 +151,28 @@ def main():
         "-DBUILD_PROCEDURAL=OFF",
         "-DBUILD_BUNDLE=OFF",
         "-DBUILD_TESTSUITE=OFF",
-        "-DBUILD_UNIT_TESTS=OFF"
+        "-DBUILD_UNIT_TESTS=OFF",
         "-DBUILD_DOCS=OFF",
         "-DBUILD_DISABLE_CXX11_ABI=OFF",
         "-DBUILD_HEADERS_AS_SOURCES=OFF",
         "-DBUILD_WITH_USD_STATIC=OFF",
         f"-DARNOLD_LOCATION={sdk_target_dir}",
-        f"-DUSD_LOCATION={os.path.join(blender_libs_dir, 'usd')}",
         f"-DUSD_INCLUDE_DIR={os.path.join(blender_libs_dir, 'usd', 'include')}",
         f"-DUSD_LIBRARY_DIR={os.path.join(blender_libs_dir, 'usd', 'lib')}",
         f"-DUSD_BINARY_DIR={os.path.join(blender_libs_dir, 'usd', 'bin')}",
+        f"-DUSD_LIBRARIES={os.path.join(blender_libs_dir, 'usd', 'lib', 'usd_ms.dll' if platform == 'windows' else 'usd_ms.lib')}",
         "-DUSD_MONOLITHIC_BUILD=ON",
         f"-DPython3_ROOT={blender_python_dir}",
-        f"-DPython3_INCLUDE_DIRS={os.path.join(blender_python_dir, 'include', 'python3.13')}",
-        f"-DPython3_LIBRARY={os.path.join(blender_python_dir, 'libs' if platform == 'windows' else 'lib', 'libpython3.13.a')}",
-        f"-DPython3_EXECUTABLE={os.path.join(blender_python_dir, 'bin', 'python3.13')}",
-        f"-DTBB_ROOT_DIR={os.path.join(blender_libs_dir, 'tbb')}",
+        f"-DPython3_INCLUDE_DIRS={os.path.join(blender_python_dir, 'include', '' if platform == 'windows' else 'python3.13')}",
+        f"-DPython3_LIBRARY={os.path.join(blender_python_dir, 'libs' if platform == 'windows' else 'lib', 'python313.lib' if platform == 'windows' else 'libpython3.13.a')}",
+        f"-DPython3_EXECUTABLE={os.path.join(blender_python_dir, 'bin', 'python.exe' if platform == 'windows' else 'python3.13')}",
+        f"-DTBB_ROOT_DIR={os.path.join(blender_libs_dir, 'tbb')}"
     ]
     
     if platform == "windows":
-        pass
+        cmake_args.append(f"-DTBB_LIBRARY={os.path.join(blender_libs_dir, 'tbb', 'lib')}")
+    else:
+        cmake_args.append(f"-DUSD_LOCATION={os.path.join(blender_libs_dir, 'usd')}")
     
     run_cmd(cmake_args, cwd=build_dir)
     
