@@ -4,17 +4,6 @@
 
 ---
 
-## Key Features
-
-- **USD Hydra Render Delegate Integration**: Fully connects Blender's geometry and material data with the Autodesk Arnold USD backend.
-- **Interactive Viewport Rendering**: Real-time rendering directly within the 3D viewport with support for Blender's shading modes.
-- **Progressive Refinement**: Highly responsive look-development via progressive image refinement inside the viewport.
-- **Custom Viewport AOVs**: Switch between different viewport render passes (Combined, Depth, Position, Normal, Diffuse, Specular, etc.) on the fly.
-- **Flexible Render Devices**: Seamlessly switch between CPU and GPU rendering directly from Blender's Render properties.
-- **Thread Optimization**: Automatic detection of available logical CPU cores for optimal rendering performance.
-
----
-
 ## Getting Started
 
 ### Prerequisites
@@ -29,7 +18,7 @@ Before building and running the plugin, ensure you have:
 The repository contains a build helper script `build.py` to compile the Arnold USD render delegate. Run the script with the path to your local Arnold SDK:
 
 ```bash
-python3 build.py --arnold-sdk /path/to/arnold-sdk
+python3 build.py --blender-version=5.2 --arnold-version=7.4.5.2 --arnold-sdk=/path/to/arnold-sdk
 ```
 
 Optional build parameters:
@@ -47,15 +36,6 @@ Use the provided `launch.sh` wrapper script to set up environment paths (such as
 
 ---
 
-## Usage
-
-1. **Select Renderer**: Open Blender, navigate to the **Render Properties** tab, and select **HdArnold** (`ARNOLD`) as the active Render Engine.
-2. **Viewport Render**: Switch the 3D Viewport shading mode to **Rendered** (shortcut `Z` -> `Rendered`).
-3. **Change Viewport AOV**: In the 3D Viewport header, open the **Render Pass** dropdown under Shading options to switch between available AOVs.
-4. **Configure Device**: Change the render device (CPU or GPU) under the Render Properties panel.
-
----
-
 ## Community & Help
 
 - Join the discussion on the [Arnold for Blender Discord](https://discord.gg/TeVFR5JVE) for support, updates, and community sharing.
@@ -65,4 +45,5 @@ Use the provided `launch.sh` wrapper script to set up environment paths (such as
 ## Acknowledgements
 
 - **Christopher Hosken** (Lead Developer)
-- Autodesk Arnold & USD/Hydra Teams
+- Autodesk Team
+- Blender Foundation
