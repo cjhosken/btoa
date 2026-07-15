@@ -41,8 +41,8 @@ class ARNOLD_HYDRA_CAMERA_PT_camera(ArnoldCameraPanel):
         layout.prop(settings, "radial_distortion_type")
         layout.prop(settings, "lens_tilt")
         layout.prop(settings, "lens_shift")
-        #layout.prop(arnold, "filtermap")
-        #layout.prop(arnold, "uv_remap")
+        layout.prop(settings, "filtermap")
+        layout.prop(settings, "uv_remap")
 
 
 class ARNOLD_HYDRA_CAMERA_PT_motion_blur(ArnoldCameraPanel):
@@ -100,11 +100,11 @@ class ARNOLD_HYDRA_CAMERA_PT_override(ArnoldCameraPanel):
             layout.prop(settings, "vr_camera_merge_shader")
 
         elif settings.camera == "uv_camera":
-            #layout.prop(arnold, "uv_camera_mesh")
+            layout.prop(settings, "uv_camera_mesh")
             layout.prop(settings, "uv_camera_offset")
             layout.prop(settings, "uv_camera_u_offset")
             layout.prop(settings, "uv_camera_v_offset")
-            #layout.prop(arnold, "uv_camera_uv_set")
+            layout.prop(settings, "uv_camera_uv_set")
             layout.prop(settings, "uv_camera_u_scale")
             layout.prop(settings, "uv_camera_v_scale")
             layout.prop(settings, "uv_camera_extend_edges")

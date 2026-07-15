@@ -220,6 +220,24 @@ class ArnoldLightProperties(bpy.types.PropertyGroup):
         default=999, soft_min=0, soft_max=1000,
     )
 
+    aov: USDProperty(
+        name="AOV Light Group",
+        description="",
+        usd="primvars:arnold:aov",
+        type=bpy.props.StringProperty,
+        default=""
+    )
+
+    ### Contribution
+
+    shaders: USDProperty(
+        name="Shaders",
+        description="",
+        usd="primvars:arnold:shaders",
+        type=bpy.props.StringProperty,
+        default=""
+    )
+
 
 def register():
     bpy.utils.register_class(ArnoldLightProperties)

@@ -114,10 +114,8 @@ class ARNOLD_HYDRA_GEOM_PT_visibility(ArnoldShapePanel):
         layout.prop(settings, "self_shadows")
         layout.prop(settings, "opaque")
         layout.prop(settings, "matte")
-
-        #layout.separator()
-        #layout.prop(arnold, "trace_sets")
-        #layout.prop(arnold, "interior_set")
+        layout.prop(settings, "trace_sets")
+        layout.prop(settings, "interior_set")
 
 
 class ARNOLD_HYDRA_GEOM_PT_normals(ArnoldShapePanel):
@@ -181,9 +179,9 @@ class ARNOLD_HYDRA_GEOM_PT_light(ArnoldShapePanel):
         col.prop(settings, "light_max_bounces")
         col.prop(settings, "light_volume_samples")
         col.prop(settings, "light_volume")
-        #col.prop(arnold, "light_aov")
+        col.prop(settings, "light_aov")
         col.prop(settings, "light_sampling_mode")
-        #col.prop(arnold, "shaders")
+        col.prop(settings, "light_shaders")
 
 
 register, unregister = bpy.utils.register_classes_factory((

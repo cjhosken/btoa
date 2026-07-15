@@ -1,6 +1,19 @@
 import bpy
 from ..usd import USDProperty
 
+def make_traceset(prop_name, default=None):
+    """Custom Traceset function based on USDProperty to convert strings into string[] (for arnold)"""
+    if default is None:
+        default = []
+
+    def getter(self):
+        value = self.id_data.get(prop_name, default)
+        return " ".join(value)
+
+    def setter(self, value):
+        self.id_data[prop_name] = value.split()
+
+    return getter, setter
 
 class ArnoldShapeProperties(bpy.types.PropertyGroup):
 
@@ -337,6 +350,22 @@ class ArnoldShapeProperties(bpy.types.PropertyGroup):
         default=False,
     )
 
+    trace_sets: bpy.props.StringProperty(
+        name="Trace Sets",
+        description="",
+        default="",
+        get=make_traceset("primvars:arnold:trace_sets", True)[0],
+        set=make_traceset("primvars:arnold:trace_sets", True)[1]
+    )
+
+    interior_set: USDProperty(
+        name="Interior Set",
+        description="",
+        usd="primvars:interior_set",
+        type=bpy.props.StringProperty,
+        default=""
+    )
+
     ### Normals
 
     smoothing: USDProperty(
@@ -593,6 +622,14 @@ class ArnoldShapeProperties(bpy.types.PropertyGroup):
         default=1.0, soft_min=0.0, soft_max=1.0
     )
 
+    light_aov: USDProperty(
+        name="AOV",
+        description="",
+        usd="primvars:arnold:light:aov",
+        type=bpy.props.StringProperty,
+        default=""
+    )
+
     light_sampling_mode: USDProperty(
         name="Sampling Mode",
         description="Mesh light sampling mode",
@@ -603,6 +640,14 @@ class ArnoldShapeProperties(bpy.types.PropertyGroup):
             ("local", "Local", ""),
         ],
         default="auto",
+    )
+
+    light_shaders: USDProperty(
+        name="Shaders",
+        description="",
+        usd="primvars:arnold:light:shaders",
+        type=bpy.props.StringProperty,
+        default=""
     )
 
 

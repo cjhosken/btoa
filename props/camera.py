@@ -34,6 +34,37 @@ class ArnoldCameraProperties(bpy.types.PropertyGroup):
         default="cubic",
     )
 
+    lens_tilt: USDProperty(
+        name="Lens Tilt",
+        description="Tilt angle of the lens in degrees (horizontal, vertical)",
+        usd="primvars:arnold:lens_tilt",
+        type=bpy.props.FloatVectorProperty,
+        default=(0.0, 0.0, 0.0),
+    )
+
+    lens_shift: USDProperty(
+        name="Lens Shift",
+        description="Horizontal and vertical shift of the lens",
+        usd="primvars:arnold:lens_shift",
+        type=bpy.props.FloatVectorProperty,
+        default=(0.0, 0.0, 0.0),
+    )
+
+    filtermap: USDProperty(
+        name="Filter Map",
+        description="",
+        usd="primvars:arnold:filtermap",
+        type=bpy.props.StringProperty,
+        default=0.0, soft_min=-0.2, soft_max=2.0
+    )
+
+    uv_remap: USDProperty(
+        name="UV Remap",
+        description="",
+        usd="primvars:arnold:uv_remap",
+        type=bpy.props.StringProperty
+    )
+
     ### Motion Blur
 
     shutter_filter: USDProperty(
@@ -115,22 +146,6 @@ class ArnoldCameraProperties(bpy.types.PropertyGroup):
         usd="primvars:arnold:flat_field_focus",
         type=bpy.props.BoolProperty,
         default=True,
-    )
-
-    lens_tilt: USDProperty(
-        name="Lens Tilt",
-        description="Tilt angle of the lens in degrees (horizontal, vertical)",
-        usd="primvars:arnold:lens_tilt",
-        type=bpy.props.FloatVectorProperty,
-        default=(0.0, 0.0, 0.0),
-    )
-
-    lens_shift: USDProperty(
-        name="Lens Shift",
-        description="Horizontal and vertical shift of the lens",
-        usd="primvars:arnold:lens_shift",
-        type=bpy.props.FloatVectorProperty,
-        default=(0.0, 0.0, 0.0),
     )
 
     ### Override Camera
@@ -269,6 +284,14 @@ class ArnoldCameraProperties(bpy.types.PropertyGroup):
         default=0.0, soft_min=0.0, soft_max=10.0
     )
 
+    uv_camera_mesh : USDProperty(
+        name="Mesh",
+        description="",
+        usd="primvars:arnold:mesh",
+        type=bpy.props.StringProperty,
+        default=""
+    )
+
     uv_camera_offset : USDProperty(
         name="Offset",
         description="Offset of the camera ray along the normal",
@@ -291,6 +314,14 @@ class ArnoldCameraProperties(bpy.types.PropertyGroup):
         usd="primvars:arnold:v_offset",
         type=bpy.props.FloatProperty,
         default=0.0, soft_min=0.0, soft_max=10.0
+    )
+
+    uv_camera_uv_set : USDProperty(
+        name="UV Set",
+        description="",
+        usd="primvars:arnold:uv_set",
+        type=bpy.props.StringProperty,
+        default=""
     )
 
     uv_camera_u_scale : USDProperty(

@@ -84,7 +84,7 @@ class ARNOLD_HYDRA_LIGHT_PT_arnold_light(ArnoldLightPanel):
         layout.prop(settings, "resolution")
         layout.prop(settings, "aspect_ratio")
         layout.prop(settings, "lens_radius")
-        #layout.prop(arnold, "aov_indirect")
+        layout.prop(settings, "aov_indirect")
 
 
 class ARNOLD_HYDRA_LIGHT_PT_shadows(ArnoldLightPanel):
@@ -117,8 +117,17 @@ class ARNOLD_HYDRA_LIGHT_PT_contribution(ArnoldLightPanel):
         layout.prop(settings, "volume")
         layout.prop(settings, "indirect")
         layout.prop(settings, "max_bounces")
-        #layout.prop(arnold, "aov_light_group")
-        #layout.prop(arnold, "shaders")
+        layout.prop(settings, "aov_light_group")
+
+class ARNOLD_HYDRA_LIGHT_PT_shaders(ArnoldLightPanel):
+    bl_label = "Shaders"
+    bl_parent_id = "ARNOLD_HYDRA_LIGHT_PT_arnold"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout, settings = self.setup(context)
+
+        layout.prop(settings, "shaders")
 
 
 register, unregister = bpy.utils.register_classes_factory((
@@ -127,4 +136,5 @@ register, unregister = bpy.utils.register_classes_factory((
     ARNOLD_HYDRA_LIGHT_PT_arnold_light,
     ARNOLD_HYDRA_LIGHT_PT_shadows,
     ARNOLD_HYDRA_LIGHT_PT_contribution,
+    ARNOLD_HYDRA_LIGHT_PT_shaders,
 ))
