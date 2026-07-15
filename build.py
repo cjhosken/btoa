@@ -145,7 +145,7 @@ def main():
         "-DCMAKE_TOOLCHAIN_FILE=",
         "-DBUILD_SCHEMAS=OFF",
         "-DBUILD_RENDER_DELEGATE=ON",
-        "-DBUILD_NDR_PLUGIN=ON",
+        "-DBUILD_NDR_PLUGIN=OFF",
         "-DBUILD_SCENE_INDEX=OFF",
         "-DBUILD_USD_IMAGING_PLUGIN=ON",
         "-DBUILD_PROCEDURAL=OFF",
@@ -156,12 +156,11 @@ def main():
         "-DBUILD_DISABLE_CXX11_ABI=OFF",
         "-DBUILD_HEADERS_AS_SOURCES=OFF",
         "-DBUILD_WITH_USD_STATIC=OFF",
+        "-DUSD_MONOLITHIC_BUILD=ON",
         f"-DARNOLD_LOCATION={sdk_target_dir}",
+        f"-DUSD_LOCATION={os.path.join(blender_libs_dir, 'usd')}",
         f"-DUSD_INCLUDE_DIR={os.path.join(blender_libs_dir, 'usd', 'include')}",
         f"-DUSD_LIBRARY_DIR={os.path.join(blender_libs_dir, 'usd', 'lib')}",
-        f"-DUSD_BINARY_DIR={os.path.join(blender_libs_dir, 'usd', 'bin')}",
-        f"-DUSD_LIBRARIES={os.path.join(blender_libs_dir, 'usd', 'lib', 'usd_ms.dll' if platform == 'windows' else 'usd_ms.lib')}",
-        "-DUSD_MONOLITHIC_BUILD=ON",
         f"-DPython3_ROOT={blender_python_dir}",
         f"-DPython3_INCLUDE_DIRS={os.path.join(blender_python_dir, 'include', '' if platform == 'windows' else 'python3.13')}",
         f"-DPython3_LIBRARY={os.path.join(blender_python_dir, 'libs' if platform == 'windows' else 'lib', 'python313.lib' if platform == 'windows' else 'libpython3.13.a')}",
@@ -171,15 +170,19 @@ def main():
     
     if platform == "windows":
         cmake_args.append(f"-DTBB_LIBRARY={os.path.join(blender_libs_dir, 'tbb', 'lib')}")
+        cmake_args.append(f"-DTBB_tbb_LIBRARY={os.path.join(blender_libs_dir, 'tbb', 'lib', 'tbb12.lib')}")
+        cmake_args.append(f"-DTBB_tbbmalloc_LIBRARY={os.path.join(blender_libs_dir, 'tbb', 'lib', 'tbbmalloc.lib')}")
+        cmake_args.append(f"-DPython3_LIBRARIES={os.path.join(blender_python_dir, 'libs', 'python313.lib')}")
+        cmake_args.append("-DUSD_LIB_EXTENSION=.lib")
     else:
-        cmake_args.append(f"-DUSD_LOCATION={os.path.join(blender_libs_dir, 'usd')}")
+        cmake_args.append(f"-DUSD_BINARY_DIR={os.path.join(blender_libs_dir, 'usd', 'bin')}")
     
     run_cmd(cmake_args, cwd=build_dir)
     
     log("Building Arnold USD delegate...")
     nproc = str(os.cpu_count() or 2)
     if platform == "windows":
-        run_cmd(["cmake", "--build", ".", "--config", "Release", "--target", "install", "-j", nproc], cwd=build_dir)
+        run_cmd(["cmake", "--build", ".", "--config", "Release", "--verbose", "--target", "install", "-j", nproc], cwd=build_dir)
     else:
         run_cmd(["cmake", "--build", ".", "--target", "install", "--", f"-j{nproc}"], cwd=build_dir)
     
