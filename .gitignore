@@ -159,12 +159,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-installer/
-btoa/
-/.vs
+.vs/
 build/
 arnoldsdk/
-build-deps/
-arnoldsdk.zip
-arnoldsdk.tgz
 source/
+plugins/

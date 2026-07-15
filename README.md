@@ -18,12 +18,13 @@ Before building and running the plugin, ensure you have:
 The repository contains a build helper script `build.py` to compile the Arnold USD render delegate. Run the script with the path to your local Arnold SDK:
 
 ```bash
-python3 build.py --blender-version=5.2 --arnold-version=7.4.5.2 --arnold-sdk=/path/to/arnold-sdk
+python3 build.py --blender-version=5.2 --arnoldusd-version=7.4.5.2 --arnoldsdk=/path/to/arnold-sdk
 ```
 
 Optional build parameters:
 - `--blender-version`: Specify target Blender version (defaults to `5.2`).
-- `--arnold-version`: Specify target Arnold version (defaults to `7.4.5.2`).
+- `--arnoldusd-version`: Specify target Arnold version (defaults to `7.4.5.2`).
+- `--arnoldsdk`: path to the local Arnold SDK.
 - `--build-dir`: Custom build workspace directory.
 - `--install-dir`: Custom install location for built libraries.
 

@@ -55,14 +55,15 @@ class ArnoldCameraProperties(bpy.types.PropertyGroup):
         description="",
         usd="primvars:arnold:filtermap",
         type=bpy.props.StringProperty,
-        default=0.0, soft_min=-0.2, soft_max=2.0
+        default=""
     )
 
     uv_remap: USDProperty(
         name="UV Remap",
         description="",
         usd="primvars:arnold:uv_remap",
-        type=bpy.props.StringProperty
+        type=bpy.props.StringProperty,
+        default=""
     )
 
     ### Motion Blur
