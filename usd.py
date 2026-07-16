@@ -72,15 +72,33 @@ def USDProperty(*args, usd=None, type=None, **kwargs):
 def register_plugin():
     bpy.utils.expose_bundled_modules()
 
-    import pxr.Plug
+    btoa_root = os.environ.get("BTOA_ROOT", "")
+    if not btoa_root:
+        addon_dir = os.path.dirname(os.path.abspath(__file__))
+        plugins_dir = os.path.join(addon_dir, "plugins")
+        if os.path.isdir(plugins_dir):
+            for name in os.listdir(plugins_dir):
+                if name.startswith("btoa-"):
+                    btoa_root = os.path.join(plugins_dir, name)
+                    break
 
-    path = os.path.join(
-        os.environ.get("BTOA_ROOT", ""),
-        "plugin"
-    )
+    if os.name == "nt":
+        for subdir in ("bin", "plugin"):
+            dll_dir = os.path.join(btoa_root, subdir)
+            if os.path.isdir(dll_dir):
+                os.add_dll_directory(dll_dir)
 
-    if os.path.exists(path):
-        pxr.Plug.Registry().RegisterPlugins([path])
+    plugin_path = os.path.join(btoa_root, "plugin")
+
+    if os.path.exists(plugin_path):
+        pxr_paths = os.environ.get("PXR_PLUGINPATH_NAME", "")
+        entries = [p.strip() for p in pxr_paths.split(os.pathsep) if p.strip()]
+        if plugin_path not in entries:
+            entries.insert(0, plugin_path)
+            os.environ["PXR_PLUGINPATH_NAME"] = os.pathsep.join(entries)
+
+        import pxr.Plug
+        pxr.Plug.Registry().RegisterPlugins([plugin_path])
 
 def configure_hydra():
     scene = bpy.context.scene

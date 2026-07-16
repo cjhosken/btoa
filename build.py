@@ -174,6 +174,10 @@ def main():
         cmake_args.append(f"-DTBB_tbbmalloc_LIBRARY={os.path.join(blender_libs_dir, 'tbb', 'lib', 'tbbmalloc.lib')}")
         cmake_args.append(f"-DPython3_LIBRARIES={os.path.join(blender_python_dir, 'libs', 'python313.lib')}")
         cmake_args.append("-DUSD_LIB_EXTENSION=.lib")
+        python_libs = os.path.join(blender_python_dir, "libs")
+        tbb_libs = os.path.join(blender_libs_dir, "tbb", "lib")
+        cmake_args.append(f"-DCMAKE_SHARED_LINKER_FLAGS=/LIBPATH:{python_libs} /LIBPATH:{tbb_libs}")
+        cmake_args.append(f"-DCMAKE_EXE_LINKER_FLAGS=/LIBPATH:{python_libs} /LIBPATH:{tbb_libs}")
     else:
         cmake_args.append(f"-DUSD_BINARY_DIR={os.path.join(blender_libs_dir, 'usd', 'bin')}")
     
