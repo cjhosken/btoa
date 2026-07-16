@@ -85,8 +85,9 @@ def register_plugin():
     if os.name == "nt":
         for subdir in ("bin", "plugin"):
             dll_dir = os.path.join(btoa_root, subdir)
-            if os.path.isdir(dll_dir):
+            if os.path.isdir(dll_dir) and dll_dir not in os.environ["PATH"]:
                 os.add_dll_directory(dll_dir)
+                os.environ["PATH"] = dll_dir + os.pathsep + os.environ.get("PATH", "")
 
     plugin_path = os.path.join(btoa_root, "plugin")
 
